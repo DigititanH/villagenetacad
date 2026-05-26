@@ -3,20 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "description": "Village NetAcad shop & support platform",
-  "scripts": {
-    "install:all": "npm install --prefix frontend",
-    "dev:backend": "php -S localhost:5000 -t backend-php/public backend-php/public/index.php",
-    "dev:frontend": "npm run dev --prefix frontend",
-    "build": "npm run build --prefix frontend",
-    "migrate": "php backend-php/database/migrate.php",
-    "predeploy": "npm run migrate && npm run build",
-    "start": "php -S localhost:5000 -t backend-php/public backend-php/public/index.php",
-    "deploy": "npm run predeploy"
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3"
-  },
   "engines": {
-    "node": ">=18"
+    "node": "22.x"
+  },
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "migrate": "node backend/src/database/migrate.js",
+    "start": "node backend/src/server.js",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend"
   }
 }

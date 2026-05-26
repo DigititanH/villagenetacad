@@ -2,7 +2,8 @@
 
 This guide matches **your** project: domain `villagenetacad.co.za`, email `info@villagenetacad.co.za`, PayFast merchant `14050025` (sandbox first), single Node server on port **5000**.
 
-> **Hosting on Afrihost?** Use the dedicated guide: **[deploy/AFRIHOST.md](deploy/AFRIHOST.md)**  
+> **Hosting on Microsoft Azure?** Use **[deploy/azure/AZURE.md](deploy/azure/AZURE.md)** (App Service, GitHub Actions, custom domain).  
+> **Hosting on Afrihost?** Use **[deploy/AFRIHOST.md](deploy/AFRIHOST.md)**  
 > (Client Zone DNS, VPS SSH, nginx, SSL, and what to do if you only have shared hosting.)
 
 ---

@@ -1,9 +1,9 @@
+# Frontend-only deploy — does NOT run the Express API or SQLite.
+# For production use .github/workflows/azure-app-service.yml instead.
 name: Azure Static Web Apps CI/CD
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
@@ -30,7 +30,7 @@ jobs:
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "./frontend" # App source code path
           api_location: "" # Api source code path - optional
-          output_location: "build" # Built app content directory - optional
+          output_location: "dist" # Vite output directory
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:

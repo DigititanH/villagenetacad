@@ -2,16 +2,20 @@ const path = require("path");
 const fs = require("fs");
 
 const backendRoot = path.join(__dirname, "..", "..");
+const isAzureAppService = Boolean(process.env.WEBSITE_SITE_NAME);
+const azureDataRoot = "/home/site/data";
 
 const getDbPath = () => {
   const custom = process.env.DATABASE_PATH?.trim();
   if (custom) return path.resolve(custom);
+  if (isAzureAppService) return path.join(azureDataRoot, "database.sqlite");
   return path.join(backendRoot, "database.sqlite");
 };
 
 const getUploadsDir = () => {
   const custom = process.env.UPLOADS_DIR?.trim();
   if (custom) return path.resolve(custom);
+  if (isAzureAppService) return path.join(azureDataRoot, "uploads");
   return path.join(backendRoot, "uploads");
 };
 
