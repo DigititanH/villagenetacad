@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.output/
+
+# Environment files
+.env
+.env.local
+.env.production
+backend/.env
+backend-php/.env
+
+# Database
+backend/database.sqlite
+backend/database.sqlite-wal
+backend/database.sqlite-shm
+backend-php/database.sqlite
+backend-php/database.sqlite-wal
+backend-php/database.sqlite-shm
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend-php/uploads/*
+!backend-php/uploads/.gitkeep
+
+# Deploy artifacts
+*.zip
+!frontend/public/certicate.pdf
+
+# Logs
+logs/
+*.log
+
+# Production data (when using custom paths)
+data/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Old config
+.tanstack/
+.vinxi/
+.nitro/
+.wrangler/
+.venv/
+__pycache__/
+*.pyc

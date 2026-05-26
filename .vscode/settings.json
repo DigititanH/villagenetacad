@@ -1,0 +1,53 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/.tanstack": true,
+    "**/.nitro": true,
+    "**/.output": true,
+    "**/.wrangler": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.venv": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.pytest_cache": true,
+    "**/.tanstack": true,
+    "**/.output": true,
+    "**/dist": true,
+    "**/dist-ssr": true,
+    "**/node_modules": true,
+    "**/.venv": true,
+    "**/package-lock.json": true,
+    "**/routeTree.gen.ts": true
+  },
+  "files.watcherExclude": {
+    "**/__pycache__/**": true,
+    "**/.venv/**": true,
+    "**/node_modules/**": true,
+    "**/.tanstack/**": true,
+    "**/.output/**": true,
+    "**/dist/**": true
+  },
+  "python.analysis.exclude": [
+    "**/__pycache__",
+    "**/.venv"
+  ],
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[typescriptreact]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
