@@ -1,128 +1,206 @@
-# Deploy Village NetAcad on Microsoft Azure
+# Deploy to Microsoft Azure App Service
 
-This app is a **single Node.js server** (Express API + React static files + SQLite). Use **Azure App Service (Linux, Node 22)** — not Azure Static Web Apps alone (SWA cannot run this Express API or SQLite).
+**Stack:** `backend-php/` (PHP 8.2+) + SQLite + React (built into `public/`).  
+**No Node.js** on the server — same app as Afrihost, different host settings.
+
+| Requirement | Value |
+|-------------|--------|
+| Plan | Linux App Service (B1+ recommended for persistent `/home`) |
+| Runtime | **PHP 8.2** (8.1+ supported) |
+| Extensions | `pdo_sqlite`, `curl`, `mbstring`, `fileinfo`, `json` |
+
+---
+
+## Architecture
 
 ```
-Internet → HTTPS (Azure) → App Service :8080
-                              ├── /api/*       API
-                              ├── /uploads/*   images
-                              └── /*           React (frontend/dist)
+Browser → https://yourapp.azurewebsites.net
+              ├── /api/*     → PHP router (index.php)
+              ├── /uploads/* → files in /home/site/data/uploads
+              └── /*         → React SPA (index.html)
+SQLite + uploads → /home/site/data/  (persists across restarts)
 ```
 
-Database and uploads persist under `/home/site/data/` on Linux App Service.
+---
+
+## 1. Build deployment zip (local)
+
+```powershell
+cd path\to\shop-share-support-main
+npm run install:all
+npm run package:azure
+```
+
+Creates:
+
+- `village-netacad-azure.zip` (project root)
+- `deploy/azure/release.zip` (for CI)
+
+Zip contents deploy **directly** to `/home/site/wwwroot` (not nested in `backend-php/`).
 
 ---
 
-## 1. Create the App Service (Portal)
+## 2. Create Azure resources
 
-1. [Azure Portal](https://portal.azure.com) → **Create a resource** → **Web App**
-2. **Basics**
-   - Name: e.g. `villagenetacad` (becomes `villagenetacad.azurewebsites.net`)
-   - Publish: **Code**
-   - Runtime stack: **Node 22 LTS**
-   - Operating System: **Linux**
-   - Region: closest to South Africa if most users are ZA (e.g. South Africa North, or West Europe)
-3. **App Service Plan**: B1 or higher recommended (Free F1 has cold starts and limited CPU)
-4. Create the web app
-
----
-
-## 2. Configure the app
-
-**Configuration** → **General settings**
-
-| Setting | Value |
-|--------|--------|
-| Startup Command | `bash deploy/azure/startup.sh` |
-| Stack | Node 22 |
-
-**Configuration** → **Application settings** — add variables from [`env.azure.template`](./env.azure.template). Minimum:
-
-- `NODE_ENV` = `production`
-- `JWT_SECRET` = (32+ char random)
-- `CLIENT_URL` / `API_URL` = `https://YOUR_APP.azurewebsites.net`
-- `PAYFAST_*` and `SMTP_*` as needed
-
-**Configuration** → **General settings** → **HTTPS Only**: On
-
----
-
-## 3. Deploy from GitHub
-
-### Option A — GitHub Actions (recommended)
-
-1. In Azure Portal: Web App → **Deployment Center** → **GitHub** → authorize and select repo `DigititanH/villagenetacad`, branch `main`
-2. Or use the workflow [`.github/workflows/azure-app-service.yml`](../../.github/workflows/azure-app-service.yml):
-
-   - Create an **Azure service principal** or use **Publish profile**:
-   - Web App → **Download publish profile**
-   - GitHub repo → **Settings** → **Secrets** → add `AZURE_WEBAPP_PUBLISH_PROFILE` (paste XML)
-
-3. Edit the workflow env `AZURE_WEBAPP_NAME` to match your app name
-4. Push to `main` — Actions builds frontend and deploys
-
-### Option B — Local Git / ZIP
+### Option A — Azure CLI (script)
 
 ```bash
-# From project root, after building frontend locally
-npm install --prefix backend
-npm install --prefix frontend
-npm run build --prefix frontend
-az webapp up --name YOUR_APP --resource-group YOUR_RG --runtime "NODE:22-lts"
+chmod +x deploy/azure/provision.sh
+./deploy/azure/provision.sh villagenetacad-prod rg-villagenetacad southafricanorth
+az login
+```
+
+### Option B — Azure Portal
+
+1. **Create a resource** → **Web App**
+2. **Publish:** Code  
+3. **Runtime stack:** PHP 8.2  
+4. **Operating System:** Linux  
+5. **Region:** South Africa North (or nearest)
+
+---
+
+## 3. Required application settings
+
+Portal → your Web App → **Configuration** → **Application settings**:
+
+| Name | Value |
+|------|--------|
+| `WEBSITE_DOCUMENT_ROOT` | `/home/site/wwwroot/public` |
+| `WEBSITES_ENABLE_APP_SERVICE_STORAGE` | `true` |
+| `SCM_DO_BUILD_DURING_DEPLOYMENT` | `false` |
+| `NODE_ENV` | `production` |
+| `DATABASE_PATH` | `/home/site/data/database.sqlite` |
+| `UPLOADS_DIR` | `/home/site/data/uploads` |
+| `JWT_SECRET` | 64+ random chars (`openssl rand -hex 32`) |
+| `CLIENT_URL` | `https://yourapp.azurewebsites.net` |
+| `API_URL` | `https://yourapp.azurewebsites.net` |
+| `PAYFAST_NOTIFY_URL` | `https://yourapp.azurewebsites.net/api/payfast/notify` |
+| `PAYFAST_MERCHANT_ID` | (your PayFast ID) |
+| `PAYFAST_MERCHANT_KEY` | (your key) |
+| `PAYFAST_SANDBOX` | `true` until live |
+
+Template: `deploy/azure/env.azure.template`
+
+**Startup command** (optional, creates data folders):
+
+```
+/home/site/wwwroot/startup.sh
 ```
 
 ---
 
-## 4. Custom domain (villagenetacad.co.za)
+## 4. Deploy the zip
 
-1. App Service → **Custom domains** → **Add custom domain**
-2. At your DNS host, add the CNAME or A record Azure shows
-3. Enable **Managed certificate** (free SSL)
-4. Update App Settings:
-   - `CLIENT_URL=https://villagenetacad.co.za`
-   - `API_URL=https://villagenetacad.co.za`
-   - `PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify`
+### Azure CLI
+
+```bash
+az webapp deploy \
+  --resource-group rg-villagenetacad \
+  --name villagenetacad-prod \
+  --src-path village-netacad-azure.zip \
+  --type zip
+```
+
+### Portal
+
+**Deployment Center** → ZIP deploy → upload `village-netacad-azure.zip`
+
+### GitHub Actions
+
+See `.github/workflows/azure-app-service.yml`. Add repository secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_WEBAPP_NAME` | Web app name |
+| `AZURE_WEBAPP_PUBLISH_PROFILE` | Download from Portal → **Get publish profile** |
 
 ---
 
-## 5. Verify
+## 5. Initialize database
+
+**SSH** (Portal → **SSH** or Advanced Tools → Kudu):
+
+```bash
+cd /home/site/wwwroot
+php database/migrate.php
+```
+
+**Or** upload an existing `database.sqlite` to `/home/site/data/database.sqlite`.
+
+Default admin after migrate: `admin@villagenetacad.com` / `Admin123!` — change immediately.
+
+---
+
+## 6. Verify
 
 | Check | URL |
-|-------|-----|
-| Health | `https://YOUR_APP.azurewebsites.net/health` |
-| Shop | `https://YOUR_APP.azurewebsites.net/` |
-| Admin login | `https://YOUR_APP.azurewebsites.net/login` |
+|--------|-----|
+| Site | `https://yourapp.azurewebsites.net` |
+| Health | `https://yourapp.azurewebsites.net/health` |
+| API | `https://yourapp.azurewebsites.net/api/...` |
 
-Default admin (change after first login): `admin@villagenetacad.com` / `Admin123!`
-
----
-
-## 6. Azure Static Web Apps workflow
-
-The repo includes [`.github/workflows/azure-static-web-apps-*.yml`](../../.github/workflows/) from an earlier Azure setup. That deploys **frontend only** and will **not** run the API. For this project, rely on **App Service** (`azure-app-service.yml`). You can disable or delete the Static Web Apps workflow in GitHub if you are not using SWA.
+Health should show `"status":"ok"` and `"hosting":"azure-app-service"`.
 
 ---
 
-## 7. Production notes
+## 7. Custom domain & HTTPS
 
-| Topic | Guidance |
-|-------|----------|
-| **SQLite** | Fine for small/medium traffic; for high scale use Azure Database for PostgreSQL and migrate later |
-| **Backups** | Periodically copy `/home/site/data/database.sqlite` (Kudu SSH or backup slot) |
-| **Scaling** | Scale up App Service plan; SQLite is single-instance — use one instance or external DB for multiple instances |
-| **Secrets** | Prefer **Key Vault references** in App Settings for production |
-| **Node version** | Must be **22.x** (see `.nvmrc`) for `better-sqlite3` on Windows dev; Linux App Service builds native module on deploy |
+1. Portal → **Custom domains** → add domain  
+2. **TLS/SSL settings** → bind certificate (App Service Managed Certificate)  
+3. Update `CLIENT_URL`, `API_URL`, `PAYFAST_NOTIFY_URL` to your custom domain  
+4. Restart the app
 
 ---
 
-## Quick CLI (optional)
+## 8. Go-live checklist
 
-```bash
-az login
-az group create --name rg-villagenetacad --location southafricanorth
-az appservice plan create --name plan-villagenetacad --resource-group rg-villagenetacad --sku B1 --is-linux
-az webapp create --name villagenetacad --resource-group rg-villagenetacad --plan plan-villagenetacad --runtime "NODE:22-lts"
-az webapp config set --name villagenetacad --resource-group rg-villagenetacad --startup-file "bash deploy/azure/startup.sh"
-```
+- [ ] `WEBSITE_DOCUMENT_ROOT` points to `public`
+- [ ] SQLite and uploads under `/home/site/data` (not in `public/`)
+- [ ] `JWT_SECRET` is strong (not a placeholder)
+- [ ] HTTPS URLs in all env vars
+- [ ] Admin password changed
+- [ ] PayFast sandbox payment tested
+- [ ] SMTP configured for contact email (optional)
 
-Then set application settings from `env.azure.template` and connect GitHub deployment.
+---
+
+## 9. Backups
+
+`/home/site/data` persists on Linux when `WEBSITES_ENABLE_APP_SERVICE_STORAGE=true`.
+
+- Schedule download of `database.sqlite` and `uploads/` via Kudu or Azure Backup  
+- For production scale, consider **Azure Database for PostgreSQL** (requires code changes; not included today)
+
+---
+
+## 10. CI/CD (GitHub)
+
+Push to `main` runs `.github/workflows/azure-app-service.yml` when secrets are set.
+
+Manual run: **Actions** → **Deploy to Azure App Service** → **Run workflow**
+
+---
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| 404 on all routes | Set `WEBSITE_DOCUMENT_ROOT=/home/site/wwwroot/public` |
+| 503 misconfigured | Set `JWT_SECRET`, `CLIENT_URL`, `API_URL` in Configuration |
+| DB resets on restart | Enable `WEBSITES_ENABLE_APP_SERVICE_STORAGE`; use `/home/site/data` |
+| React loads, API 404 | Re-deploy zip; confirm `public/index.php` exists |
+| PayFast ITN fails | `PAYFAST_NOTIFY_URL` must be public HTTPS (not localhost) |
+
+---
+
+## Quick reference
+
+| Item | Value |
+|------|--------|
+| Document root | `/home/site/wwwroot/public` |
+| Data | `/home/site/data/` |
+| Local package | `npm run package:azure` |
+| Provision | `./deploy/azure/provision.sh APP_NAME` |
+
+Azure docs: [App Service on Linux](https://learn.microsoft.com/azure/app-service/overview)

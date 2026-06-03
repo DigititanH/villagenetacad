@@ -1,164 +1,137 @@
-# Host Village NetAcad on Afrihost
+# Deploy to Afrihost (shared hosting / cPanel)
 
-**Stack:** PHP API (`backend-php/`) + SQLite + React (`frontend/dist`).  
-**Domain:** `villagenetacad.co.za`  
-**No Node.js required** on the server.
+**Stack:** `backend-php/` (PHP 8.1+) + SQLite + React (built into `backend-php/public`).  
+**No Node.js** on the server.
 
----
-
-## Choose your Afrihost product
-
-| Product | Good for this site? |
-|---------|---------------------|
-| **Web Hosting / cPanel (PHP)** | Yes — easiest |
-| **Cloud VPS Self Managed** | Yes — more control (nginx + PHP) |
-| **Basic hosting without PHP 8.1+** | No — upgrade or use VPS |
-
-You need: **PHP 8.1+**, extensions `pdo_sqlite`, `curl`, `mbstring`, `fileinfo`.
+**Requirements:** PHP 8.1+, extensions `pdo_sqlite`, `curl`, `mbstring`, `fileinfo`.
 
 ---
 
-## Before you upload (on your PC)
+## 1. Build zip on your PC
 
 ```powershell
-cd c:\Users\diteb\Downloads\shop-share-support-main\shop-share-support-main
-.\deploy\package-for-upload.ps1
+cd path\to\shop-share-support-main
+npm run package:afrihost
 ```
 
-This builds the React app and creates **`village-netacad-afrihost.zip`** ready to upload.
+Creates **`village-netacad-afrihost.zip`**.
 
 ---
 
-## Part 1 — DNS (Client Zone)
+## 2. DNS (Client Zone)
 
-1. Log in: [https://clientzone.afrihost.com](https://clientzone.afrihost.com)
-2. **Domains** → `villagenetacad.co.za` → **DNS**
-3. Point to your hosting IP:
-
-| Type | Host | Value |
-|------|------|--------|
-| A | `@` | Your server IP |
-| A | `www` | Your server IP |
-
-Wait 15 min – 48 hours. Test: `ping villagenetacad.co.za`
+1. [clientzone.afrihost.com](https://clientzone.afrihost.com) → **Domains** → your domain → **DNS**
+2. Point **A** records `@` and `www` to your hosting IP (from cPanel welcome email).
 
 ---
 
-## Part 2 — cPanel / shared PHP hosting (recommended)
+## 3. Upload (cPanel File Manager)
 
-### Upload
+1. Upload the zip to `public_html` (or your domain folder).
+2. Extract (e.g. into `village-netacad/`).
 
-1. Upload `village-netacad-afrihost.zip` via **File Manager**
-2. Extract into e.g. `village-netacad/`
-
-### Document root
-
-Set the domain’s **document root** to:
+Expected layout:
 
 ```
-village-netacad/backend-php/public
+village-netacad/
+  backend-php/
+    public/          ← document root (index.php, index.html, assets/)
+    database/
+    ...
+  deploy/
+    AFRIHOST.md
+    env.production.template
 ```
 
-(Not the project root — must be `public` so `.env` and `database.sqlite` stay private.)
+---
 
-### Environment
+## 4. Document root
+
+cPanel → **Domains** → your domain → set **Document Root** to:
+
+```
+/home/YOUR_USER/public_html/village-netacad/backend-php/public
+```
+
+Must end in **`public`** so `.env` and the database stay private.
+
+---
+
+## 5. PHP version
+
+cPanel → **Select PHP Version** / **MultiPHP** → **8.1+** → enable:
+
+`pdo_sqlite`, `curl`, `mbstring`, `fileinfo`, `json`
+
+---
+
+## 6. Writable data (outside `public`)
+
+In File Manager, under `/home/YOUR_USER/`:
+
+1. Create folder `village-netacad-data/`
+2. Create `village-netacad-data/uploads/`
+3. Permissions **755** or **775**
+
+---
+
+## 7. `.env` on the server
 
 1. Copy `deploy/env.production.template` → `backend-php/.env`
-2. Edit paths for your account (cPanel shows home path, e.g. `/home/username/`):
+2. Edit (use your real cPanel username in paths):
 
 ```env
 NODE_ENV=production
-DATABASE_PATH=/home/username/village-netacad-data/database.sqlite
-UPLOADS_DIR=/home/username/village-netacad-data/uploads
-CLIENT_URL=https://villagenetacad.co.za
-API_URL=https://villagenetacad.co.za
-PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify
-JWT_SECRET=<long random string>
+DATABASE_PATH=/home/YOUR_USER/village-netacad-data/database.sqlite
+UPLOADS_DIR=/home/YOUR_USER/village-netacad-data/uploads
+JWT_SECRET=<64+ random characters>
+CLIENT_URL=https://yourdomain.co.za
+API_URL=https://yourdomain.co.za
+PAYFAST_NOTIFY_URL=https://yourdomain.co.za/api/payfast/notify
+PAYFAST_SANDBOX=true
 PAYFAST_MERCHANT_ID=...
 PAYFAST_MERCHANT_KEY=...
 ```
 
-3. Create folder `village-netacad-data/` with **write** permission for PHP
-4. Upload your `database.sqlite` (+ `-wal` / `-shm` if present) or run once via SSH:
+---
+
+## 8. Database
+
+**SSH / Terminal** (if available):
 
 ```bash
-php backend-php/database/migrate.php
+cd ~/public_html/village-netacad/backend-php
+php database/migrate.php
 ```
 
-### SSL
+**No SSH:** run `npm run migrate` on your PC, upload `backend-php/database.sqlite` to `village-netacad-data/database.sqlite` (path in `.env`).
 
-In cPanel: **SSL/TLS** → AutoSSL or Let’s Encrypt for `villagenetacad.co.za`
-
-### Permissions
-
-- `backend-php/` data folder: **755** or **775**
-- `database.sqlite`: writable by PHP
-- `uploads/`: writable by PHP
+Default admin: `admin@villagenetacad.com` / `Admin123!` — change after login.
 
 ---
 
-## Part 3 — VPS (Ubuntu + nginx + PHP)
+## 9. SSL
 
-```bash
-sudo apt update && sudo apt install -y nginx php8.3-fpm php8.3-sqlite3 php8.3-curl php8.3-mbstring certbot python3-certbot-nginx unzip
-```
-
-Upload zip to `/var/www/`, extract, then:
-
-```bash
-cd /var/www/village-netacad
-cp deploy/env.production.template backend-php/.env
-nano backend-php/.env
-
-sudo mkdir -p /var/lib/village-netacad/uploads
-sudo chown -R www-data:www-data /var/lib/village-netacad backend-php/uploads
-
-php backend-php/database/migrate.php
-
-sudo cp deploy/nginx.villagenetacad.php.conf /etc/nginx/sites-available/villagenetacad.co.za
-sudo ln -sf /etc/nginx/sites-available/villagenetacad.co.za /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d villagenetacad.co.za -d www.villagenetacad.co.za
-```
+cPanel → **SSL/TLS** / AutoSSL → enable HTTPS for your domain.
 
 ---
 
-## Part 4 — PayFast (required for payments)
+## 10. Go-live checklist
 
-In `backend-php/.env` on the server:
-
-```env
-PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify
-PAYFAST_SANDBOX=true
-```
-
-Use **HTTPS** only in production. Test a donation after go-live.
-
----
-
-## Part 5 — Go-live checklist
-
-- [ ] https://villagenetacad.co.za loads the homepage
-- [ ] https://villagenetacad.co.za/health → `{"status":"ok"}`
-- [ ] Login works — change admin password (`admin@villagenetacad.com`)
-- [ ] Donation / shop checkout redirects to PayFast
-- [ ] SMTP set for contact form emails
+- [ ] https://yourdomain.co.za — homepage loads
+- [ ] https://yourdomain.co.za/health — `"status":"ok"`, all checks green
+- [ ] Login works; admin password changed
+- [ ] PayFast sandbox payment tested
+- [ ] SMTP set for contact form (optional)
 
 ---
 
 ## Backups
 
-Download weekly:
+Weekly download from cPanel:
 
-- `backend-php/database.sqlite`
-- `backend-php/uploads/` (or your `UPLOADS_DIR`)
-
----
-
-## Support
-
-- Afrihost Client Zone: [clientzone.afrihost.com](https://clientzone.afrihost.com)
-- WhatsApp: 071 883 5005
+- `village-netacad-data/database.sqlite`
+- `village-netacad-data/uploads/`
 
 ---
 
@@ -167,6 +140,8 @@ Download weekly:
 | Item | Value |
 |------|--------|
 | Document root | `backend-php/public` |
-| API | `https://villagenetacad.co.za/api/...` |
-| PayFast ITN | `https://villagenetacad.co.za/api/payfast/notify` |
-| Local package script | `.\deploy\package-for-upload.ps1` |
+| API | `https://yourdomain.co.za/api/...` |
+| PayFast ITN | `https://yourdomain.co.za/api/payfast/notify` |
+| Local build | `npm run package:afrihost` |
+
+Afrihost support: [clientzone.afrihost.com](https://clientzone.afrihost.com)

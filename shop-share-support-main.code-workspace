@@ -1,14 +1,8 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "backend"
-		},
-		{
-			"path": "frontend"
-		}
-	],
-	"settings": {}
+  "folders": [
+    { "path": "frontend", "name": "frontend" },
+    { "path": "backend-php", "name": "backend-php" },
+    { "path": "deploy", "name": "deploy" }
+  ],
+  "settings": {}
 }

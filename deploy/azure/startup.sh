@@ -1,16 +1,11 @@
 #!/bin/bash
-set -euo pipefail
+# Optional Azure App Service startup (Linux).
+# Portal → Configuration → General settings → Startup Command:
+#   /home/site/wwwroot/startup.sh
+#
+# Ensures persistent data dirs exist. Run migrate once via SSH if DB is missing:
+#   cd /home/site/wwwroot && php database/migrate.php
 
-cd /home/site/wwwroot
-
-export NODE_ENV="${NODE_ENV:-production}"
-export DATABASE_PATH="${DATABASE_PATH:-/home/site/data/database.sqlite}"
-export UPLOADS_DIR="${UPLOADS_DIR:-/home/site/data/uploads}"
-
-mkdir -p "$(dirname "$DATABASE_PATH")" "$UPLOADS_DIR"
-
-echo "==> Village NetAcad — migrate database"
-node backend/src/database/migrate.js
-
-echo "==> Village NetAcad — starting API on port ${PORT:-8080}"
-exec node backend/src/server.js
+set -e
+mkdir -p /home/site/data/uploads
+chmod -R 775 /home/site/data 2>/dev/null || true

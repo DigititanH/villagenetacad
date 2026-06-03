@@ -2,57 +2,41 @@
 node_modules/
 
 # Build output
-dist/
+frontend/dist/
 .output/
 
-# Environment files
+# Environment
 .env
 .env.local
 .env.production
-backend/.env
 backend-php/.env
 
-# Database
-backend/database.sqlite
-backend/database.sqlite-wal
-backend/database.sqlite-shm
+# Database & uploads (local dev)
 backend-php/database.sqlite
 backend-php/database.sqlite-wal
 backend-php/database.sqlite-shm
-
-# Uploads
-backend/uploads/*
-!backend/uploads/.gitkeep
 backend-php/uploads/*
 !backend-php/uploads/.gitkeep
 
 # Deploy artifacts
+village-netacad-afrihost.zip
+village-netacad-azure.zip
+deploy/azure/release.zip
+deploy/azure/publish-profile.xml
 *.zip
-!frontend/public/certicate.pdf
 
 # Logs
 logs/
 *.log
-
-# Production data (when using custom paths)
-data/
 npm-debug.log*
 
-# OS files
+# OS / editor
 .DS_Store
 Thumbs.db
-
-# Editor
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
 .idea/
 
-# Old config
+# Legacy / tooling (not used)
 .tanstack/
 .vinxi/
-.nitro/
-.wrangler/
 .venv/
 __pycache__/
-*.pyc

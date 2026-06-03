@@ -1,81 +1,77 @@
 # Village NetAcad
 
-Community networking academy. The repo holds two runnable services side-by-side
-plus the shared Supabase database schema.
+Shop and support platform for **Afrihost** (cPanel) or **Microsoft Azure App Service** (Linux PHP 8.2+ + SQLite). No Node.js on the server.
+
+## Project layout
 
 ```
-.
-├── frontend/      # TanStack Start + React + Vite + Tailwind  (the website)
-├── backend/       # FastAPI + Supabase Python client            (the API)
-├── supabase/      # Database migrations + seed data             (shared)
-├── .env           # Shared credentials, read by both services
-└── .env.example   # Documented variables — copy to .env to start
+frontend/       React app (Vite) — built into backend-php/public for production
+backend-php/    PHP API + SQLite + serves the website from public/
+deploy/         Afrihost + Azure upload scripts and production .env templates
+docs/           Local PHP setup on Windows
 ```
 
-Both services share one `.env` at the project root:
+## Local development
 
-- `frontend/vite.config.ts` sets `envDir: ".."` so Vite picks up the root `.env`.
-- `backend/app/config.py` resolves the env file path to `<repo-root>/.env`.
-
-## First-time setup
-
-1. **Configure environment**
-   ```powershell
-   copy .env.example .env
-   # then fill in SUPABASE_URL, VITE_SUPABASE_URL, etc.
-   ```
-
-2. **Apply the database schema**
-   In the Supabase SQL editor, paste and run `supabase/setup_all.sql` (idempotent).
-
-3. **Install frontend dependencies**
-   ```powershell
-   cd frontend
-   npm install
-   ```
-
-4. **Install backend dependencies (creates `backend/.venv`)**
-   ```powershell
-   cd backend
-   .\guard.ps1
-   ```
-
-## Day-to-day
-
-Run each service in its own terminal:
+**Requirements:** Node.js (frontend build only), PHP 8.1+ with `pdo_sqlite`. See [docs/INSTALL-PHP-WINDOWS.md](docs/INSTALL-PHP-WINDOWS.md).
 
 ```powershell
-# terminal 1 — website
-cd frontend
-npm run dev                          # http://localhost:8080
+cd backend-php
+copy .env.example .env
+cd ..
+npm run install:all
+npm run migrate
 
-# terminal 2 — API
-cd backend
-.\.venv\Scripts\uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+# Terminal 1 — API + built-in server
+npm run dev:backend
+
+# Terminal 2 — React with hot reload
+npm run dev:frontend
 ```
 
-## What lives where
+- Website (dev): http://localhost:5173  
+- API: http://localhost:5000  
+- Health: http://localhost:5000/health  
 
-### `frontend/`
-TanStack Start app. Key folders:
+Default admin after migrate: `admin@villagenetacad.com` / `Admin123!`
 
-- `src/routes/` — file-based pages (`/`, `/login`, `/register`, `/admin/*`, `/back-office`, etc.)
-- `src/components/` — UI components incl. `admin-shell`, `theme-provider`, `site-header`
-- `src/hooks/` — `use-auth`, `use-cart`, `use-idle-timeout`
-- `src/integrations/supabase/` — generated Supabase client + types
-- `src/lib/` — small helpers (formatting, activity-log)
+## Deploy to Afrihost
 
-### `backend/`
-FastAPI app that proxies admin-side concerns through Supabase with proper RLS.
+```powershell
+npm run package:afrihost
+```
 
-- `app/main.py` — FastAPI factory, CORS, error handlers
-- `app/routers/` — `products`, `categories`, `orders`, `cart`, `notifications`
-- `app/config.py` — pydantic-settings, reads `../.env`
-- `app/supabase_client.py` — anon and service-role Supabase clients
-- `app/notifications.py` — Resend (email) + Twilio (WhatsApp) helpers
-- `requirements.txt`, `guard.ps1` — install + bootstrap script
+Upload **`village-netacad-afrihost.zip`** to cPanel. Full steps: **[deploy/AFRIHOST.md](deploy/AFRIHOST.md)**
 
-### `supabase/`
-- `migrations/` — every SQL change made over the lifetime of the project
-- `setup_all.sql` — one consolidated, idempotent script that applies them all
-- `seed/` — optional test users and demo data
+| Setting | Value |
+|---------|--------|
+| Document root | `.../backend-php/public` |
+| Config | `backend-php/.env` (from `deploy/env.production.template`) |
+| Data (writable, outside `public`) | `~/village-netacad-data/` |
+
+## Deploy to Microsoft Azure
+
+```powershell
+npm run package:azure
+```
+
+Upload **`village-netacad-azure.zip`** or use GitHub Actions. Full steps: **[deploy/azure/AZURE.md](deploy/azure/AZURE.md)**
+
+| Setting | Value |
+|---------|--------|
+| Runtime | Linux App Service, PHP 8.2 |
+| Document root | `WEBSITE_DOCUMENT_ROOT=/home/site/wwwroot/public` |
+| Data | `/home/site/data/` (SQLite + uploads) |
+| CI/CD | `.github/workflows/azure-app-service.yml` |
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run install:all` | Install frontend dependencies |
+| `npm run build` | Build React to `frontend/dist` |
+| `npm run migrate` | Create/update SQLite schema |
+| `npm run dev:backend` | PHP API on :5000 |
+| `npm run dev:frontend` | Vite dev server on :5173 |
+| `npm run package:afrihost` | Build + zip for cPanel upload |
+| `npm run package:azure` | Build + zip for Azure App Service |

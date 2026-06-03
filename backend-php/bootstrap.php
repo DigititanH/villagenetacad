@@ -21,6 +21,6 @@ spl_autoload_register(function (string $class) use ($root): void {
 Paths::ensureDir(Paths::getUploadsDir());
 Paths::ensureDir(dirname(Paths::getDbPath()));
 
-if (php_sapi_name() !== 'cli') {
-    Env::validateProduction();
+if (php_sapi_name() === 'cli') {
+    Env::validateProductionCli();
 }

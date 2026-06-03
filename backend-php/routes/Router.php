@@ -32,11 +32,7 @@ class Router
 
     public static function registerRoutes(): void
     {
-        self::get('/health', fn () => Response::json([
-            'status' => 'ok',
-            'env' => Env::get('NODE_ENV', 'development'),
-            'timestamp' => gmdate('c'),
-        ]));
+        self::get('/health', fn () => Response::json(Hosting::healthPayload()));
 
         // Auth
         self::post('/api/auth/register', [AuthController::class, 'register']);

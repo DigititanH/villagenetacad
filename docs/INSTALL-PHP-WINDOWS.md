@@ -92,7 +92,7 @@ npm run dev:frontend
 |---------|-----|
 | `php` not recognized | Restart terminal; check Path includes PHP folder |
 | `could not find driver` | Enable `pdo_sqlite` in `php.ini` |
-| Port 5000 in use | Stop old Node backend: `Get-NetTCPConnection -LocalPort 5000` then kill PID |
+| Port 5000 in use | `Get-NetTCPConnection -LocalPort 5000` then stop the process using that port |
 | CORS errors | Ensure `CLIENT_URL=http://localhost:5173` in `backend-php/.env` |
 
 ---

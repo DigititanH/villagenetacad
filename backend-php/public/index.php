@@ -5,6 +5,28 @@ require_once dirname(__DIR__) . '/bootstrap.php';
 $method = Request::method();
 $path = Request::path();
 
+// Production misconfiguration (Afrihost: fix .env before go-live)
+if (Env::isProduction()) {
+    $configErrors = Hosting::productionConfigErrors();
+    if ($configErrors !== [] && $path !== '/health') {
+        Response::json([
+            'status' => 'misconfigured',
+            'message' => 'Server configuration incomplete. Fix .env (see deploy/AFRIHOST.md or deploy/azure/AZURE.md).',
+            'errors' => $configErrors,
+        ], 503);
+        exit;
+    }
+}
+
+$extMissing = Hosting::missingExtensions();
+if ($extMissing !== [] && $path !== '/health') {
+    Response::json([
+        'status' => 'error',
+        'message' => 'PHP extensions required: ' . implode(', ', $extMissing),
+    ], 503);
+    exit;
+}
+
 // CORS
 $isProduction = Env::isProduction();
 $origins = Client::getAllowedOrigins();

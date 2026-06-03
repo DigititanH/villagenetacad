@@ -54,46 +54,22 @@ class Env
         return self::get('NODE_ENV', 'development') === 'production';
     }
 
-    public static function validateProduction(): void
+    /** CLI only — exits with message when production .env is invalid. */
+    public static function validateProductionCli(): void
     {
         if (!self::isProduction()) {
             return;
         }
 
-        $errors = [];
-        $jwt = self::get('JWT_SECRET', '');
-        if (strlen($jwt) < 32) {
-            $errors[] = 'JWT_SECRET must be set and at least 32 characters';
-        }
-        if (preg_match('/CHANGE_ME|your_jwt|placeholder/i', $jwt)) {
-            $errors[] = 'JWT_SECRET must be a strong random value (not a placeholder)';
-        }
-        if (!self::get('CLIENT_URL')) {
-            $errors[] = 'CLIENT_URL must be your public site URL';
+        $errors = Hosting::productionConfigErrors();
+        if ($errors === []) {
+            return;
         }
 
-        $pfId = self::get('PAYFAST_MERCHANT_ID', '');
-        $pfKey = self::get('PAYFAST_MERCHANT_KEY', '');
-        if ($pfId !== '' && $pfKey !== '') {
-            if (!self::get('API_URL')) {
-                $errors[] = 'API_URL must be your public HTTPS API URL when PayFast is enabled';
-            }
-            $notify = trim(self::get('PAYFAST_NOTIFY_URL', '') ?? '');
-            if ($notify === '') {
-                $api = rtrim(self::get('API_URL', '') ?? '', '/');
-                $notify = ($api !== '' ? $api : 'http://localhost') . '/api/payfast/notify';
-            }
-            if (preg_match('/localhost|127\.0\.0\.1|0\.0\.0\.0/i', $notify)) {
-                $errors[] = 'PayFast ITN requires a public HTTPS notify URL';
-            }
+        fwrite(STDERR, "[env] Production configuration errors:\n");
+        foreach ($errors as $e) {
+            fwrite(STDERR, "  - $e\n");
         }
-
-        if ($errors) {
-            fwrite(STDERR, "[env] Production configuration errors:\n");
-            foreach ($errors as $e) {
-                fwrite(STDERR, "  - $e\n");
-            }
-            exit(1);
-        }
+        exit(1);
     }
 }
