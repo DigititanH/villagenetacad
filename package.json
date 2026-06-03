@@ -6,6 +6,8 @@
   "scripts": {
     "install:all": "npm install --prefix frontend",
     "build": "npm run build --prefix frontend",
+    "validate:routes": "php backend-php/scripts/validate-routes.php",
+    "prepare:deploy": "powershell -ExecutionPolicy Bypass -File deploy/prepare-production.ps1",
     "migrate": "php backend-php/database/migrate.php",
     "dev:backend": "php -S localhost:5000 -t backend-php/public backend-php/public/index.php",
     "dev:frontend": "npm run dev --prefix frontend",

@@ -3,6 +3,8 @@ node_modules/
 
 # Build output
 frontend/dist/
+backend-php/public/index.html
+backend-php/public/assets/
 .output/
 
 # Environment

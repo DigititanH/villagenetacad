@@ -1,5 +1,6 @@
-# Deploy PHP API + React to Azure App Service (Linux, PHP 8.2)
-# Secrets: AZURE_WEBAPP_NAME, AZURE_WEBAPP_PUBLISH_PROFILE
+# Build and optionally deploy to Azure App Service (Linux, PHP 8.2)
+# Deploy requires secrets: AZURE_WEBAPP_NAME, AZURE_WEBAPP_PUBLISH_PROFILE
+# Manual deploy: Actions → Deploy to Azure App Service → Run workflow
 
 name: Deploy to Azure App Service
 
@@ -13,7 +14,7 @@ env:
   PHP_VERSION: "8.2"
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,6 +38,9 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+
+      - name: Validate PHP routes
+        run: php backend-php/scripts/validate-routes.php
 
       - name: Package for Azure
         shell: pwsh
@@ -69,6 +73,27 @@ jobs:
           $release = Join-Path $azureDir "release.zip"
           if (Test-Path $release) { Remove-Item $release -Force }
           Compress-Archive -Path "$temp/*" -DestinationPath $release
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: village-netacad-azure
+          path: deploy/azure/release.zip
+          retention-days: 14
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: village-netacad-azure
+          path: deploy/azure
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3

@@ -75,3 +75,5 @@ Upload **`village-netacad-azure.zip`** or use GitHub Actions. Full steps: **[dep
 | `npm run dev:frontend` | Vite dev server on :5173 |
 | `npm run package:afrihost` | Build + zip for cPanel upload |
 | `npm run package:azure` | Build + zip for Azure App Service |
+| `npm run prepare:deploy` | Validate routes, build, sync public, both zips |
+| `npm run validate:routes` | Check all API routes register (no 500 on boot) |
