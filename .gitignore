@@ -1,8 +1,7 @@
 # Dependencies
 node_modules/
 
-# Build output
-frontend/dist/
+# Build output (frontend/dist is committed for GitHub Pages / direct deploy)
 backend-php/public/index.html
 backend-php/public/assets/
 .output/
