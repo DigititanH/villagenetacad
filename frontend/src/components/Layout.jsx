@@ -12,7 +12,7 @@ export default function Layout() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-deep text-white">
+    <div className="relative min-h-screen flex flex-col text-white">
       <Navbar />
       <main className="flex-1">
         <Outlet />

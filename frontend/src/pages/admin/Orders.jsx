@@ -5,8 +5,8 @@ import toast from "react-hot-toast";
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  processing: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  shipped: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+  processing: "bg-burnt-100 text-burnt-800 dark:bg-accent-900/30 dark:text-accent-400",
+  shipped: "bg-burnt-100 text-burnt-800 dark:bg-accent-900/30 dark:text-accent-400",
   delivered: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
   cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
 };
@@ -48,7 +48,7 @@ export default function AdminOrders() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Orders ({orders.length})</h1>
+        <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Orders ({orders.length})</h1>
         <div className="flex gap-2">
           <button onClick={() => downloadReport("csv")} className="btn-secondary text-sm inline-flex items-center gap-2 !py-2 !px-4"><Download size={16} /> CSV</button>
           <button onClick={() => downloadReport("pdf")} className="btn-primary text-sm inline-flex items-center gap-2 !py-2 !px-4"><FileText size={16} /> PDF</button>

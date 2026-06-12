@@ -114,7 +114,10 @@ class OrdersController
         $page = max(1, (int) Request::query('page', 1));
         $limit = max(1, (int) Request::query('limit', 20));
 
-        $sql = 'SELECT o.*, u.name as customer_name, u.email as customer_email FROM orders o JOIN users u ON o.user_id = u.id';
+        $sql = 'SELECT o.*, r.name as customer_name, l.email as customer_email
+                FROM orders o
+                JOIN registrations r ON o.user_id = r.id
+                JOIN logins l ON l.registration_id = r.id';
         $params = [];
         if ($status) {
             $sql .= ' WHERE o.status = ?';

@@ -5,8 +5,8 @@ class ReviewsController
     public static function byProduct(array $params): void
     {
         Response::json(Database::queryAll(
-            'SELECT r.*, u.name as user_name, u.avatar FROM reviews r
-             JOIN users u ON r.user_id = u.id WHERE r.product_id = ? ORDER BY r.created_at DESC',
+            'SELECT r.*, reg.name as user_name, reg.avatar FROM reviews r
+             JOIN registrations reg ON r.user_id = reg.id WHERE r.product_id = ? ORDER BY r.created_at DESC',
             [$params['productId']]
         ));
     }

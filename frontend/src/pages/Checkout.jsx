@@ -60,10 +60,10 @@ export default function Checkout() {
   return (
     <div className="section-padding">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Checkout</h1>
+        <h1 className="text-4xl font-black mb-8 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Checkout</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="card">
-            <h2 className="font-black text-lg mb-4 text-cyan-400">Shipping Address</h2>
+            <h2 className="font-black text-lg mb-4 text-burnt-600">Shipping Address</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2"><input required placeholder="Street Address" value={address.street} onChange={(e) => setAddress({ ...address, street: e.target.value })} className="input-field" /></div>
               <div><input required placeholder="City" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} className="input-field" /></div>
@@ -74,7 +74,7 @@ export default function Checkout() {
           </div>
 
           <div className="card">
-            <h2 className="font-black text-lg mb-2 text-cyan-400">
+            <h2 className="font-black text-lg mb-2 text-burnt-600">
               Reseller Referral Code {isAdmin ? "(optional)" : "(required)"}
             </h2>
             {!isAdmin && (
@@ -90,13 +90,13 @@ export default function Checkout() {
             />
             {!isAdmin && !referral.trim() && !getReferralCode() && (
               <p className="text-sm text-amber-400/90 mt-2">
-                No referral code yet? <Link to="/shop" className="text-cyan-400 hover:underline">Visit the shop</Link> using a reseller&apos;s link.
+                No referral code yet? <Link to="/shop" className="text-burnt-600 hover:underline">Visit the shop</Link> using a reseller&apos;s link.
               </p>
             )}
           </div>
 
           <div className="card">
-            <h2 className="font-black text-lg mb-4 text-cyan-400">Order Summary</h2>
+            <h2 className="font-black text-lg mb-4 text-burnt-600">Order Summary</h2>
             <div className="space-y-2 mb-4">
               {items.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
@@ -107,7 +107,7 @@ export default function Checkout() {
             </div>
             <div className="border-t border-white/10 pt-4 flex justify-between">
               <span className="text-lg font-bold">Total</span>
-              <span className="text-xl font-black text-cyan-400">R{total.toFixed(2)}</span>
+              <span className="text-xl font-black text-burnt-600">R{total.toFixed(2)}</span>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export default function Checkout() {
 
           <p className="text-center text-xs text-gray-500 flex items-center justify-center gap-1">
             <ShoppingBag size={14} /> Secure payment via PayFast. Questions?{" "}
-            <a href={`mailto:${SITE_EMAIL}`} className="text-cyan-400 hover:underline">{SITE_EMAIL}</a>
+            <a href={`mailto:${SITE_EMAIL}`} className="text-burnt-600 hover:underline">{SITE_EMAIL}</a>
           </p>
         </form>
       </div>

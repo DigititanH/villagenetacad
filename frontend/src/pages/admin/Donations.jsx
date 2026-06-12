@@ -34,7 +34,7 @@ export default function AdminDonations() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Donations</h1>
+        <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Donations</h1>
         <div className="flex gap-2">
           <button onClick={() => downloadReport("csv")} className="btn-secondary text-sm inline-flex items-center gap-2 !py-2 !px-4"><Download size={16} /> CSV</button>
           <button onClick={() => downloadReport("pdf")} className="btn-primary text-sm inline-flex items-center gap-2 !py-2 !px-4"><FileText size={16} /> PDF</button>
@@ -47,11 +47,11 @@ export default function AdminDonations() {
           <div><p className="text-sm text-gray-500">Total Donated</p><p className="text-xl font-bold">R{Number(data.summary.total).toLocaleString()}</p></div>
         </div>
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"><Heart size={22} className="text-purple-600" /></div>
+          <div className="w-12 h-12 bg-burnt-100 dark:bg-burnt-900/30 rounded-xl flex items-center justify-center"><Heart size={22} className="text-accent-400" /></div>
           <div><p className="text-sm text-gray-500">Total Donors</p><p className="text-xl font-bold">{data.summary.count}</p></div>
         </div>
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"><TrendingUp size={22} className="text-blue-600" /></div>
+          <div className="w-12 h-12 bg-burnt-100 dark:bg-burnt-900/30 rounded-xl flex items-center justify-center"><TrendingUp size={22} className="text-accent-400" /></div>
           <div><p className="text-sm text-gray-500">Average</p><p className="text-xl font-bold">R{data.summary.count > 0 ? (data.summary.total / data.summary.count).toFixed(0) : 0}</p></div>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function AdminDonations() {
             <XAxis dataKey="month" tick={chartAxisTick} />
             <YAxis tick={chartAxisTick} />
             <Tooltip {...chartTooltipStyle} />
-            <Bar dataKey="total" fill="#f472b6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="total" fill="#38bdf8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

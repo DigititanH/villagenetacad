@@ -30,10 +30,10 @@ export default function Login() {
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="card w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 bg-gradient-to-br from-burnt-400 to-burnt-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
             <LogIn size={24} className="text-white" />
           </div>
-          <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Welcome Back</h1>
+          <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Welcome Back</h1>
           <p className="text-sm text-gray-400 mt-1">Sign in to your Village Netacad account</p>
         </div>
 
@@ -47,13 +47,13 @@ export default function Login() {
             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="input-field" placeholder="••••••••" />
           </div>
           <div className="flex justify-end">
-            <Link to="/forgot-password" className="text-sm text-cyan-400 hover:underline">Forgot password?</Link>
+            <Link to="/forgot-password" className="text-sm text-burnt-600 hover:underline">Forgot password?</Link>
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? "Signing in..." : "Sign In"}</button>
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-6">
-          Don't have an account? <Link to="/register" className="text-cyan-400 font-semibold hover:underline">Register</Link>
+          Don't have an account? <Link to="/register" className="text-burnt-600 font-semibold hover:underline">Register</Link>
         </p>
       </div>
     </div>

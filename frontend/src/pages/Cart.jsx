@@ -23,7 +23,7 @@ export default function Cart() {
     </div>
   );
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-cyan-500 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-burnt-500 border-t-transparent rounded-full" /></div>;
 
   if (!items.length) return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -38,7 +38,7 @@ export default function Cart() {
   return (
     <div className="section-padding">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-black mb-8 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Shopping Cart</h1>
+        <h1 className="text-4xl font-black mb-8 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Shopping Cart</h1>
         <div className="space-y-4">
           {items.map((item) => (
             <div key={item.id} className="card flex items-center gap-4">
@@ -62,14 +62,14 @@ export default function Cart() {
                   ) : null}
                   {item.color && <span className="text-sm text-gray-400">Color: {item.color}</span>}
                 </div>
-                <p className="font-bold text-cyan-400 mt-1">R{Number(item.price).toFixed(2)}</p>
+                <p className="font-bold text-burnt-600 mt-1">R{Number(item.price).toFixed(2)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1.5 rounded-xl hover:bg-white/10 transition-colors"><Minus size={16} /></button>
                 <span className="w-8 text-center font-bold">{item.quantity}</span>
                 <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 rounded-xl hover:bg-white/10 transition-colors"><Plus size={16} /></button>
               </div>
-              <p className="font-black w-24 text-right text-cyan-400">R{(item.price * item.quantity).toFixed(2)}</p>
+              <p className="font-black w-24 text-right text-burnt-600">R{(item.price * item.quantity).toFixed(2)}</p>
               <button onClick={() => removeItem(item.id)} className="p-2 text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"><Trash2 size={18} /></button>
             </div>
           ))}
@@ -96,7 +96,7 @@ export default function Cart() {
           )}
           <div className="flex items-center justify-between">
             <span className="text-lg font-bold">Total</span>
-            <span className="text-2xl font-black text-cyan-400">R{total.toFixed(2)}</span>
+            <span className="text-2xl font-black text-burnt-600">R{total.toFixed(2)}</span>
           </div>
           {needsReferral && !hasReferral ? (
             <button type="button" disabled className="btn-primary w-full text-center block opacity-50 cursor-not-allowed">

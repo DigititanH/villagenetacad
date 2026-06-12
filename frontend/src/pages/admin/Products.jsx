@@ -54,7 +54,7 @@ export default function AdminProducts() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Products ({products.length})</h1>
+        <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Products ({products.length})</h1>
         <button onClick={openNew} className="btn-primary text-sm inline-flex items-center gap-2"><Plus size={16} /> Add Product</button>
       </div>
 
@@ -88,7 +88,7 @@ export default function AdminProducts() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-surface-darker/80 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 glass-clear z-50 flex items-center justify-center p-4">
           <div className="card w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">{editing ? "Edit" : "Add"} Product</h2>

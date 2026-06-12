@@ -13,9 +13,9 @@ backend-php/public/assets/
 backend-php/.env
 
 # Database & uploads (local dev)
-backend-php/database.sqlite
-backend-php/database.sqlite-wal
-backend-php/database.sqlite-shm
+backend-php/database/database.sqlite
+backend-php/database/database.sqlite-wal
+backend-php/database/database.sqlite-shm
 backend-php/uploads/*
 !backend-php/uploads/.gitkeep
 

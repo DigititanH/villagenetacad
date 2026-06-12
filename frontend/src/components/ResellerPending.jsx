@@ -26,7 +26,7 @@ export default function ResellerPending({ status = "pending" }) {
           : "An admin must approve your reseller account before you can use the dashboard. Refresh this page or sign in again after you are approved."}
       </p>
       {!declined && (
-        <Link to="/" className="text-sm text-cyan-400 hover:underline">
+        <Link to="/" className="text-sm text-burnt-600 hover:underline">
           Back to site
         </Link>
       )}

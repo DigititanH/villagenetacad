@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import About from "./pages/About";
+import Courses from "./pages/Courses";
 import Donation from "./pages/Donation";
 import Shop from "./pages/Shop";
 import ProductDetail from "./pages/ProductDetail";
@@ -18,6 +19,7 @@ import Wishlist from "./pages/Wishlist";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCancel from "./pages/PaymentCancel";
 import PayFastDebug from "./pages/PayFastDebug";
+import Health from "./pages/Health";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
@@ -34,6 +36,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/courses" element={<Courses />} />
           <Route path="/donation" element={<Donation />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/:slug" element={<ProductDetail />} />
@@ -47,6 +50,7 @@ export default function App() {
           <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/cancel" element={<PaymentCancel />} />
+          <Route path="/health" element={<Health />} />
           {import.meta.env.DEV && <Route path="/debug/payfast" element={<PayFastDebug />} />}
         </Route>
 

@@ -1,4 +1,6 @@
 .env
-database.sqlite
+.env.*
+!.env.example
+env/
 uploads/*
 !uploads/.gitkeep

@@ -22,8 +22,8 @@ class AdminController
     public static function dashboard(): void
     {
         Auth::authorize('admin');
-        $users = Database::queryAll('SELECT role, COUNT(*) as count FROM users GROUP BY role');
-        $totalUsers = Database::queryGet('SELECT COUNT(*) as total FROM users');
+        $users = Database::queryAll('SELECT role, COUNT(*) as count FROM registrations GROUP BY role');
+        $totalUsers = Database::queryGet('SELECT COUNT(*) as total FROM registrations');
         $orders = Database::queryGet('SELECT COUNT(*) as total, COALESCE(SUM(total),0) as revenue FROM orders');
         $pendingOrders = Database::queryGet("SELECT COUNT(*) as total FROM orders WHERE status = 'pending'");
         $donations = Database::queryGet(
@@ -47,12 +47,12 @@ class AdminController
                 'pending_resellers' => (int) ($pendingResellers['total'] ?? 0),
             ],
             'monthly_sales' => Database::queryAll(
-                "SELECT strftime('%Y-%m', created_at) as month, SUM(total) as revenue, COUNT(*) as orders
+                "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, SUM(total) as revenue, COUNT(*) as orders
                  FROM orders GROUP BY month ORDER BY month DESC LIMIT 12"
             ),
             'recent_orders' => Database::queryAll(
-                'SELECT o.id, o.total, o.status, o.created_at, u.name FROM orders o
-                 JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC LIMIT 10'
+                'SELECT o.id, o.total, o.status, o.created_at, r.name FROM orders o
+                 JOIN registrations r ON o.user_id = r.id ORDER BY o.created_at DESC LIMIT 10'
             ),
             'top_products' => Database::queryAll(
                 'SELECT p.name, SUM(oi.quantity) as sold, SUM(oi.quantity * oi.price) as revenue
@@ -70,24 +70,26 @@ class AdminController
         $page = max(1, (int) Request::query('page', 1));
         $limit = max(1, (int) Request::query('limit', 20));
 
-        $sql = 'SELECT id, name, email, role, avatar, phone, is_verified, is_approved, created_at FROM users WHERE 1=1';
+        $sql = 'SELECT r.id, r.name, l.email, r.role, r.avatar, r.phone, r.is_verified, r.is_approved, r.created_at
+                FROM registrations r
+                JOIN logins l ON l.registration_id = r.id WHERE 1=1';
         $params = [];
         if ($role) {
-            $sql .= ' AND role = ?';
+            $sql .= ' AND r.role = ?';
             $params[] = $role;
         }
         if ($search) {
-            $sql .= ' AND (name LIKE ? OR email LIKE ?)';
+            $sql .= ' AND (r.name LIKE ? OR l.email LIKE ?)';
             $term = '%' . $search . '%';
             $params[] = $term;
             $params[] = $term;
         }
-        $sql .= ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        $sql .= ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
         $params[] = $limit;
         $params[] = ($page - 1) * $limit;
 
         $users = Database::queryAll($sql, $params);
-        $count = Database::queryGet('SELECT COUNT(*) as total FROM users');
+        $count = Database::queryGet('SELECT COUNT(*) as total FROM registrations');
         Response::json(['users' => $users, 'total' => (int) ($count['total'] ?? 0)]);
     }
 
@@ -99,7 +101,7 @@ class AdminController
         if (!in_array($role, ['admin', 'reseller', 'customer'], true)) {
             Response::error('Invalid role', 400);
         }
-        Database::queryRun('UPDATE users SET role = ? WHERE id = ?', [$role, $params['id']]);
+        Database::queryRun('UPDATE registrations SET role = ? WHERE id = ?', [$role, $params['id']]);
         Response::json(['message' => 'User role updated']);
     }
 
@@ -111,9 +113,9 @@ class AdminController
         if (!in_array($status, ['approved', 'declined'], true)) {
             Response::error("Status must be 'approved' or 'declined'", 400);
         }
-        Database::queryRun('UPDATE users SET is_approved = ? WHERE id = ?', [$status, $params['id']]);
+        Database::queryRun('UPDATE registrations SET is_approved = ? WHERE id = ?', [$status, $params['id']]);
 
-        $user = Database::queryGet('SELECT role FROM users WHERE id = ?', [$params['id']]);
+        $user = Database::queryGet('SELECT role FROM registrations WHERE id = ?', [$params['id']]);
         if ($user && $user['role'] === 'reseller') {
             $profileStatus = $status === 'approved' ? 'approved' : 'rejected';
             Database::queryRun('UPDATE reseller_profiles SET status = ? WHERE user_id = ?', [$profileStatus, $params['id']]);
@@ -128,7 +130,7 @@ class AdminController
         if ((string) $params['id'] === (string) Auth::$user['id']) {
             Response::error('Cannot delete yourself', 400);
         }
-        Database::queryRun('DELETE FROM users WHERE id = ?', [$params['id']]);
+        Database::queryRun('DELETE FROM registrations WHERE id = ?', [$params['id']]);
         Response::json(['message' => 'User deleted']);
     }
 
@@ -170,8 +172,11 @@ class AdminController
     {
         Auth::authorize('admin');
         $orders = Database::queryAll(
-            'SELECT o.id, u.name as customer, u.email, o.total, o.status, o.payment_status, o.tracking_number, o.created_at
-             FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC'
+            'SELECT o.id, r.name as customer, l.email, o.total, o.status, o.payment_status, o.tracking_number, o.created_at
+             FROM orders o
+             JOIN registrations r ON o.user_id = r.id
+             JOIN logins l ON l.registration_id = r.id
+             ORDER BY o.created_at DESC'
         );
         $fields = ['id', 'customer', 'email', 'total', 'status', 'payment_status', 'tracking_number', 'created_at'];
         Response::csv('sales-report.csv', self::toCsv($orders, $fields));
@@ -181,8 +186,8 @@ class AdminController
     {
         Auth::authorize('admin');
         $orders = Database::queryAll(
-            'SELECT o.id, u.name as customer, o.total, o.status, o.created_at
-             FROM orders o JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC'
+            'SELECT o.id, r.name as customer, o.total, o.status, o.created_at
+             FROM orders o JOIN registrations r ON o.user_id = r.id ORDER BY o.created_at DESC'
         );
         $summary = Database::queryGet('SELECT COUNT(*) as count, COALESCE(SUM(total),0) as revenue FROM orders');
 

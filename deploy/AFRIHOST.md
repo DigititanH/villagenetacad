@@ -1,9 +1,9 @@
 # Deploy to Afrihost (shared hosting / cPanel)
 
-**Stack:** `backend-php/` (PHP 8.1+) + SQLite + React (built into `backend-php/public`).  
+**Stack:** `backend-php/` (PHP 8.1+) + MySQL/MariaDB + React (built into `backend-php/public`).  
 **No Node.js** on the server.
 
-**Requirements:** PHP 8.1+, extensions `pdo_sqlite`, `curl`, `mbstring`, `fileinfo`.
+**Requirements:** PHP 8.1+, extensions `pdo_mysql`, `curl`, `mbstring`, `fileinfo`.
 
 ---
 
@@ -61,7 +61,7 @@ Must end in **`public`** so `.env` and the database stay private.
 
 cPanel → **Select PHP Version** / **MultiPHP** → **8.1+** → enable:
 
-`pdo_sqlite`, `curl`, `mbstring`, `fileinfo`, `json`
+`pdo_mysql`, `curl`, `mbstring`, `fileinfo`, `json`
 
 ---
 
@@ -82,7 +82,10 @@ In File Manager, under `/home/YOUR_USER/`:
 
 ```env
 NODE_ENV=production
-DATABASE_PATH=/home/YOUR_USER/village-netacad-data/database.sqlite
+DB_HOST=localhost
+DB_NAME=YOUR_USER_villagenetacad
+DB_USER=YOUR_USER_dbuser
+DB_PASSWORD=YOUR_DB_PASSWORD
 UPLOADS_DIR=/home/YOUR_USER/village-netacad-data/uploads
 JWT_SECRET=<64+ random characters>
 CLIENT_URL=https://yourdomain.co.za
@@ -97,14 +100,17 @@ PAYFAST_MERCHANT_KEY=...
 
 ## 8. Database
 
-**SSH / Terminal** (if available):
+1. cPanel → **MySQL Databases** → create database + user, add user to database with **All Privileges**.
+2. cPanel → **phpMyAdmin** → **Import** → choose `backend-php/database/import.sql` → **Go**.
+
+If your host prefixes database names (e.g. `youruser_villagenetacad`), edit `import.sql` before importing or create the database in cPanel first and import only the table statements from `schema.sql` + `seed.sql`.
+
+**Alternative (SSH):**
 
 ```bash
 cd ~/public_html/village-netacad/backend-php
 php database/migrate.php
 ```
-
-**No SSH:** run `npm run migrate` on your PC, upload `backend-php/database.sqlite` to `village-netacad-data/database.sqlite` (path in `.env`).
 
 Default admin: `admin@villagenetacad.com` / `Admin123!` — change after login.
 

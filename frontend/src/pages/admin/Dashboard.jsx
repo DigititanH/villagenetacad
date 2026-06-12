@@ -28,19 +28,19 @@ export default function AdminDashboard() {
   ];
 
   const colorMap = {
-    blue: "bg-blue-900/30 text-blue-400",
+    blue: "bg-accent-900/30 text-accent-400",
     green: "bg-green-900/30 text-green-400",
-    purple: "bg-purple-900/30 text-purple-400",
+    purple: "bg-accent-900/30 text-accent-400",
     yellow: "bg-yellow-900/30 text-yellow-400",
     pink: "bg-pink-900/30 text-pink-400",
-    indigo: "bg-indigo-900/30 text-indigo-400",
+    indigo: "bg-burnt-900/30 text-burnt-600",
     orange: "bg-orange-900/30 text-orange-400",
     teal: "bg-teal-900/30 text-teal-400",
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Dashboard Overview</h1>
+      <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Dashboard Overview</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c, i) => (
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
               <XAxis dataKey="month" tick={chartAxisTick} />
               <YAxis tick={chartAxisTick} />
               <Tooltip {...chartTooltipStyle} />
-              <Bar dataKey="revenue" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
               <XAxis dataKey="month" tick={chartAxisTick} />
               <YAxis tick={chartAxisTick} />
               <Tooltip {...chartTooltipStyle} />
-              <Line type="monotone" dataKey="orders" stroke="#a78bfa" strokeWidth={2} dot={{ fill: "#a78bfa" }} />
+              <Line type="monotone" dataKey="orders" stroke="#2563eb" strokeWidth={2} dot={{ fill: "#2563eb" }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

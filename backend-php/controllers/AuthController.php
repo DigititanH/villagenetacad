@@ -23,8 +23,7 @@ class AuthController
             }
         }
 
-        $existing = Database::queryGet('SELECT id FROM users WHERE email = ?', [$email]);
-        if ($existing) {
+        if (User::emailExists($email)) {
             Response::error('Email already registered', 409);
         }
 
@@ -33,10 +32,15 @@ class AuthController
         $approvalStatus = $userRole === 'customer' ? 'approved' : 'pending';
 
         $result = Database::queryRun(
-            'INSERT INTO users (name, email, password, role, verification_token, is_approved) VALUES (?, ?, ?, ?, ?, ?)',
-            [$name, $email, $hash, $userRole, $verificationToken, $approvalStatus]
+            'INSERT INTO registrations (name, role, verification_token, is_approved) VALUES (?, ?, ?, ?)',
+            [$name, $userRole, $verificationToken, $approvalStatus]
         );
         $userId = $result['lastInsertRowid'];
+
+        Database::queryRun(
+            'INSERT INTO logins (registration_id, email, password) VALUES (?, ?, ?)',
+            [$userId, strtolower(trim($email)), $hash]
+        );
 
         if ($userRole === 'reseller') {
             $academyName = trim((string) $academy);
@@ -100,7 +104,7 @@ class AuthController
             Response::error('Email and password are required', 400);
         }
 
-        $user = Database::queryGet('SELECT * FROM users WHERE LOWER(email) = ?', [$email]);
+        $user = User::findByEmailForAuth($email);
         if (!$user || !password_verify($password, $user['password'])) {
             Response::error('Invalid credentials', 401);
         }
@@ -111,6 +115,8 @@ class AuthController
         if ($user['is_approved'] === 'pending' && $user['role'] !== 'admin') {
             Response::error('Your account is pending admin approval', 403);
         }
+
+        Database::queryRun('UPDATE logins SET last_login_at = NOW() WHERE registration_id = ?', [$user['id']]);
 
         Response::json([
             'token' => Jwt::sign((int) $user['id']),
@@ -128,12 +134,12 @@ class AuthController
     public static function verifyEmail(): void
     {
         $token = Request::query('token');
-        $user = Database::queryGet('SELECT id FROM users WHERE verification_token = ?', [$token]);
+        $user = Database::queryGet('SELECT id FROM registrations WHERE verification_token = ?', [$token]);
         if (!$user) {
             Response::error('Invalid verification token', 400);
         }
         Database::queryRun(
-            'UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?',
+            'UPDATE registrations SET is_verified = 1, verification_token = NULL WHERE id = ?',
             [$user['id']]
         );
         Response::json(['message' => 'Email verified successfully']);
@@ -143,13 +149,13 @@ class AuthController
     {
         $body = Request::jsonBody();
         $email = $body['email'] ?? '';
-        $user = Database::queryGet('SELECT id, name FROM users WHERE email = ?', [$email]);
+        $user = User::findByEmailForAuth($email);
 
         if ($user) {
             $resetToken = Request::uuid();
             $expires = gmdate('c', time() + 3600);
             Database::queryRun(
-                'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?',
+                'UPDATE logins SET reset_token = ?, reset_token_expires = ? WHERE registration_id = ?',
                 [$resetToken, $expires, $user['id']]
             );
             $resetUrl = Client::getClientUrl() . '/reset-password?token=' . urlencode($resetToken);
@@ -170,18 +176,18 @@ class AuthController
         $token = $body['token'] ?? '';
         $password = $body['password'] ?? '';
 
-        $user = Database::queryGet(
-            "SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > datetime('now')",
+        $login = Database::queryGet(
+            "SELECT registration_id FROM logins WHERE reset_token = ? AND reset_token_expires > NOW()",
             [$token]
         );
-        if (!$user) {
+        if (!$login) {
             Response::error('Invalid or expired reset token', 400);
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
         Database::queryRun(
-            'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
-            [$hash, $user['id']]
+            'UPDATE logins SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE registration_id = ?',
+            [$hash, $login['registration_id']]
         );
         Response::json(['message' => 'Password reset successfully']);
     }

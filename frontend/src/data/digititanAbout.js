@@ -17,6 +17,14 @@ export const digititanHomeHero = {
     "Digititan delivers high-impact digital training, innovation programmes, and technology partnerships to build a stronger, more inclusive digital economy.",
 };
 
+/** Homepage banner slideshow — images only (add files to frontend/public/) */
+export const homeBannerSlides = [
+  { image: "/slide1.png", alt: "Village Netacad — community and digital learning", objectPosition: "center top" },
+  { image: "/IMG.jpeg", alt: "Village Netacad — digital skills training", objectPosition: "center top" },
+  { image: "/IMG.jpeg", alt: "Community learning and ICT programmes", objectPosition: "center top" },
+  { image: "/IMG.jpeg", alt: "Innovation and enterprise programmes", objectPosition: "center top" },
+];
+
 export const digititanHero = {
   label: "Village Netacad powered by Digititan",
   title: "About Village NetAcad",

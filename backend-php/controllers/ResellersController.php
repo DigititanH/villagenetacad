@@ -17,8 +17,9 @@ class ResellersController
     {
         Auth::authorize('reseller');
         $row = Database::queryGet(
-            'SELECT rp.*, u.name, u.email, u.is_approved FROM reseller_profiles rp
-             JOIN users u ON rp.user_id = u.id WHERE rp.user_id = ?',
+            'SELECT rp.*, r.name, l.email, r.is_approved FROM reseller_profiles rp
+             JOIN registrations r ON rp.user_id = r.id
+             JOIN logins l ON l.registration_id = r.id WHERE rp.user_id = ?',
             [Auth::$user['id']]
         );
         if (!$row) {
@@ -61,8 +62,8 @@ class ResellersController
             Response::error('Profile not found', 404);
         }
         Response::json(Database::queryAll(
-            'SELECT o.id, o.total, o.status, o.created_at, u.name as customer_name FROM commissions c
-             JOIN orders o ON c.order_id = o.id JOIN users u ON o.user_id = u.id
+            'SELECT o.id, o.total, o.status, o.created_at, r.name as customer_name FROM commissions c
+             JOIN orders o ON c.order_id = o.id JOIN registrations r ON o.user_id = r.id
              WHERE c.reseller_id = ? ORDER BY o.created_at DESC',
             [$profile['id']]
         ));
@@ -123,8 +124,9 @@ class ResellersController
     {
         Auth::authorize('admin');
         Response::json(Database::queryAll(
-            'SELECT rp.*, u.name, u.email FROM reseller_profiles rp
-             JOIN users u ON rp.user_id = u.id ORDER BY rp.created_at DESC'
+            'SELECT rp.*, r.name, l.email FROM reseller_profiles rp
+             JOIN registrations r ON rp.user_id = r.id
+             JOIN logins l ON l.registration_id = r.id ORDER BY rp.created_at DESC'
         ));
     }
 
@@ -141,7 +143,7 @@ class ResellersController
         $profile = Database::queryGet('SELECT user_id FROM reseller_profiles WHERE id = ?', [$params['id']]);
         if ($profile) {
             $userStatus = $status === 'approved' ? 'approved' : 'declined';
-            Database::queryRun('UPDATE users SET is_approved = ? WHERE id = ?', [$userStatus, $profile['user_id']]);
+            Database::queryRun('UPDATE registrations SET is_approved = ? WHERE id = ?', [$userStatus, $profile['user_id']]);
         }
         Response::json(['message' => "Reseller $status"]);
     }
@@ -150,9 +152,10 @@ class ResellersController
     {
         Auth::authorize('admin');
         Response::json(Database::queryAll(
-            'SELECT w.*, rp.referral_code, u.name, u.email FROM withdrawals w
+            'SELECT w.*, rp.referral_code, r.name, l.email FROM withdrawals w
              JOIN reseller_profiles rp ON w.reseller_id = rp.id
-             JOIN users u ON rp.user_id = u.id ORDER BY w.created_at DESC'
+             JOIN registrations r ON rp.user_id = r.id
+             JOIN logins l ON l.registration_id = r.id ORDER BY w.created_at DESC'
         ));
     }
 
@@ -176,7 +179,7 @@ class ResellersController
         }
 
         Database::queryRun(
-            "UPDATE withdrawals SET status = ?, processed_at = datetime('now') WHERE id = ?",
+            "UPDATE withdrawals SET status = ?, processed_at = NOW() WHERE id = ?",
             [$status, $params['id']]
         );
         Response::json(['message' => "Withdrawal $status"]);

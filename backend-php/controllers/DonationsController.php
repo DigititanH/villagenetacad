@@ -120,7 +120,7 @@ class DonationsController
             "SELECT COUNT(*) as count, COALESCE(SUM(amount),0) as total FROM donations WHERE payment_status = 'completed'"
         );
         $monthly = Database::queryAll(
-            "SELECT strftime('%Y-%m', created_at) as month, SUM(amount) as total, COUNT(*) as count
+            "SELECT DATE_FORMAT(created_at, '%Y-%m') as month, SUM(amount) as total, COUNT(*) as count
              FROM donations WHERE payment_status = 'completed' GROUP BY month ORDER BY month DESC LIMIT 12"
         );
         Response::json(['donations' => $donations, 'summary' => $totals, 'monthly' => $monthly]);

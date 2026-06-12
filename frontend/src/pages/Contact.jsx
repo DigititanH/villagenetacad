@@ -26,9 +26,9 @@ export default function Contact() {
   return (
     <div>
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-page-gradient" />
+        <div className="absolute inset-0 glass-section" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Contact Us</h1>
+          <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Contact Us</h1>
           <p className="text-lg text-gray-400">Have questions? We'd love to hear from you.</p>
         </div>
       </section>
@@ -42,12 +42,12 @@ export default function Contact() {
                 { icon: Phone, title: "Phone", text: "+27 128440176" },
                 { icon: MapPin, title: "Location", text: digititanContact.location, href: digititanLinks.maps },
               ].map((item, i) => (
-                <div key={i} className="card flex items-start gap-4 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(0,255,255,0.1)]">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                <div key={i} className="card flex items-start gap-4 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(14,165,233,0.22)]">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-burnt-400 to-burnt-700 flex items-center justify-center flex-shrink-0">
                     <item.icon size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-cyan-400">{item.title}</h3>
+                    <h3 className="font-bold text-lg text-burnt-600">{item.title}</h3>
                     <p className="text-sm text-gray-400">{item.text}</p>
                   </div>
                 </div>
@@ -57,11 +57,11 @@ export default function Contact() {
             <div className="lg:col-span-2">
               {sent ? (
                 <div className="card text-center py-12">
-                  <CheckCircle size={48} className="text-cyan-400 mx-auto mb-4" />
+                  <CheckCircle size={48} className="text-burnt-600 mx-auto mb-4" />
                   <h2 className="text-xl font-black mb-2">Message Sent!</h2>
                   <p className="text-gray-400 mb-4">
                     We&apos;ll get back to you as soon as possible. Messages are sent to{" "}
-                    <a href={`mailto:${SITE_EMAIL}`} className="text-cyan-400 hover:underline">{SITE_EMAIL}</a>.
+                    <a href={`mailto:${SITE_EMAIL}`} className="text-burnt-600 hover:underline">{SITE_EMAIL}</a>.
                   </p>
                   <button onClick={() => { setSent(false); setForm({ name: "", email: "", subject: "", message: "" }); }} className="btn-primary">Send Another</button>
                 </div>

@@ -63,8 +63,8 @@ export default function PaymentSuccess() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <Icon size={72} className="text-cyan-400 mx-auto mb-6" />
-        <h1 className="text-3xl font-black mb-3 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+        <Icon size={72} className="text-burnt-600 mx-auto mb-6" />
+        <h1 className="text-3xl font-black mb-3 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">
           {isDonation ? "Thank You!" : "Payment Successful!"}
         </h1>
         <p className="text-gray-400 mb-4">
@@ -75,8 +75,8 @@ export default function PaymentSuccess() {
               : `Payment received. Order #${id} is being confirmed — this usually takes a few seconds.`}
         </p>
         {isDonation && donationAcademy && (
-          <p className="text-sm text-cyan-300/90 mb-8 px-4 py-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 max-w-sm mx-auto">
-            Donating to: <strong className="text-cyan-400">{donationAcademy}</strong>
+          <p className="text-sm text-burnt-600/80 mb-8 px-4 py-3 rounded-xl bg-burnt-800/20 border border-burnt-700/30 max-w-sm mx-auto">
+            Donating to: <strong className="text-burnt-600">{donationAcademy}</strong>
           </p>
         )}
         {!(isDonation && donationAcademy) && <div className="mb-8" />}

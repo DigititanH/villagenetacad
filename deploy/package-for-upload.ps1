@@ -17,10 +17,12 @@ New-Item -ItemType Directory -Path $temp | Out-Null
 # PHP API (exclude secrets and local DB)
 $phpDest = Join-Path $temp "backend-php"
 Copy-Item (Join-Path $root "backend-php") $phpDest -Recurse -Force
-@("database.sqlite", "database.sqlite-wal", "database.sqlite-shm", ".env") | ForEach-Object {
+@(".env") | ForEach-Object {
     $p = Join-Path $phpDest $_
     if (Test-Path $p) { Remove-Item $p -Force }
 }
+$dbFolder = Join-Path $phpDest "database"
+# SQL schema files are included; no local database file to strip
 
 # React build -> public/ (keep index.php router)
 $dist = Join-Path $root "frontend\dist"

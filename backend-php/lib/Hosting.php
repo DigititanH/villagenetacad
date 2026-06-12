@@ -13,7 +13,7 @@ class Hosting
         return 'php-shared';
     }
     /** @var list<string> */
-    private const REQUIRED_EXTENSIONS = ['pdo_sqlite', 'json', 'mbstring', 'curl', 'fileinfo'];
+    private const REQUIRED_EXTENSIONS = ['pdo_mysql', 'json', 'mbstring', 'curl', 'fileinfo'];
 
     /** @return list<string> */
     public static function missingExtensions(): array
@@ -43,6 +43,12 @@ class Hosting
         }
         if (!Env::get('CLIENT_URL')) {
             $errors[] = 'CLIENT_URL must be your public site URL';
+        }
+        if (!Env::get('DB_NAME')) {
+            $errors[] = 'DB_NAME must be set';
+        }
+        if (!Env::get('DB_USER')) {
+            $errors[] = 'DB_USER must be set';
         }
 
         $pfId = Env::get('PAYFAST_MERCHANT_ID', '');
@@ -74,17 +80,18 @@ class Hosting
             $errors[] = 'UPLOADS_DIR is not writable: ' . $uploads;
         }
 
-        $dbPath = Paths::getDbPath();
-        $dbDir = dirname($dbPath);
-        Paths::ensureDir($dbDir);
-        if (!is_dir($dbDir) || !is_writable($dbDir)) {
-            $errors[] = 'Database directory is not writable: ' . $dbDir;
-        }
-        if (is_file($dbPath) && !is_writable($dbPath)) {
-            $errors[] = 'DATABASE_PATH file is not writable: ' . $dbPath;
-        }
-
         return $errors;
+    }
+
+    /** @return list<string> */
+    public static function databaseConnectionErrors(): array
+    {
+        try {
+            Database::connection()->query('SELECT 1');
+            return [];
+        } catch (Throwable $e) {
+            return ['Database connection failed: ' . $e->getMessage()];
+        }
     }
 
     /** @return array<string, mixed> */
@@ -92,8 +99,9 @@ class Hosting
     {
         $extMissing = self::missingExtensions();
         $writableErrors = self::writablePathErrors();
+        $dbErrors = self::databaseConnectionErrors();
         $configErrors = self::productionConfigErrors();
-        $ok = $extMissing === [] && $writableErrors === [] && $configErrors === [];
+        $ok = $extMissing === [] && $writableErrors === [] && $dbErrors === [] && $configErrors === [];
 
         return [
             'status' => $ok ? 'ok' : 'degraded',
@@ -110,8 +118,13 @@ class Hosting
                 'writable' => [
                     'ok' => $writableErrors === [],
                     'errors' => $writableErrors,
-                    'database_path' => Paths::getDbPath(),
                     'uploads_dir' => Paths::getUploadsDir(),
+                ],
+                'database' => [
+                    'ok' => $dbErrors === [],
+                    'errors' => $dbErrors,
+                    'name' => Paths::getDatabaseName(),
+                    'host' => Env::get('DB_HOST', '127.0.0.1'),
                 ],
                 'config' => [
                     'ok' => $configErrors === [],

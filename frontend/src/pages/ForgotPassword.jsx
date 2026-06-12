@@ -24,17 +24,17 @@ export default function ForgotPassword() {
       <div className="card w-full max-w-md text-center">
         {sent ? (
           <>
-            <CheckCircle size={48} className="text-cyan-400 mx-auto mb-4" />
-            <h1 className="text-2xl font-black mb-2 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Check Your Email</h1>
+            <CheckCircle size={48} className="text-burnt-600 mx-auto mb-4" />
+            <h1 className="text-2xl font-black mb-2 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Check Your Email</h1>
             <p className="text-gray-400 mb-6">If an account exists for {email}, we've sent a password reset link.</p>
             <Link to="/login" className="btn-primary inline-block">Back to Login</Link>
           </>
         ) : (
           <>
-            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 bg-gradient-to-br from-burnt-400 to-burnt-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
               <KeyRound size={24} className="text-white" />
             </div>
-            <h1 className="text-2xl font-black mb-1 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Forgot Password?</h1>
+            <h1 className="text-2xl font-black mb-1 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Forgot Password?</h1>
             <p className="text-sm text-gray-400 mb-6">Enter your email and we'll send you a reset link.</p>
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               <div>
@@ -43,7 +43,7 @@ export default function ForgotPassword() {
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? "Sending..." : "Send Reset Link"}</button>
             </form>
-            <p className="text-sm text-gray-400 mt-4"><Link to="/login" className="text-cyan-400 hover:underline">Back to Login</Link></p>
+            <p className="text-sm text-gray-400 mt-4"><Link to="/login" className="text-burnt-600 hover:underline">Back to Login</Link></p>
           </>
         )}
       </div>

@@ -43,7 +43,7 @@ export default function ResellerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Reseller Dashboard</h1>
+      <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Reseller Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="card flex items-center gap-4">
@@ -51,7 +51,7 @@ export default function ResellerDashboard() {
           <div><p className="text-sm text-gray-500">Total Earned</p><p className="text-xl font-bold">R{Number(profile.total_earned).toFixed(2)}</p></div>
         </div>
         <div className="card flex items-center gap-4">
-          <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"><TrendingUp size={22} className="text-purple-600" /></div>
+          <div className="w-12 h-12 bg-burnt-100 dark:bg-burnt-900/30 rounded-xl flex items-center justify-center"><TrendingUp size={22} className="text-accent-400" /></div>
           <div><p className="text-sm text-gray-500">Commission Rate</p><p className="text-xl font-bold">{profile.commission_rate}%</p></div>
         </div>
       </div>
@@ -59,12 +59,12 @@ export default function ResellerDashboard() {
       <div className="card">
         <h3 className="font-semibold mb-3">Your Referral Code</h3>
         <div className="flex items-center gap-3">
-          <code className="bg-white/10 border border-white/10 px-4 py-2 rounded-lg font-mono text-lg flex-1 text-cyan-300">{profile.referral_code}</code>
+          <code className="glass px-4 py-2 rounded-lg font-mono text-lg flex-1 text-burnt-600">{profile.referral_code}</code>
           <button onClick={copyCode} className="btn-primary !py-2 !px-4 inline-flex items-center gap-2">
             {copied ? <CheckCircle size={16} /> : <Copy size={16} />} {copied ? "Copied" : "Copy"}
           </button>
         </div>
-        <button onClick={copyLink} className="text-sm text-cyan-400 hover:underline mt-2">Copy full referral link</button>
+        <button onClick={copyLink} className="text-sm text-burnt-600 hover:underline mt-2">Copy full referral link</button>
       </div>
 
       <div className="card">

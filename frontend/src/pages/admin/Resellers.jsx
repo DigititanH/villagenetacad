@@ -30,7 +30,7 @@ export default function AdminResellers() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Resellers ({resellers.length})</h1>
+      <h1 className="text-2xl font-black mb-6 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Resellers ({resellers.length})</h1>
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="text-left text-gray-500 border-b dark:border-gray-700"><th className="pb-3">Name</th><th className="pb-3">Email</th><th className="pb-3">Academy</th><th className="pb-3">Referral Code</th><th className="pb-3">Earnings</th><th className="pb-3">Wallet</th><th className="pb-3">Status</th><th className="pb-3">Actions</th></tr></thead>

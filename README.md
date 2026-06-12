@@ -13,7 +13,7 @@ docs/           Local PHP setup on Windows
 
 ## Local development
 
-**Requirements:** Node.js (frontend build only), PHP 8.1+ with `pdo_sqlite`. See [docs/INSTALL-PHP-WINDOWS.md](docs/INSTALL-PHP-WINDOWS.md).
+**Requirements:** Node.js (frontend build only), PHP 8.1+ with `pdo_mysql`, MySQL/MariaDB. See [docs/INSTALL-PHP-WINDOWS.md](docs/INSTALL-PHP-WINDOWS.md).
 
 ```powershell
 cd backend-php

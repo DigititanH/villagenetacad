@@ -233,7 +233,7 @@ class PayfastController
             if ($pfStatus !== 'COMPLETE') {
                 if ($parsed['type'] === 'order') {
                     Database::queryRun(
-                        "UPDATE orders SET payment_status = 'failed', updated_at = datetime('now') WHERE id = ?",
+                        "UPDATE orders SET payment_status = 'failed', updated_at = NOW() WHERE id = ?",
                         [$parsed['id']]
                     );
                 } else {

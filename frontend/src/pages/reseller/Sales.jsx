@@ -13,7 +13,7 @@ export default function ResellerSales() {
 
   return (
     <div>
-      <h1 className="text-2xl font-black mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">My Sales</h1>
+      <h1 className="text-2xl font-black mb-6 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">My Sales</h1>
       {!sales.length ? (
         <div className="card text-center py-12"><p className="text-gray-500">No sales yet. Share your referral code to start earning!</p></div>
       ) : (

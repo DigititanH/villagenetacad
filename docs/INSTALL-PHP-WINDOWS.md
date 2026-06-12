@@ -18,7 +18,7 @@ php -v
 
 If `php` is not recognized, restart Cursor/VS Code or log out and back in.
 
-### Enable SQLite (required)
+### Enable MySQL (required)
 
 Winget’s PHP zip ships without `php.ini`. One-time setup:
 
@@ -35,15 +35,17 @@ Winget’s PHP zip ships without `php.ini`. One-time setup:
    - `extension=curl`
    - `extension=mbstring`
    - `extension=openssl`
-   - `extension=pdo_sqlite`
-   - `extension=sqlite3`
+   - `extension=pdo_mysql`
+   - `extension=mysqli`
    - `extension=fileinfo`
 
 4. Verify:
    ```powershell
-   php -m | findstr sqlite
+   php -m | findstr mysql
    ```
-   You should see `pdo_sqlite` and `sqlite3`.
+   You should see `pdo_mysql` and `mysqli`.
+
+5. Install **MySQL** or **XAMPP**, create database `village_netacad`, and set credentials in `backend-php/.env`.
 
 ---
 
@@ -81,7 +83,7 @@ npm run dev:frontend
 
 - Site: http://localhost:5173  
 - API health: http://localhost:5000/health  
-- Database file: `backend-php/database.sqlite`  
+- Database: MySQL (`village_netacad`) — import `backend-php/database/import.sql` or run `npm run migrate`  
 - View DB: `php backend-php/scripts/peek-db.php`
 
 ---
@@ -91,7 +93,7 @@ npm run dev:frontend
 | Problem | Fix |
 |---------|-----|
 | `php` not recognized | Restart terminal; check Path includes PHP folder |
-| `could not find driver` | Enable `pdo_sqlite` in `php.ini` |
+| `could not find driver` | Enable `pdo_mysql` in `php.ini` and ensure MySQL is running |
 | Port 5000 in use | `Get-NetTCPConnection -LocalPort 5000` then stop the process using that port |
 | CORS errors | Ensure `CLIENT_URL=http://localhost:5173` in `backend-php/.env` |
 

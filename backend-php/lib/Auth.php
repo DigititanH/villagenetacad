@@ -15,10 +15,7 @@ class Auth
         if (!$decoded || !isset($decoded['id'])) {
             Response::error('Invalid or expired token', 401);
         }
-        $user = Database::queryGet(
-            'SELECT id, name, email, role, avatar, phone, is_verified, is_approved FROM users WHERE id = ?',
-            [$decoded['id']]
-        );
+        $user = User::findById((int) $decoded['id']);
         if (!$user) {
             Response::error('User not found', 401);
         }
@@ -43,9 +40,6 @@ class Auth
         if (!$decoded || !isset($decoded['id'])) {
             return null;
         }
-        return Database::queryGet(
-            'SELECT id, name, email, role, avatar, phone, is_verified, is_approved FROM users WHERE id = ?',
-            [$decoded['id']]
-        );
+        return User::findById((int) $decoded['id']);
     }
 }

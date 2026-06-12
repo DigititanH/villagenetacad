@@ -41,10 +41,10 @@ export default function Register() {
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
       <div className="card w-full max-w-md">
         <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 bg-gradient-to-br from-burnt-400 to-burnt-700 rounded-2xl flex items-center justify-center mx-auto mb-3">
             <UserPlus size={24} className="text-white" />
           </div>
-          <h1 className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Create Account</h1>
+          <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Create Account</h1>
           <p className="text-sm text-gray-400 mt-1">Join Village Netacad today</p>
         </div>
 
@@ -95,7 +95,7 @@ export default function Register() {
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-6">
-          Already have an account? <Link to="/login" className="text-cyan-400 font-semibold hover:underline">Sign In</Link>
+          Already have an account? <Link to="/login" className="text-burnt-600 font-semibold hover:underline">Sign In</Link>
         </p>
       </div>
     </div>

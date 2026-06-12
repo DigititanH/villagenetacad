@@ -53,9 +53,9 @@ export default function Shop() {
   return (
     <div>
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-page-gradient" />
+        <div className="absolute inset-0 glass-section" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Futuristic Store</h1>
+          <h1 className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Village Netacad Store</h1>
           <p className="text-lg text-gray-400">Support Village Netacad by purchasing our branded merchandise.</p>
         </div>
       </section>
@@ -82,7 +82,7 @@ export default function Shop() {
 
           {loading ? (
             <div className="text-center py-20">
-              <div className="animate-spin h-8 w-8 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto" />
+              <div className="animate-spin h-8 w-8 border-4 border-burnt-500 border-t-transparent rounded-full mx-auto" />
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-20">
@@ -91,8 +91,8 @@ export default function Shop() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((p) => (
-                <Link to={`/shop/${p.slug}`} key={p.id} className="group bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[2rem] overflow-hidden hover:border-cyan-400/40 transition-all duration-700 hover:-translate-y-3">
-                  <div className="aspect-square bg-white/5 overflow-hidden">
+                <Link to={`/shop/${p.slug}`} key={p.id} className="group glass rounded-[2rem] overflow-hidden hover:border-burnt-500/35 transition-all duration-700 hover:-translate-y-3">
+                  <div className="aspect-square glass-clear overflow-hidden border-0 shadow-none">
                     {p.image ? (
                       <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     ) : (
@@ -102,7 +102,7 @@ export default function Shop() {
                     )}
                   </div>
                   <div className="p-5">
-                    <p className="text-xs text-cyan-400 font-semibold mb-1 uppercase tracking-wider">{p.category_name || "General"}</p>
+                    <p className="text-xs text-burnt-600 font-semibold mb-1 uppercase tracking-wider">{p.category_name || "General"}</p>
                     <h3 className="font-bold text-lg mb-1 line-clamp-1">{p.name}</h3>
                     <div className="flex items-center gap-1 mb-3">
                       <Star size={14} className="fill-yellow-400 text-yellow-400" />
@@ -110,7 +110,7 @@ export default function Shop() {
                     </div>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-xl text-cyan-400">R{Number(p.price).toFixed(2)}</span>
+                        <span className="font-black text-xl text-burnt-600">R{Number(p.price).toFixed(2)}</span>
                         {p.compare_price && <span className="text-sm text-gray-500 line-through">R{Number(p.compare_price).toFixed(2)}</span>}
                       </div>
                     </div>
@@ -127,7 +127,7 @@ export default function Shop() {
                         </select>
                       </div>
                     )}
-                    <button onClick={(e) => handleAddToCart(e, p)} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 font-bold text-sm hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(0,255,255,0.2)] flex items-center justify-center gap-2">
+                    <button onClick={(e) => handleAddToCart(e, p)} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-burnt-400 to-burnt-700 font-bold text-sm hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(14,165,233,0.28)] flex items-center justify-center gap-2">
                       <ShoppingCart size={15} /> Add to Cart
                     </button>
                   </div>

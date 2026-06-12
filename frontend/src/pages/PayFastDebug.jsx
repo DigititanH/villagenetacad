@@ -48,10 +48,10 @@ export default function PayFastDebug() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 space-y-6">
       <div>
-        <Link to="/donation" className="text-cyan-400 text-sm hover:underline">
+        <Link to="/donation" className="text-burnt-600 text-sm hover:underline">
           ← Back to donation
         </Link>
-        <h1 className="text-3xl font-black mt-4 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-black mt-4 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">
           PayFast debug
         </h1>
         <p className="text-gray-400 text-sm mt-2">Development only. Backend must be running on port 5000.</p>
@@ -63,7 +63,7 @@ export default function PayFastDebug() {
         <>
           <section className="card">
             <h2 className="font-bold text-lg mb-3">Configuration</h2>
-            <pre className="text-xs overflow-auto bg-black/40 p-4 rounded-xl text-cyan-100/90">
+            <pre className="text-xs overflow-auto glass p-4 rounded-xl text-burnt-100/90">
               {JSON.stringify(check, null, 2)}
             </pre>
             {check?.warnings?.length > 0 && (
@@ -77,7 +77,7 @@ export default function PayFastDebug() {
 
           <section className="card">
             <h2 className="font-bold text-lg mb-3">Sample signature</h2>
-            <pre className="text-xs overflow-auto bg-black/40 p-4 rounded-xl text-cyan-100/90 break-all">
+            <pre className="text-xs overflow-auto glass p-4 rounded-xl text-burnt-100/90 break-all">
               {signature?.signature_string}
             </pre>
             {check?.blockers?.length > 0 && (

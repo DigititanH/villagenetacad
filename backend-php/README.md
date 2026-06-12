@@ -4,15 +4,18 @@ PHP 8.1+ API for **Afrihost cPanel** shared hosting. Same `/api/*` JSON API for 
 
 ## Requirements
 
-- PHP 8.1+ with `pdo_sqlite`, `json`, `mbstring`, `curl`, `fileinfo`
-- SQLite3
+- PHP 8.1+ with `pdo_mysql`, `json`, `mbstring`, `curl`, `fileinfo`
+- MySQL 5.7+ or MariaDB 10.3+
 
 ## Setup
 
 ```bash
 cp .env.example .env
+# Edit DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 php database/migrate.php
 ```
+
+Or import `database/import.sql` in phpMyAdmin.
 
 Default admin: `admin@villagenetacad.com` / `Admin123!`
 
@@ -37,8 +40,9 @@ php -S localhost:5000 -t public public/index.php
 
 1. Document root → **`backend-php/public/`**
 2. `mod_rewrite` enabled (`.htaccess` in `public/`)
-3. Copy `deploy/env.production.template` → `.env` with writable `DATABASE_PATH` / `UPLOADS_DIR` outside `public/`
-4. Run `php database/migrate.php` once (SSH) or upload an existing `database.sqlite`
+3. Create MySQL database + user in cPanel
+4. Import **`database/import.sql`** in phpMyAdmin
+5. Copy `deploy/env.production.template` → `.env` with `DB_*` credentials and writable `UPLOADS_DIR`
 
 See [../deploy/AFRIHOST.md](../deploy/AFRIHOST.md) or [../deploy/azure/AZURE.md](../deploy/azure/AZURE.md) for Azure App Service.
 
@@ -46,7 +50,11 @@ See [../deploy/AFRIHOST.md](../deploy/AFRIHOST.md) or [../deploy/azure/AZURE.md]
 
 | Variable | Description |
 |----------|-------------|
-| `DATABASE_PATH` | SQLite file (keep outside `public/` in production) |
+| `DB_HOST` | MySQL host (usually `localhost` on cPanel) |
+| `DB_PORT` | MySQL port (default `3306`) |
+| `DB_NAME` | Database name |
+| `DB_USER` | Database user |
+| `DB_PASSWORD` | Database password |
 | `UPLOADS_DIR` | Product images |
 | `JWT_SECRET` | Bearer token signing (32+ chars in production) |
 | `CLIENT_URL` | Site URL for CORS and emails |

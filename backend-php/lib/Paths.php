@@ -7,13 +7,9 @@ class Paths
         return dirname(__DIR__);
     }
 
-    public static function getDbPath(): string
+    public static function getDatabaseName(): string
     {
-        $custom = trim((string) Env::get('DATABASE_PATH', ''));
-        if ($custom !== '') {
-            return self::resolvePath($custom);
-        }
-        return self::backendRoot() . DIRECTORY_SEPARATOR . 'database.sqlite';
+        return Env::get('DB_NAME', 'village_netacad') ?? 'village_netacad';
     }
 
     public static function getUploadsDir(): string

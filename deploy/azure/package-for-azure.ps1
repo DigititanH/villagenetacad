@@ -22,7 +22,17 @@ New-Item -ItemType Directory -Path $temp | Out-Null
 
 # Flatten backend-php into zip root (Azure wwwroot)
 Copy-Item (Join-Path $root "backend-php\*") $temp -Recurse -Force
-@("database.sqlite", "database.sqlite-wal", "database.sqlite-shm", ".env") | ForEach-Object {
+@(".env") | ForEach-Object {
+    $p = Join-Path $temp $_
+    if (Test-Path $p) { Remove-Item $p -Force }
+}
+$dbDir = Join-Path $temp "database"
+@("database.sqlite", "database.sqlite-wal", "database.sqlite-shm") | ForEach-Object {
+    $p = Join-Path $dbDir $_
+    if (Test-Path $p) { Remove-Item $p -Force }
+}
+# Legacy path (pre database/ folder)
+@("database.sqlite", "database.sqlite-wal", "database.sqlite-shm") | ForEach-Object {
     $p = Join-Path $temp $_
     if (Test-Path $p) { Remove-Item $p -Force }
 }

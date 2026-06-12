@@ -51,12 +51,16 @@ class OrderFulfillment
         }
 
         Database::queryRun(
-            "UPDATE orders SET payment_status = 'paid', status = 'processing', updated_at = datetime('now') WHERE id = ?",
+            "UPDATE orders SET payment_status = 'paid', status = 'processing', updated_at = NOW() WHERE id = ?",
             [$orderId]
         );
         Database::queryRun('DELETE FROM cart WHERE user_id = ?', [$order['user_id']]);
 
-        $user = Database::queryGet('SELECT name, email FROM users WHERE id = ?', [$order['user_id']]);
+        $user = Database::queryGet(
+            'SELECT r.name, l.email FROM registrations r
+             JOIN logins l ON l.registration_id = r.id WHERE r.id = ?',
+            [$order['user_id']]
+        );
         if ($user) {
             $itemsList = implode('<br>', array_map(
                 fn ($i) => $i['name'] . ' × ' . $i['quantity'] . ' (R' . number_format($i['price'] * $i['quantity'], 2) . ')',

@@ -61,7 +61,7 @@ export default function ProductDetail() {
     } catch (err) { toast.error(err.response?.data?.message || "Failed to add review"); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-cyan-500 border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-burnt-500 border-t-transparent rounded-full" /></div>;
   if (!product) return <div className="text-center py-20"><p className="text-gray-500 text-lg">Product not found.</p></div>;
 
   const sizes = product.sizes ? JSON.parse(product.sizes) : [];
@@ -72,19 +72,19 @@ export default function ProductDetail() {
     <div className="section-padding">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="aspect-square bg-white/5 rounded-[2rem] overflow-hidden border border-white/10">
+          <div className="aspect-square glass rounded-[2rem] overflow-hidden">
             {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-600"><ShoppingCart size={80} /></div>}
           </div>
 
           <div>
-            <p className="text-sm text-cyan-400 font-semibold mb-2 uppercase tracking-wider">{product.category_name}</p>
+            <p className="text-sm text-burnt-600 font-semibold mb-2 uppercase tracking-wider">{product.category_name}</p>
             <h1 className="text-4xl font-black mb-2">{product.name}</h1>
             <div className="flex items-center gap-2 mb-4">
               <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={16} className={i < Math.round(avgRating) ? "fill-yellow-400 text-yellow-400" : "text-gray-600"} />)}</div>
               <span className="text-sm text-gray-400">{avgRating} ({reviews.length} reviews)</span>
             </div>
             <div className="flex items-center gap-3 mb-6">
-              <span className="text-4xl font-black text-cyan-400">R{Number(product.price).toFixed(2)}</span>
+              <span className="text-4xl font-black text-burnt-600">R{Number(product.price).toFixed(2)}</span>
               {product.compare_price && <span className="text-lg text-gray-500 line-through">R{Number(product.compare_price).toFixed(2)}</span>}
             </div>
 
@@ -100,7 +100,7 @@ export default function ProductDetail() {
             {colors.length > 0 && (
               <div className="mb-6">
                 <label className="block text-sm font-semibold mb-2 text-gray-300">Color</label>
-                <div className="flex gap-2">{colors.map((c) => <button key={c} onClick={() => setColor(c)} className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all duration-300 ${color === c ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white border-transparent shadow-[0_0_15px_rgba(0,255,255,0.2)]" : "border-white/20 hover:border-cyan-400/40"}`}>{c}</button>)}</div>
+                <div className="flex gap-2">{colors.map((c) => <button key={c} onClick={() => setColor(c)} className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all duration-300 ${color === c ? "bg-gradient-to-r from-burnt-400 to-burnt-700 text-white border-transparent shadow-[0_0_15px_rgba(14,165,233,0.28)]" : "border-white/20 hover:border-burnt-600/35"}`}>{c}</button>)}</div>
               </div>
             )}
 
@@ -121,7 +121,7 @@ export default function ProductDetail() {
         </div>
 
         <div className="mt-16">
-          <h2 className="text-3xl font-black mb-6 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Reviews ({reviews.length})</h2>
+          <h2 className="text-3xl font-black mb-6 bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Reviews ({reviews.length})</h2>
           {user && (
             <form onSubmit={handleReview} className="card mb-8">
               <h3 className="font-bold mb-4">Write a Review</h3>
@@ -134,7 +134,7 @@ export default function ProductDetail() {
             {reviews.map((r) => (
               <div key={r.id} className="card">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center"><span className="text-sm font-bold text-white">{r.user_name?.[0]}</span></div>
+                  <div className="w-8 h-8 bg-gradient-to-r from-burnt-400 to-burnt-700 rounded-full flex items-center justify-center"><span className="text-sm font-bold text-white">{r.user_name?.[0]}</span></div>
                   <div>
                     <p className="font-bold text-sm">{r.user_name}</p>
                     <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={12} className={i < r.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-600"} />)}</div>
