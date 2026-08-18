@@ -1,0 +1,32 @@
+# Sprint 6 demo polish (login quick-fill) — run in S:\WORK\Digititan mobile app
+$ErrorActionPreference = "Stop"
+if (-not (Test-Path ".\mobile\pubspec.yaml")) { Write-Error "Wrong folder" }
+$b64 = @'
+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
+'@
+$zipPath = Join-Path $PWD "sprint6.zip"
+$libPath = Join-Path $PWD "mobile\lib"
+[IO.File]::WriteAllBytes($zipPath, [Convert]::FromBase64String(($b64 -replace "\s","")))
+Expand-Archive -Path $zipPath -DestinationPath $libPath -Force
+Remove-Item $zipPath -Force
+# copy docs if present in same folder from Cursor sync; otherwise user copies manually
+Write-Host "SUCCESS: Login demo quick-fill installed"
+Write-Host "Also copy docs 09/10/11 from Cursor Digititan mobile app/docs to your S: docs folder"
+Write-Host "Then: cd mobile; flutter run -d emulator-5554"
