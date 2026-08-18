@@ -5,6 +5,7 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../shared/widgets/demo_banner.dart';
 
 class AdminShell extends StatefulWidget {
   final AppContainer container;
@@ -142,12 +143,22 @@ class _AdminShellState extends State<AdminShell> {
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(child: Text(_error!))
-                : TabBarView(
+                : Column(
                     children: [
-                      _dashboard(),
-                      _ordersTab(),
-                      _resellersTab(),
-                      _productsTab(),
+                      const DemoBanner(
+                        message:
+                            'Say aloud: second-level admin can update ops without developers.',
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _dashboard(),
+                            _ordersTab(),
+                            _resellersTab(),
+                            _productsTab(),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
       ),

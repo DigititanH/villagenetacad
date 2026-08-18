@@ -18,10 +18,12 @@ Future<void> openDigititanStore(BuildContext context) async {
   await showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Digititan Store website'),
+      title: const Text('Store link copied'),
       content: Text(
-        'Store link copied to clipboard:\n\n$url\n\n'
-        'Paste it into Chrome (or any browser) on this device.',
+        'Full shopping is on the Digititan Store website.\n\n'
+        'Link copied:\n$url\n\n'
+        'Paste into Chrome (or any browser) on this device.\n'
+        '(Auto-open browser comes later when the project is not on S:.)',
       ),
       actions: [
         TextButton(

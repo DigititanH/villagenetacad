@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
+import '../../shared/widgets/demo_banner.dart';
 
 class ResellerShell extends StatefulWidget {
   final AppContainer container;
@@ -134,11 +135,21 @@ class _ResellerShellState extends State<ResellerShell> {
             ? const Center(child: CircularProgressIndicator())
             : _error != null
                 ? Center(child: Text(_error!))
-                : TabBarView(
+                : Column(
                     children: [
-                      _dashboard(),
-                      _clientsTab(),
-                      _salesTab(),
+                      const DemoBanner(
+                        message:
+                            'Say aloud: Digititan pays resellers at month-end (with approval).',
+                      ),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _dashboard(),
+                            _clientsTab(),
+                            _salesTab(),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
       ),

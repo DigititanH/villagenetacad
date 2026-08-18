@@ -80,8 +80,8 @@ class _StoreTabState extends State<StoreTab> {
                             const SizedBox(height: 10),
                             ElevatedButton.icon(
                               onPressed: () => openDigititanStore(context),
-                              icon: const Icon(Icons.open_in_browser),
-                              label: const Text('Shop on Digititan Store website'),
+                              icon: const Icon(Icons.link),
+                              label: const Text('Copy Digititan Store website link'),
                             ),
                           ],
                         ),

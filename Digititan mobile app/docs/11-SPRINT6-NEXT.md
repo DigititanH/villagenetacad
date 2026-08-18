@@ -9,6 +9,7 @@ Built (core functionality, plain UI):
 5. Store + Orders + payment OTP simulation
 6. Reseller ops
 7. Admin ops
+8. Demo polish: one-tap role sign-in, demo banners, Store link copy, Profile cheat sheet
 
 Not done yet (by design):
 - Final branding/colours/icons
@@ -19,10 +20,11 @@ Not done yet (by design):
 - iOS TestFlight/App Store release
 
 ## Your actions now
-1. Run full demo using `docs/09-PROTOTYPE-DEMO-SCRIPT.md`
-2. Capture feedback
-3. Complete `docs/10-PROTOTYPE-SIGNOFF.md`
-4. Only after GO: start production integrations
+1. Install demo polish: `INSTALL-DEMO-POLISH.ps1`
+2. Run full demo using `docs/09-PROTOTYPE-DEMO-SCRIPT.md`
+3. Capture feedback
+4. Complete `docs/10-PROTOTYPE-SIGNOFF.md`
+5. Only after GO: start production integrations
 
 ## Suggested production next slices (after sign-off)
 A. Firebase Auth + real Google Sign-In  

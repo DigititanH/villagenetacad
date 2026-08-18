@@ -4,7 +4,9 @@ import '../../../app/injection.dart';
 import '../../../domain/entities/programme_highlight.dart';
 import '../../../domain/entities/training_offer.dart';
 import '../../../domain/entities/user.dart';
+import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
+import '../../../shared/widgets/demo_banner.dart';
 import '../training_detail_screen.dart';
 
 class HomeTab extends StatefulWidget {
@@ -63,72 +65,88 @@ class _HomeTabState extends State<HomeTab> {
       appBar: AppBar(title: const Text('Home')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
+          : Column(
               children: [
-                Text(
-                  'Hi ${widget.user.name.split(' ').first},',
-                  style: Theme.of(context).textTheme.titleLarge,
+                const DemoBanner(
+                  message:
+                      'Pillars: Training · Academies · Store. Learning is in a separate LMS.',
                 ),
-                const SizedBox(height: 4),
-                const Text('Home hub — programmes, training, store previews.'),
-                if (_error != null) ...[
-                  const SizedBox(height: 8),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
-                ],
-                const SizedBox(height: 16),
-                Text('Current programmes', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                ..._programmes.map(
-                  (p) => Card(
-                    child: ListTile(
-                      title: Text(p.title),
-                      subtitle: Text(p.subtitle),
-                      trailing: p.isRecruiting
-                          ? const Chip(label: Text('Recruiting'))
-                          : null,
-                      onTap: widget.onOpenTraining,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Text('Featured training', style: Theme.of(context).textTheme.titleMedium),
-                    const Spacer(),
-                    TextButton(onPressed: widget.onOpenTraining, child: const Text('See all')),
-                  ],
-                ),
-                ..._offers.map(
-                  (o) => Card(
-                    child: ListTile(
-                      title: Text(o.title),
-                      subtitle: Text('${o.category} · ${o.level} · ${o.hours}h'),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => TrainingDetailScreen(
-                              container: widget.container,
-                              user: widget.user,
-                              trainingId: o.id,
-                            ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(
+                        'Hi ${widget.user.name.split(' ').first},',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text('Home hub — programmes, training, store previews.'),
+                      Text(
+                        AppConfig.demoModeLine,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 8),
+                        Text(_error!, style: const TextStyle(color: Colors.red)),
+                      ],
+                      const SizedBox(height: 16),
+                      Text('Current programmes', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      ..._programmes.map(
+                        (p) => Card(
+                          child: ListTile(
+                            title: Text(p.title),
+                            subtitle: Text(p.subtitle),
+                            trailing: p.isRecruiting
+                                ? const Chip(label: Text('Recruiting'))
+                                : null,
+                            onTap: widget.onOpenTraining,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Card(
-                  child: ListTile(
-                    title: Text('Best sellers / Promotions'),
-                    subtitle: Text('Sample products in Store tab. Full shopping opens Digititan Store website.'),
-                  ),
-                ),
-                const Card(
-                  child: ListTile(
-                    title: Text('Academies'),
-                    subtitle: Text('Map + academy list arrive in Sprint 3.'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Text('Featured training', style: Theme.of(context).textTheme.titleMedium),
+                          const Spacer(),
+                          TextButton(onPressed: widget.onOpenTraining, child: const Text('See all')),
+                        ],
+                      ),
+                      ..._offers.map(
+                        (o) => Card(
+                          child: ListTile(
+                            title: Text(o.title),
+                            subtitle: Text('${o.category} · ${o.level} · ${o.hours}h'),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => TrainingDetailScreen(
+                                    container: widget.container,
+                                    user: widget.user,
+                                    trainingId: o.id,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Card(
+                        child: ListTile(
+                          title: Text('Best sellers / Promotions'),
+                          subtitle: Text(
+                            'Sample products in Store tab. Full shopping = Digititan Store website link.',
+                          ),
+                        ),
+                      ),
+                      const Card(
+                        child: ListTile(
+                          title: Text('Academies'),
+                          subtitle: Text('Province filter + academy list in Academies tab.'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
