@@ -2,35 +2,30 @@
 
 Updated: 18 Aug 2026
 
-## What leadership asked for
-1. A **South African map**
-2. Tap a **province** → see that province + **list of academies**
-3. **Pins / location points** for academies
-4. Tap an academy → **events**, **programmes**, **location**, status, apply
+## What you asked for
+A **real South African map** (not boxes):
+1. See South Africa with the **9 provinces**
+2. Tap a **province** → list of academies in that province
+3. **Pins** on academy locations
+4. Tap academy → events, programmes, location, apply
 
-## What we had before
-Province **ChoiceChips** as a temporary stand-in for the map.
+## What we ship now
+- Geographic province outlines (real SA shape — Limpopo north, Western Cape south-west, etc.)
+- Tap province regions to filter
+- Red location pins
+- Detail: address, programmes, events
 
-## What we built (prototype)
-- Interactive SA map (`SouthAfricaAcademiesMap`) — CustomPainter, **no Google Maps plugin** (S-drive safe)
-- Tap province region → filters list + highlights province
-- Red pins → tap opens academy
-- List under the map mirrors the filter
-- Academy detail shows address, coordinates, programmes, events
+No Google Maps plugin (keeps S: drive builds working). Later we can swap in live Google Maps / Mapbox with DB coordinates.
 
-## Flow
-Map (SA) → Province → Academies list/pins → Academy detail → Register/apply
-
-## Later (production)
-- Real Google Maps / Mapbox with live GPS coordinates from database
-- Real events calendar from API
-- Compare academies (if leadership confirms)
-
-## Install on laptop
+## Install / update on laptop
 ```powershell
 cd "S:\WORK\Digititan mobile app"
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DigititanH/villagenetacad/cursor/fix-s-drive-url-launcher-09ad/Digititan%20mobile%20app/INSTALL-SA-ACADEMIES-MAP.ps1" -OutFile ".\INSTALL-SA-ACADEMIES-MAP.ps1"
 powershell -ExecutionPolicy Bypass -File .\INSTALL-SA-ACADEMIES-MAP.ps1
 cd mobile
-flutter run -d emulator-5554
+flutter run -d windows
 ```
+(Use the Android emulator when Pixel_6 starts cleanly again.)
+
+## Demo
+Academies tab → you should recognise South Africa → tap Gauteng → pins + list → open academy.
