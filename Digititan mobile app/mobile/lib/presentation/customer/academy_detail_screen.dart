@@ -52,9 +52,30 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(_academy!.name, style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      _academy!.name,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 8),
-                    Text('${_academy!.city}, ${_academy!.province}'),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.place, size: 18, color: Color(0xFFC62828)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${_academy!.address}\n'
+                            '${_academy!.city}, ${_academy!.province}',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Map pin: ${_academy!.latitude.toStringAsFixed(4)}, '
+                      '${_academy!.longitude.toStringAsFixed(4)}',
+                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -70,17 +91,39 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                     ],
                     const SizedBox(height: 16),
                     Text(_academy!.summary),
-                    const SizedBox(height: 16),
-                    Text('Courses offered', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 20),
+                    Text('Programmes', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    ..._academy!.coursesOffered.map(
-                      (c) => ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.check_circle_outline),
-                        title: Text(c),
+                    if (_academy!.programmes.isEmpty)
+                      const Text('No programmes listed yet.')
+                    else
+                      ..._academy!.programmes.map(
+                        (c) => ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.school_outlined),
+                          title: Text(c),
+                        ),
                       ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Events hosting',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
+                    const SizedBox(height: 8),
+                    if (_academy!.events.isEmpty)
+                      const Text('No upcoming events listed yet.')
+                    else
+                      ..._academy!.events.map(
+                        (e) => Card(
+                          child: ListTile(
+                            title: Text(e.title),
+                            subtitle: Text('${e.dateLabel}\n${e.description}'),
+                            isThreeLine: true,
+                            leading: const Icon(Icons.event),
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {

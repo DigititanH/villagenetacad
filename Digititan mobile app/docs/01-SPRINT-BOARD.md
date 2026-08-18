@@ -21,9 +21,9 @@
 3. Real database / API sync
 
 ### What we are currently doing
-- Sprint 7: work that comes **after** Google / OTP / DB in the production list
-- Default track: **branding foundation** (see `docs/14-SPRINT7-AFTER-AUTH.md`)
-- Alternate tracks: payment approach docs, Windows desktop, leadership Qs in copy
+- Sprint 7: **SA Academies map** (province → list/pins → events/programmes/location)
+- Google Sign-In / real OTP / database remain **on hold**
+- Branding follows after map demo feels right
 
 ### Problems we are facing now
 1. Cloud workspace ≠ laptop `S:\` — use installers / raw GitHub download when needed
@@ -32,7 +32,7 @@
 
 ### How we will solve them
 1. Keep laptop as run target; ship ASCII installers
-2. Start branding with website colours + placeholder logo until brand book arrives
+2. Prototype map first (CustomPainter); live Google Maps later with DB coords
 3. Keep open questions in `docs/12-LOCKED-DECISIONS.md`
 
 ---

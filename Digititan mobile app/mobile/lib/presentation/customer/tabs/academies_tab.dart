@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../app/injection.dart';
 import '../../../domain/entities/academy.dart';
 import '../../../domain/entities/user.dart';
-import '../../../infrastructure/dummy/dummy_academy_repository.dart';
 import '../../../shared/result/result.dart';
 import '../academy_detail_screen.dart';
 import '../organisation_register_screen.dart';
+import '../widgets/south_africa_academies_map.dart';
 
-/// Province picker acts as the prototype "map" step from the meeting.
-/// Real Google Map can replace this later without changing domain.
+/// Meeting requirement:
+/// SA map -> tap province -> academy list (+ pins) -> academy detail
+/// (events, programmes, location).
 class AcademiesTab extends StatefulWidget {
   final AppContainer container;
   final User user;
@@ -25,45 +26,80 @@ class AcademiesTab extends StatefulWidget {
 }
 
 class _AcademiesTabState extends State<AcademiesTab> {
-  String _province = 'All';
-  List<Academy> _items = [];
+  String? _province;
+  List<Academy> _all = [];
+  List<Academy> _filtered = [];
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadAll();
   }
 
-  Future<void> _load() async {
+  Future<void> _loadAll() async {
     setState(() {
       _loading = true;
       _error = null;
     });
-    final result = await widget.container.getAcademies(
-      province: _province == 'All' ? null : _province,
-    );
+    final result = await widget.container.getAcademies();
     if (!mounted) return;
     setState(() {
       _loading = false;
       switch (result) {
         case Success(:final data):
-          _items = data;
+          _all = data;
+          _applyFilter();
         case Failure(:final message):
           _error = message;
       }
     });
   }
 
+  void _applyFilter() {
+    if (_province == null || _province == 'All') {
+      _filtered = List.of(_all);
+    } else {
+      _filtered = _all.where((a) => a.province == _province).toList();
+    }
+  }
+
+  void _selectProvince(String province) {
+    setState(() {
+      _province = province;
+      _applyFilter();
+    });
+  }
+
+  void _openAcademy(Academy a) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AcademyDetailScreen(
+          container: widget.container,
+          user: widget.user,
+          academyId: a.id,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provinces = ['All', ...DummyAcademyRepository.provinces];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Academies'),
         actions: [
+          if (_province != null)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _province = null;
+                  _applyFilter();
+                });
+              },
+              child: const Text('All SA'),
+            ),
           IconButton(
             tooltip: 'Register NPO / Academy',
             onPressed: () {
@@ -79,79 +115,74 @@ class _AcademiesTabState extends State<AcademiesTab> {
           ),
         ],
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Text(
-              'South Africa map (prototype): choose a province',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-          SizedBox(
-            height: 48,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: provinces
-                  .map(
-                    (p) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(p),
-                        selected: _province == p,
-                        onSelected: (_) {
-                          setState(() => _province = p);
-                          _load();
-                        },
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text(_error!))
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      child: Text(
+                        _province == null
+                            ? 'South Africa map — tap a province (red pins = academies)'
+                            : '$_province — tap a pin or an academy below',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
-                  )
-                  .toList(),
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(child: Text(_error!))
-                    : _items.isEmpty
-                        ? const Center(child: Text('No academies in this province yet.'))
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(12),
-                            itemCount: _items.length,
-                            itemBuilder: (context, i) {
-                              final a = _items[i];
-                              return Card(
-                                child: ListTile(
-                                  title: Text(a.name),
-                                  subtitle: Text(
-                                    '${a.city}, ${a.province}\n'
-                                    '${a.isActive ? 'Active' : 'Inactive'}'
-                                    '${a.isRecruiting ? ' · Recruiting' : ''}',
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: SouthAfricaAcademiesMap(
+                        selectedProvince: _province,
+                        academies: _all,
+                        onProvinceSelected: _selectProvince,
+                        onAcademySelected: _openAcademy,
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                      child: Text(
+                        _province == null
+                            ? 'All academies (${_filtered.length})'
+                            : 'Academies in $_province (${_filtered.length})',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                    Expanded(
+                      child: _filtered.isEmpty
+                          ? const Center(
+                              child: Text('No academies in this province yet.'),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: _filtered.length,
+                              itemBuilder: (context, i) {
+                                final a = _filtered[i];
+                                return Card(
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.location_on,
+                                      color: Color(0xFFC62828),
+                                    ),
+                                    title: Text(a.name),
+                                    subtitle: Text(
+                                      '${a.city}, ${a.province}\n'
+                                      '${a.isActive ? 'Active' : 'Inactive'}'
+                                      '${a.isRecruiting ? ' · Recruiting' : ''}'
+                                      ' · ${a.events.length} event(s)',
+                                    ),
+                                    isThreeLine: true,
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => _openAcademy(a),
                                   ),
-                                  isThreeLine: true,
-                                  trailing: const Icon(Icons.chevron_right),
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => AcademyDetailScreen(
-                                          container: widget.container,
-                                          user: widget.user,
-                                          academyId: a.id,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-          ),
-        ],
-      ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
     );
   }
 }

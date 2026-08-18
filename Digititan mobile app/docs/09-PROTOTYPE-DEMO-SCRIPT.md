@@ -30,12 +30,13 @@ Tip: on Login, use **Sign in as Customer / Reseller / Admin** (one tap).
 3. Register interest → submit
 4. Show flutter console line `INTEREST REGISTERED...`
 
-### 3) Academies (2 min)
-1. Academies tab
-2. Filter province (e.g. Gauteng)
-3. Open academy → Active/Recruiting chips
-4. Register/apply
-5. Top-right + → Register NPO/Academy organisation
+### 3) Academies (2–3 min)
+1. Academies tab → South Africa map
+2. Tap a province (e.g. Gauteng) — list filters, pins show
+3. Tap a red pin **or** an academy in the list
+4. Show location, programmes, events hosting
+5. Register/apply
+6. Top-right + → Register NPO/Academy organisation
 
 ### 4) Store + Orders + payment OTP (3 min)
 1. Store → tap **Copy Digititan Store website link** → show dialog (paste into Chrome)

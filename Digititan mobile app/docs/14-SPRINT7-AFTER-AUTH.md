@@ -22,15 +22,18 @@ Recommended: **Track E — Branding + demo polish**, then **Track F — Windows 
 | F | Flutter Windows desktop build (Mac later) | No |
 | G | Close open leadership questions in product copy | No |
 
-## Suggested Sprint 7 (default)
-**Branding foundation + demo polish**
-1. Confirm Digititan logo / colour tokens from website
-2. Apply theme (AppBar, buttons, demo banner) without redesigning every screen
-3. App icon + splash (Android first)
-4. Re-run demo script with branded look
+## Suggested Sprint 7 (updated)
+**Priority A — SA Academies map** (meeting requirement, constantly requested)
+1. Interactive SA map → province → academy list + pins
+2. Academy detail: events, programmes, location
+3. See `docs/15-SA-ACADEMIES-MAP.md`
+
+**Priority B — Branding foundation** (after map demo feels right)
+1. Logo / colour tokens from website
+2. Theme + app icon + splash
 
 ## After Sprint 7
-- Windows desktop package (if not done in 7)
+- Windows desktop package (if not done)
 - Then un-hold: Firebase Google → OTP mail → API/database
 - Soft launch path
 
@@ -40,3 +43,4 @@ Recommended: **Track E — Branding + demo polish**, then **Track F — Windows 
 - 3/6 month plans in V1?
 - Branding assets / brand book
 - Academy comparison in V1?
+- Upgrade prototype map → live Google Maps / Mapbox?
