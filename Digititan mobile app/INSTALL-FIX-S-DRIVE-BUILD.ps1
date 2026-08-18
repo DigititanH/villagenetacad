@@ -325,7 +325,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 Write-Host "[5/5] Removing url_launcher and cleaning build caches..."
 Push-Location $mobile
 try {
-  # Strip dependency lines if present (pub remove may fail if already gone)
+  # Strip dependency lines if present (do not call flutter pub remove after strip —
+  # PowerShell Stop mode treats "was not found" as a terminating NativeCommandError)
+  $stillListed = $false
   if (Test-Path $pubspec) {
     $pub = Get-Content $pubspec -Raw
     $pub2 = $pub -replace "(?m)^\s*url_launcher\s*:.*\r?\n", ""
@@ -333,9 +335,18 @@ try {
       Set-Content -Path $pubspec -Value $pub2 -NoNewline
       Write-Host "  Removed url_launcher from pubspec.yaml"
     }
+    $stillListed = Select-String -Path $pubspec -Pattern "url_launcher" -Quiet
   }
 
-  flutter pub remove url_launcher 2>$null | Out-Host
+  if ($stillListed) {
+    Write-Host "  flutter pub remove url_launcher..."
+    $prevEap = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    flutter pub remove url_launcher 2>&1 | Out-Host
+    $ErrorActionPreference = $prevEap
+  } else {
+    Write-Host "  url_launcher already absent from pubspec — skip pub remove"
+  }
 
   Write-Host "  flutter clean..."
   flutter clean | Out-Host
