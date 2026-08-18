@@ -1,8 +1,7 @@
-/// Shared demo constants (no secrets).
+/// App-level constants (no secrets here).
 class AppConfig {
   /// Official Digititan Store website for full shopping.
-  /// Update when leadership confirms the exact live store link.
-  static const digititanStoreUrl = 'https://digititan.co.za'; // TODO: confirm exact store URL
+  static const digititanStoreUrl = 'https://www.shop.digititan.co.za/';
 
   /// Prototype notice shown in Store tab.
   static const storeModeMessage =

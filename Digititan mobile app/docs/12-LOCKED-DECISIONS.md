@@ -10,6 +10,7 @@ Updated: 18 Aug 2026
 ## Store
 - App shows **sample products only**
 - Full shopping opens **Digititan Store website**
+- Confirmed URL: `https://www.shop.digititan.co.za/` (wired in `app_config.dart`)
 
 ## Desktop
 - Downloadable Windows/Mac app required (Flutter desktop later)

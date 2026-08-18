@@ -11,6 +11,15 @@ Error key line:
 Task that fails:
 `:url_launcher_android:compileDebugKotlin`
 
+## Store URL (confirmed)
+`https://www.shop.digititan.co.za/`
+
+Apply on laptop if needed:
+```powershell
+cd "S:\WORK\Digititan mobile app"
+powershell -ExecutionPolicy Bypass -File .\INSTALL-STORE-URL.ps1
+```
+
 ## Durable fix (recommended) — no url_launcher plugin
 
 Use installer:

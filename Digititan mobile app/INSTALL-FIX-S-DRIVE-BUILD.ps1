@@ -393,7 +393,7 @@ if ($ok) {
   Write-Host '  cd "S:\WORK\Digititan mobile app\mobile"'
   Write-Host "  flutter run -d emulator-5554"
   Write-Host ""
-  Write-Host "Store button behavior now: copies https://digititan.co.za and shows a dialog."
+  Write-Host "Store button behavior now: copies https://www.shop.digititan.co.za/ and shows a dialog."
 } else {
   Write-Host "FAILED — verify files above and rerun from parent folder." -ForegroundColor Red
   exit 1
