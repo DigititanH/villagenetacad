@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/academy.dart';
+import 'sa_province_paths.dart';
 
-/// Prototype South Africa map (no Google Maps plugin — S-drive safe).
-///
-/// Flow:
-/// 1. Tap a province region -> filter academies
-/// 2. Pins show academy locations
-/// 3. Tap a pin -> open that academy
+/// Real South Africa provinces map (geographic outlines).
+/// Tap a province -> filter academies. Red pins = academy locations.
 class SouthAfricaAcademiesMap extends StatelessWidget {
   final String? selectedProvince;
   final List<Academy> academies;
@@ -25,74 +22,101 @@ class SouthAfricaAcademiesMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 0.85,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final size = Size(constraints.maxWidth, constraints.maxHeight);
-          return GestureDetector(
-            onTapUp: (details) {
-              final province = SaMapGeometry.hitTestProvince(
-                details.localPosition,
-                size,
+      aspectRatio: 1.15,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F4FC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFB0C4DE)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final size = Size(constraints.maxWidth, constraints.maxHeight);
+              return GestureDetector(
+                onTapUp: (details) {
+                  final province = SaMapGeometry.hitTestProvince(
+                    details.localPosition,
+                    size,
+                  );
+                  if (province != null) {
+                    onProvinceSelected(province);
+                    return;
+                  }
+                  final academy = SaMapGeometry.hitTestAcademy(
+                    details.localPosition,
+                    size,
+                    academies,
+                    selectedProvince,
+                  );
+                  if (academy != null) {
+                    onAcademySelected(academy);
+                  }
+                },
+                child: CustomPaint(
+                  size: size,
+                  painter: _SaMapPainter(
+                    selectedProvince: selectedProvince,
+                    academies: academies,
+                  ),
+                ),
               );
-              if (province != null) {
-                onProvinceSelected(province);
-                return;
-              }
-              final academy = SaMapGeometry.hitTestAcademy(
-                details.localPosition,
-                size,
-                academies,
-                selectedProvince,
-              );
-              if (academy != null) {
-                onAcademySelected(academy);
-              }
             },
-            child: CustomPaint(
-              size: size,
-              painter: _SaMapPainter(
-                selectedProvince: selectedProvince,
-                academies: academies,
-              ),
-            ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 }
 
-/// Normalized SA layout helpers (lng 16..33, lat -22..-35).
 class SaMapGeometry {
-  static const minLng = 16.0;
-  static const maxLng = 33.0;
-  static const maxLat = -22.0;
-  static const minLat = -35.0;
-
-  static Offset latLngToOffset(double lat, double lng, Size size) {
-    final x = ((lng - minLng) / (maxLng - minLng)).clamp(0.0, 1.0);
-    final y = ((maxLat - lat) / (maxLat - minLat)).clamp(0.0, 1.0);
-    return Offset(x * size.width, y * size.height);
-  }
-
-  /// Approximate tappable rectangles for each province (normalized 0..1).
-  static const Map<String, Rect> provinceNormRects = {
-    'Limpopo': Rect.fromLTWH(0.48, 0.02, 0.30, 0.16),
-    'Mpumalanga': Rect.fromLTWH(0.62, 0.16, 0.22, 0.14),
-    'Gauteng': Rect.fromLTWH(0.52, 0.20, 0.12, 0.08),
-    'North West': Rect.fromLTWH(0.38, 0.18, 0.16, 0.14),
-    'Free State': Rect.fromLTWH(0.42, 0.30, 0.20, 0.14),
-    'KwaZulu-Natal': Rect.fromLTWH(0.62, 0.30, 0.22, 0.22),
-    'Northern Cape': Rect.fromLTWH(0.12, 0.22, 0.30, 0.32),
-    'Eastern Cape': Rect.fromLTWH(0.42, 0.44, 0.28, 0.22),
-    'Western Cape': Rect.fromLTWH(0.10, 0.52, 0.30, 0.30),
+  static final Map<String, Path> _provincePaths = {
+    for (final e in SaProvincePaths.pathData.entries)
+      e.key: parseSvgPath(e.value),
   };
 
+  static Path pathFor(String province) => _provincePaths[province]!;
+
+  static Matrix4 svgToWidget(Size size) {
+    const vb = SaProvincePaths.viewBox;
+    final sx = size.width / (vb.maxX - vb.minX);
+    final sy = size.height / (vb.maxY - vb.minY);
+    final s = sx < sy ? sx : sy;
+    final dx = (size.width - (vb.maxX - vb.minX) * s) / 2;
+    final dy = (size.height - (vb.maxY - vb.minY) * s) / 2;
+    // Build transform: translate -> scale -> translate (SVG space to widget).
+    return Matrix4.translationValues(dx, dy, 0) *
+        Matrix4.diagonal3Values(s, s, 1) *
+        Matrix4.translationValues(-vb.minX, -vb.minY, 0);
+  }
+
+  static Offset widgetToSvg(Offset local, Size size) {
+    final m = svgToWidget(size);
+    final inv = Matrix4.tryInvert(m);
+    if (inv == null) return local;
+    return MatrixUtils.transformPoint(inv, local);
+  }
+
+  /// Calibrated approx. projection: WGS84 -> SVG coords used by the province paths.
+  static Offset latLngToSvg(double lat, double lng) {
+    const a = 25.67;
+    const b = -195.0;
+    const c = -32.64;
+    const d = -676.4;
+    return Offset(a * lng + b, c * lat + d);
+  }
+
+  static Offset latLngToWidget(double lat, double lng, Size size) {
+    return MatrixUtils.transformPoint(
+      svgToWidget(size),
+      latLngToSvg(lat, lng),
+    );
+  }
+
   static String? hitTestProvince(Offset local, Size size) {
-    final nx = local.dx / size.width;
-    final ny = local.dy / size.height;
-    // Prefer smaller provinces first (Gauteng over neighbours).
+    final svgPt = widgetToSvg(local, size);
+    // Prefer smaller provinces first.
     const order = [
       'Gauteng',
       'Mpumalanga',
@@ -105,8 +129,7 @@ class SaMapGeometry {
       'Northern Cape',
     ];
     for (final name in order) {
-      final r = provinceNormRects[name]!;
-      if (r.contains(Offset(nx, ny))) return name;
+      if (pathFor(name).contains(svgPt)) return name;
     }
     return null;
   }
@@ -123,7 +146,7 @@ class SaMapGeometry {
     Academy? best;
     var bestDist = 28.0;
     for (final a in visible) {
-      final p = latLngToOffset(a.latitude, a.longitude, size);
+      final p = latLngToWidget(a.latitude, a.longitude, size);
       final d = (p - local).distance;
       if (d < bestDist) {
         bestDist = d;
@@ -132,6 +155,75 @@ class SaMapGeometry {
     }
     return best;
   }
+}
+
+/// Minimal SVG path parser for M / m / L / l / Z / z (enough for ZA province paths).
+Path parseSvgPath(String d) {
+  final path = Path();
+  final tokens = <Object>[];
+  final re = RegExp(r'([MmZzLl])|(-?\d*\.?\d+(?:e[-+]?\d+)?)');
+  for (final m in re.allMatches(d.replaceAll(',', ' '))) {
+    if (m.group(1) != null) {
+      tokens.add(m.group(1)!);
+    } else {
+      tokens.add(double.parse(m.group(2)!));
+    }
+  }
+
+  var i = 0;
+  String? cmd;
+  var cx = 0.0;
+  var cy = 0.0;
+  var sx = 0.0;
+  var sy = 0.0;
+
+  double next() => tokens[i++] as double;
+
+  while (i < tokens.length) {
+    final t = tokens[i];
+    if (t is String) {
+      cmd = t;
+      i++;
+      continue;
+    }
+    switch (cmd) {
+      case 'M':
+        cx = next();
+        cy = next();
+        sx = cx;
+        sy = cy;
+        path.moveTo(cx, cy);
+        cmd = 'L';
+        break;
+      case 'm':
+        cx += next();
+        cy += next();
+        sx = cx;
+        sy = cy;
+        path.moveTo(cx, cy);
+        cmd = 'l';
+        break;
+      case 'L':
+        cx = next();
+        cy = next();
+        path.lineTo(cx, cy);
+        break;
+      case 'l':
+        cx += next();
+        cy += next();
+        path.lineTo(cx, cy);
+        break;
+      case 'Z':
+      case 'z':
+        path.close();
+        cx = sx;
+        cy = sy;
+        break;
+      default:
+        throw StateError('Unsupported SVG command: $cmd');
+    }
+  }
+  return path;
 }
 
 class _SaMapPainter extends CustomPainter {
@@ -145,98 +237,70 @@ class _SaMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final ocean = Paint()..color = const Color(0xFFE8F4FC);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(12)),
-      ocean,
-    );
+    final matrix = SaMapGeometry.svgToWidget(size);
+    canvas.save();
+    canvas.transform(matrix.storage);
 
-    // Soft SA land silhouette (approximate).
-    final landPath = Path()
-      ..moveTo(size.width * 0.18, size.height * 0.18)
-      ..lineTo(size.width * 0.55, size.height * 0.05)
-      ..lineTo(size.width * 0.82, size.height * 0.18)
-      ..lineTo(size.width * 0.88, size.height * 0.42)
-      ..lineTo(size.width * 0.72, size.height * 0.72)
-      ..lineTo(size.width * 0.42, size.height * 0.88)
-      ..lineTo(size.width * 0.18, size.height * 0.78)
-      ..lineTo(size.width * 0.10, size.height * 0.48)
-      ..close();
-
-    canvas.drawPath(
-      landPath,
-      Paint()..color = const Color(0xFFD8E8D0),
-    );
-    canvas.drawPath(
-      landPath,
-      Paint()
-        ..color = const Color(0xFF6B8F71)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
-
-    for (final entry in SaMapGeometry.provinceNormRects.entries) {
-      final name = entry.key;
-      final nr = entry.value;
-      final rect = Rect.fromLTWH(
-        nr.left * size.width,
-        nr.top * size.height,
-        nr.width * size.width,
-        nr.height * size.height,
-      );
+    // Ocean already from parent; draw provinces.
+    for (final name in SaProvincePaths.pathData.keys) {
+      final path = SaMapGeometry.pathFor(name);
       final selected = selectedProvince == name;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+      canvas.drawPath(
+        path,
         Paint()
           ..color = selected
-              ? const Color(0xFF2F6FED).withOpacity(0.35)
-              : const Color(0xFF2A5D3A).withOpacity(0.12),
+              ? const Color(0xFF2F6FED)
+              : const Color(0xFF6B9B6E),
       );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(6)),
+      canvas.drawPath(
+        path,
         Paint()
-          ..color = selected ? const Color(0xFF2F6FED) : const Color(0xFF4A6B52)
+          ..color = Colors.white
           ..style = PaintingStyle.stroke
-          ..strokeWidth = selected ? 2.2 : 1,
-      );
-
-      final tp = TextPainter(
-        text: TextSpan(
-          text: _shortName(name),
-          style: TextStyle(
-            color: selected ? const Color(0xFF1A3A8A) : const Color(0xFF2A4030),
-            fontSize: 9,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: rect.width - 4);
-      tp.paint(
-        canvas,
-        Offset(
-          rect.left + (rect.width - tp.width) / 2,
-          rect.top + (rect.height - tp.height) / 2,
-        ),
+          ..strokeWidth = selected ? 2.4 : 1.2,
       );
     }
 
+    // Province labels
+    for (final e in SaProvincePaths.labels.entries) {
+      final selected = selectedProvince == e.key;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: _short(e.key),
+          style: TextStyle(
+            color: selected ? Colors.white : const Color(0xFF1B3A1F),
+            fontSize: e.key == 'Gauteng' ? 9 : 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(
+        canvas,
+        Offset(e.value.$1 - tp.width / 2, e.value.$2 - tp.height / 2),
+      );
+    }
+
+    canvas.restore();
+
+    // Pins in widget space
     final visible = selectedProvince == null || selectedProvince == 'All'
         ? academies
         : academies.where((a) => a.province == selectedProvince).toList();
 
     for (final a in visible) {
-      final p = SaMapGeometry.latLngToOffset(a.latitude, a.longitude, size);
-      canvas.drawCircle(p, 7, Paint()..color = Colors.white);
-      canvas.drawCircle(p, 5.5, Paint()..color = const Color(0xFFC62828));
-      canvas.drawCircle(
-        p.translate(0, -0.5),
-        1.8,
-        Paint()..color = Colors.white,
-      );
+      final p = SaMapGeometry.latLngToWidget(a.latitude, a.longitude, size);
+      // Skip pins that fall far outside the cropped mainland view.
+      if (p.dx < -20 || p.dy < -20 || p.dx > size.width + 20 || p.dy > size.height + 20) {
+        continue;
+      }
+      canvas.drawCircle(p, 8, Paint()..color = Colors.white);
+      canvas.drawCircle(p, 6, Paint()..color = const Color(0xFFC62828));
+      canvas.drawCircle(p.translate(0, -1), 2, Paint()..color = Colors.white);
     }
   }
 
-  String _shortName(String name) {
+  String _short(String name) {
     switch (name) {
       case 'KwaZulu-Natal':
         return 'KZN';
