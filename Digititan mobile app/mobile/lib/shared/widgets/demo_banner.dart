@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Small non-branded strip for stakeholder demos.
+import '../theme/digititan_theme.dart';
+
+/// Small strip for stakeholder demos (branded, not amber generic).
 class DemoBanner extends StatelessWidget {
   final String message;
 
@@ -9,18 +11,18 @@ class DemoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.amber.shade100,
+      color: DigititanColors.primaryDark.withOpacity(0.92),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.info_outline, size: 18, color: Colors.brown.shade700),
+            const Icon(Icons.info_outline, size: 18, color: DigititanColors.teal),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 message,
-                style: TextStyle(fontSize: 12, color: Colors.brown.shade900),
+                style: const TextStyle(fontSize: 12, color: Colors.white, height: 1.3),
               ),
             ),
           ],

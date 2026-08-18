@@ -21,7 +21,7 @@
 3. Real database / API sync
 
 ### What we are currently doing
-- Sprint 7: **SA Academies map** (province → list/pins → events/programmes/location)
+- Sprint 7: SA map done; **branding** in progress (province → list/pins → events/programmes/location)
 - Google Sign-In / real OTP / database remain **on hold**
 - Branding follows after map demo feels right
 

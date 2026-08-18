@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../domain/entities/user.dart';
 import '../presentation/auth/login_screen.dart';
 import '../presentation/shell/role_router.dart';
+import '../shared/theme/digititan_theme.dart';
 import 'injection.dart';
 
-/// App shell. Temporary default theme — branding later.
+/// App shell with Digititan brand theme.
 class DigititanApp extends StatefulWidget {
   final AppContainer container;
 
@@ -21,8 +22,9 @@ class _DigititanAppState extends State<DigititanApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Digititan Mobile',
+      title: 'Digititan',
       debugShowCheckedModeBanner: false,
+      theme: DigititanTheme.light(),
       home: _user == null
           ? LoginScreen(
               container: widget.container,
