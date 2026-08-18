@@ -1,74 +1,65 @@
 # Sprint Board — Digititan Mobile App (Flutter)
 
-## Current sprint: Sprint 0 — Analysis + Design foundation
-**Dates:** 18 Aug 2026 – 20 Aug 2026  
-**Goal:** Understand the system and prepare Flutter skeleton before feature screens.
+## Current sprint: Sprint 7 — Branding / post-prototype (auth on hold)
+**Dates:** from 18 Aug 2026  
+**Goal:** Advance presentation and release readiness **without** Google Sign-In, real OTP, or database yet.
 
 ---
 
-### What we did
-- Turned meeting minutes into requirements + phased rollout plan
-- Agreed prototype-first; branding/colours later
-- Clarified email events (when OTP/emails are sent)
-- Locked stack direction to **Flutter** (Android + iOS one codebase)
-- Documented SDLC, Agile, architecture, user stories
-- Created Flutter project + ran on Android emulator
-- Installed Auth slice (domain/application/infrastructure/presentation + DI)
-- Login screen opens on emulator
+### What we did (Sprints 0–6)
+- Requirements + Flutter architecture + dummy Auth
+- Role shells (Customer / Reseller / Admin)
+- Home, Training, Academies, Store, Orders
+- Reseller + Admin dashboards
+- Demo polish + Store website URL (`https://www.shop.digititan.co.za/`)
+- Clickable Store link (S-drive safe MethodChannel)
+- Prototype demo script + sign-off docs
+
+### On hold (explicit)
+1. Real Google Sign-In (Firebase)
+2. Real OTP / Gmail SMTP
+3. Real database / API sync
 
 ### What we are currently doing
-- Sprint 6: Prototype demo script + sign-off checklist
-- Feature prototype is presentation-ready (plain UI)
-- Awaiting stakeholder GO / GO WITH CHANGES / NO-GO
+- Sprint 7: work that comes **after** Google / OTP / DB in the production list
+- Default track: **branding foundation** (see `docs/14-SPRINT7-AFTER-AUTH.md`)
+- Alternate tracks: payment approach docs, Windows desktop, leadership Qs in copy
 
 ### Problems we are facing now
-1. Cloud workspace ≠ laptop `S:\` path — files installed via `INSTALL-ON-LAPTOP.ps1`
-2. Google Sign-In not real yet
-3. Branding intentionally deferred
-
-### Problems we might face
-1. Firebase Google OAuth setup on Android
-2. Gmail App Password / 2FA for real OTP mail
-3. Scope creep into Store/Academies before Auth+shell is solid
+1. Cloud workspace ≠ laptop `S:\` — use installers / raw GitHub download when needed
+2. Branding assets not fully confirmed
+3. Some leadership % / plan questions still open
 
 ### How we will solve them
-1. Keep laptop as source of truth; ship install scripts when needed
-2. Wire Firebase after role navigation works
-3. Stick to sprint order: Auth → shells → Home/Training → Academies → Store → Reseller/Admin
+1. Keep laptop as run target; ship ASCII installers
+2. Start branding with website colours + placeholder logo until brand book arrives
+3. Keep open questions in `docs/12-LOCKED-DECISIONS.md`
 
 ---
 
-## Sprint 0 done criteria
-- [x] Architecture doc (Flutter)
-- [x] Email event map
-- [x] User stories
-- [x] Folder map explained
-- [x] Flutter project created on laptop (`flutter create`)
-- [x] `flutter run` shows app on Android emulator
-- [x] Clean architecture folders + Auth slice running (Login opens)
-- [ ] Role-based navigation after login (next)
-- [ ] You understand: UI → UseCase → Repository → DataSource
+## Prototype done criteria
+- [x] Auth stub + role navigation
+- [x] Home + Training + Academies + Store
+- [x] Reseller + Admin
+- [x] Store opens shop.digititan.co.za
+- [ ] Stakeholder sign-off (`docs/10`)
+- [ ] Branding pass (Sprint 7)
+- [ ] Windows desktop (Sprint 7 or 8)
+- [ ] Google / OTP / DB (later — on hold)
 
 ---
 
-## Upcoming sprints (prototype)
-| Sprint | Focus |
-|---|---|
-| Sprint 1 (now) | Auth UI done → role navigation shell + OTP verify path |
-| Sprint 2 | Home + Training |
-| Sprint 3 | Academies |
-| Sprint 4 | Store + Orders + simulated payment OTP |
-| Sprint 5 | Reseller + Admin core |
-| Sprint 6 | Prototype demo + sign-off |
+## Sprint map
+| Sprint | Focus | Status |
+|---|---|---|
+| 0–5 | Prototype features | Done |
+| 6 | Demo + sign-off | In progress / awaiting GO |
+| 7 | Branding / desktop / payment docs (no Firebase) | **Next** |
+| 8+ | Google Sign-In → OTP → Database/API | On hold |
 
 ---
 
-## Your next action (do this before more code)
-On laptop PowerShell:
-
-```powershell
-cd "S:\WORK\Digititan mobile app"
-flutter doctor
-```
-
-Then follow `docs/06-FLUTTER-SETUP-WINDOWS.md` and create the Flutter project.
+## Your next action
+1. Finish smoke-test + stakeholder demo (`docs/09`)
+2. Fill sign-off (`docs/10`) if ready
+3. Say **start Sprint 7 branding** (or choose desktop / payment track)

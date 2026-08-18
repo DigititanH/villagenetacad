@@ -11,6 +11,18 @@ Error key line:
 Task that fails:
 `:url_launcher_android:compileDebugKotlin`
 
+## Clickable Store link (opens browser)
+Uses project-local MethodChannel in `MainActivity` (not `url_launcher`).
+
+```powershell
+cd "S:\WORK\Digititan mobile app"
+notepad .\INSTALL-CLICKABLE-STORE-LINK.ps1
+# paste script, save, then:
+powershell -ExecutionPolicy Bypass -File .\INSTALL-CLICKABLE-STORE-LINK.ps1
+cd mobile
+flutter run -d emulator-5554
+```
+
 ## Store URL (confirmed)
 `https://www.shop.digititan.co.za/`
 

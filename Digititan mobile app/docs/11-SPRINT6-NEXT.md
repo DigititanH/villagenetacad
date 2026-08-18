@@ -27,9 +27,15 @@ Not done yet (by design):
 5. Only after GO: start production integrations
 
 ## Suggested production next slices (after sign-off)
+**On hold for now:**
 A. Firebase Auth + real Google Sign-In  
 B. Backend mail endpoint + Gmail App Password (OTP emails)  
-C. Connect to existing Digititan/Village NetAcad API  
+C. Connect to existing Digititan/Village NetAcad API / database  
+
+**Do next instead (Sprint 7):** see `docs/14-SPRINT7-AFTER-AUTH.md`  
 D. Real payment approach decision (store billing vs website checkout)  
 E. Branding pass  
-F. Soft launch
+F. Windows/Mac desktop  
+G. Soft launch prep  
+
+Dummy login + console OTPs remain until A–C are unblocked.
