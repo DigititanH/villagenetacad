@@ -64,11 +64,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         'Leadership decision: full purchase happens on Digititan Store website.',
                         style: TextStyle(fontSize: 12),
                       ),
+                      const SizedBox(height: 8),
+                      const DigititanStoreLink(),
                       const Spacer(),
                       ElevatedButton.icon(
                         onPressed: () => openDigititanStore(context),
-                        icon: const Icon(Icons.link),
-                        label: const Text('Copy Digititan Store website link'),
+                        icon: const Icon(Icons.open_in_browser),
+                        label: const Text('Open Digititan Store website'),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton(

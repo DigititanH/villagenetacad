@@ -5,8 +5,8 @@ class AppConfig {
 
   /// Prototype notice shown in Store tab.
   static const storeModeMessage =
-      'Sample products only. Full shopping is on the Digititan Store website '
-      '(button copies the link - paste into Chrome).';
+      'Sample products only. Full shopping is on the Digititan Store website. '
+      'Tap the blue link or the button to open it.';
 
   static const emailOtpDemo = '123456';
   static const paymentOtpDemo = '654321';
