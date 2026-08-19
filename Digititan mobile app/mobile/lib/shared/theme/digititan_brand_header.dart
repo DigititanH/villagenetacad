@@ -44,6 +44,16 @@ class DigititanBrandHeader extends StatelessWidget {
         ),
         SizedBox(height: compact ? 8 : 14),
         Text(
+          'powered by',
+          style: TextStyle(
+            fontSize: compact ? 11 : 12,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 1.2,
+            color: DigititanColors.foreground.withOpacity(0.7),
+          ),
+        ),
+        SizedBox(height: compact ? 2 : 4),
+        Text(
           'DIGITITAN',
           style: TextStyle(
             fontSize: compact ? 20 : 28,
