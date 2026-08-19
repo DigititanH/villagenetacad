@@ -13,7 +13,7 @@ Taken from `https://www.digititan.co.za/` theme tokens + official logo.
 | Teal highlight | `#2CC4C9` |
 | Background | `#F8F9FB` |
 | Foreground | `#15213B` |
-| Logo | `assets/branding/VillageNetAcadBackground.png` |
+| Logo | `assets/branding/VillageNetAcadTransparentBackground.png` |
 
 ## What changed
 - App-wide Material 3 theme (AppBar, buttons, nav, inputs, cards)
