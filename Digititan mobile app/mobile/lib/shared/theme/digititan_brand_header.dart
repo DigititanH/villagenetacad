@@ -22,10 +22,10 @@ class DigititanBrandHeader extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(compact ? 8 : 16),
           child: Image.asset(
-            'assets/branding/logo.png',
+            'assets/branding/VillageNetAcadTransparentBackground.png',
             width: logoSize,
             height: logoSize,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             errorBuilder: (_, __, ___) => Container(
               width: logoSize,
               height: logoSize,
