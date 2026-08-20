@@ -312,38 +312,30 @@ class _AdminShellState extends State<AdminShell> {
     if (_pending.isEmpty) {
       return const Center(child: Text('No pending reseller applications'));
     }
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
       itemCount: _pending.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, i) {
         final p = _pending[i];
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(p.name, style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 4),
-                Text(p.email),
-                Text(p.academyName ?? 'Independent / programme support'),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => _approveReseller(p),
-                      child: const Text('Approve + issue code'),
-                    ),
-                    TextButton(
-                      onPressed: () => _rejectReseller(p),
-                      child: const Text('Reject'),
-                    ),
-                  ],
-                ),
-              ],
+        return Material(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          child: ListTile(
+            isThreeLine: true,
+            title: Text(p.name),
+            subtitle: Text(
+              '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
             ),
+            trailing: TextButton(
+              style: TextButton.styleFrom(
+                minimumSize: const Size(64, 40),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed: () => _approveReseller(p),
+              child: const Text('Approve'),
+            ),
+            onLongPress: () => _rejectReseller(p),
           ),
         );
       },
