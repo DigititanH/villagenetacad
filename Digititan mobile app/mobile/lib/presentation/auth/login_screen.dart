@@ -147,7 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Demo tip: Customer checkout with code VNA-B-LERATO → see Reseller Sales update.',
+                    'Demo tips:\n'
+                    '• Full journey: Register as Reseller → Ops Admin approve + code → '
+                    'Add clients → Customer checkout with that code.\n'
+                    '• Fast path: Customer checkout with VNA-B-LERATO → Reseller Sales updates.',
                     style: TextStyle(fontSize: 12),
                   ),
                   const SizedBox(height: 22),

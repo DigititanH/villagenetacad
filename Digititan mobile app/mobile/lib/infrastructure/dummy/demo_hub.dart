@@ -195,6 +195,100 @@ class DemoHub {
     return hit;
   }
 
+  /// Apply → pending. Admin must approve before a real VNA-C/VNA-B code exists.
+  void applyReseller({
+    required String name,
+    required String email,
+    String? academyName,
+  }) {
+    final key = email.trim().toLowerCase();
+    if (resellerProfiles[key]?.status == 'approved') {
+      throw Exception('This email is already an approved reseller');
+    }
+    final alreadyPending = pendingResellers.any((p) => p.email.toLowerCase() == key);
+    if (alreadyPending) return;
+
+    pendingResellers.insert(
+      0,
+      PendingResellerApplication(
+        id: 'ra-${DateTime.now().millisecondsSinceEpoch}',
+        name: name.trim(),
+        email: key,
+        academyName: academyName?.trim().isEmpty == true ? null : academyName?.trim(),
+        appliedAt: DateTime.now(),
+      ),
+    );
+    resellerProfiles[key] = ResellerProfile(
+      email: key,
+      name: name.trim(),
+      code: 'PENDING',
+      codeType: ResellerCodeType.beneficiary,
+      status: 'pending',
+      totalEarned: 0,
+      balance: 0,
+      amountDueToDigititan: 0,
+      commissionRate: 0,
+      academyName: academyName?.trim().isEmpty == true ? null : academyName?.trim(),
+    );
+    resellerClients.putIfAbsent(key, () => []);
+    resellerSales.putIfAbsent(key, () => []);
+    log('Reseller application: $key (awaiting Ops Admin approval)');
+  }
+
+  ResellerClient addClient({
+    required String resellerEmail,
+    required String name,
+    required String email,
+    String? productInterest,
+    ResellerClientStatus status = ResellerClientStatus.pending,
+  }) {
+    final key = resellerEmail.trim().toLowerCase();
+    final profile = resellerProfiles[key];
+    if (profile == null || !profile.isApproved) {
+      throw Exception('Reseller must be approved before managing clients');
+    }
+    resellerClients.putIfAbsent(key, () => []);
+    final client = ResellerClient(
+      id: 'c-${DateTime.now().millisecondsSinceEpoch}',
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      status: status,
+      productInterest: productInterest?.trim().isEmpty == true
+          ? null
+          : productInterest?.trim(),
+      updatedAt: DateTime.now(),
+    );
+    resellerClients[key]!.insert(0, client);
+    log('Reseller $key added client ${client.email} (${status.name})');
+    return client;
+  }
+
+  void updateClientStatus({
+    required String resellerEmail,
+    required String clientId,
+    required ResellerClientStatus status,
+  }) {
+    final key = resellerEmail.trim().toLowerCase();
+    final profile = resellerProfiles[key];
+    if (profile == null || !profile.isApproved) {
+      throw Exception('Reseller must be approved before managing clients');
+    }
+    final list = resellerClients[key];
+    if (list == null) throw Exception('Client not found');
+    final i = list.indexWhere((c) => c.id == clientId);
+    if (i < 0) throw Exception('Client not found');
+    final old = list[i];
+    list[i] = ResellerClient(
+      id: old.id,
+      name: old.name,
+      email: old.email,
+      status: status,
+      productInterest: old.productInterest,
+      updatedAt: DateTime.now(),
+    );
+    log('Reseller $key client ${old.email} → ${status.name}');
+  }
+
   String issueCode({
     required PendingResellerApplication app,
     required ResellerCodeType type,

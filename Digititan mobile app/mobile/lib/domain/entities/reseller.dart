@@ -94,6 +94,9 @@ class ResellerProfile {
     this.academyName,
   });
 
+  bool get isApproved => status == 'approved';
+  bool get isPending => status == 'pending';
+
   ResellerProfile copyWith({
     double? totalEarned,
     double? balance,
@@ -101,6 +104,8 @@ class ResellerProfile {
     String? code,
     ResellerCodeType? codeType,
     String? academyName,
+    double? amountDueToDigititan,
+    double? commissionRate,
   }) {
     return ResellerProfile(
       email: email,
@@ -110,8 +115,8 @@ class ResellerProfile {
       status: status ?? this.status,
       totalEarned: totalEarned ?? this.totalEarned,
       balance: balance ?? this.balance,
-      amountDueToDigititan: amountDueToDigititan,
-      commissionRate: commissionRate,
+      amountDueToDigititan: amountDueToDigititan ?? this.amountDueToDigititan,
+      commissionRate: commissionRate ?? this.commissionRate,
       academyName: academyName ?? this.academyName,
     );
   }

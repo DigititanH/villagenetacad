@@ -62,7 +62,11 @@ class AppContainer {
     adminRepository = DummyAdminRepository();
 
     signInWithEmail = SignInWithEmail(authRepository);
-    registerWithEmail = RegisterWithEmail(authRepository, emailSender);
+    registerWithEmail = RegisterWithEmail(
+      authRepository,
+      emailSender,
+      resellerRepository,
+    );
     verifyEmailOtp = VerifyEmailOtp(authRepository);
     signInWithGoogle = SignInWithGoogle(authRepository);
 

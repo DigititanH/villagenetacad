@@ -50,16 +50,19 @@ It uses **demo data** so we can walk through flows safely in a presentation. Aft
 - Simulated payment OTP in-app (prototype only — not a live payment gateway)
 
 ### 5) Reseller model (sustainability)
-- Referral code, clients, commissions, monthly statement  
+- **Apply → pending → Ops Admin approve → issue Centre/Beneficiary code**  
+- Referral code, client pipeline (add + update pending/confirmed/bought/didNotBuy), commissions, monthly statement  
+- Sale attribution when a customer checks out with the reseller’s code  
 - Withdrawal request flow  
 - Messaging aligned to: **Digititan pays resellers at month-end (with approval)**  
-- Different codes for centres vs beneficiaries (represented in prototype logic/copy)
+- Different codes for centres vs beneficiaries  
 
 ### 6) Admin
 - Dashboard overview  
 - Update order status  
-- Approve reseller applications (issue code)  
-- Update product pricing (ops without developers)
+- Approve reseller applications (issue Centre or Beneficiary code)  
+- Update product pricing (ops without developers)  
+- Super Admin: payouts + activity (Ops cannot do payouts alone)
 
 ### 7) Branding / presentation readiness
 - Village NetAcad logo + “powered by DIGITITAN”  
@@ -103,10 +106,13 @@ Customer:
   Store     → sample products OR open Digititan Store website for full shopping
 
 Reseller:
-  Code, clients, commissions, statement, withdrawal request
+  Apply → pending → Ops Admin approves + issues VNA-C / VNA-B code
+  → add clients / update status → sales when buyers use the code
+  → statement / withdrawal request
 
 Admin:
-  Orders, reseller approvals, product prices
+  Orders, reseller approvals (+ code type), product prices
+  Super: payouts + activity
 ```
 
 Technically: **UI → use-cases → repository interfaces → data**.  

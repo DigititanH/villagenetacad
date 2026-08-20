@@ -63,8 +63,15 @@ class DummyAdminRepository implements AdminRepository {
 
   @override
   Future<void> rejectReseller(String applicationId) async {
-    _hub.pendingResellers.removeWhere((p) => p.id == applicationId);
-    _hub.log('Reseller application $applicationId rejected');
+    final i = _hub.pendingResellers.indexWhere((p) => p.id == applicationId);
+    if (i < 0) return;
+    final app = _hub.pendingResellers.removeAt(i);
+    final key = app.email.toLowerCase();
+    final existing = _hub.resellerProfiles[key];
+    if (existing != null) {
+      _hub.resellerProfiles[key] = existing.copyWith(status: 'rejected');
+    }
+    _hub.log('Reseller application ${app.email} rejected');
   }
 
   @override
