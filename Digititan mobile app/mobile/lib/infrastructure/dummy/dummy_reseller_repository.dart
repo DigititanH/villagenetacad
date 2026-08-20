@@ -1,100 +1,60 @@
 import '../../domain/entities/reseller.dart';
 import '../../domain/repositories/reseller_repository.dart';
+import 'demo_hub.dart';
 
 class DummyResellerRepository implements ResellerRepository {
-  final List<ResellerClient> _clients = [
-    ResellerClient(
-      id: 'c1',
-      name: 'Nomsa Dlamini',
-      email: 'nomsa@example.com',
-      status: ResellerClientStatus.bought,
-      productInterest: 'Home Lab Network Kit',
-      updatedAt: DateTime(2026, 8, 1),
-    ),
-    ResellerClient(
-      id: 'c2',
-      name: 'Johan Botha',
-      email: 'johan@example.com',
-      status: ResellerClientStatus.confirmed,
-      productInterest: 'Support Headset',
-      updatedAt: DateTime(2026, 8, 10),
-    ),
-    ResellerClient(
-      id: 'c3',
-      name: 'Palesa Molefe',
-      email: 'palesa@example.com',
-      status: ResellerClientStatus.pending,
-      productInterest: 'Village NetAcad Hoodie',
-      updatedAt: DateTime(2026, 8, 14),
-    ),
-    ResellerClient(
-      id: 'c4',
-      name: 'Thabo Mokoena',
-      email: 'thabo2@example.com',
-      status: ResellerClientStatus.didNotBuy,
-      productInterest: 'Wireless Mouse',
-      updatedAt: DateTime(2026, 7, 28),
-    ),
-  ];
-
-  final List<ResellerSale> _sales = [
-    ResellerSale(
-      id: 's1',
-      clientName: 'Nomsa Dlamini',
-      productName: 'Home Lab Network Kit',
-      amount: 899,
-      commission: 107.88,
-      date: DateTime(2026, 8, 1),
-    ),
-    ResellerSale(
-      id: 's2',
-      clientName: 'Aisha Patel',
-      productName: 'Digititan Laptop Bag',
-      amount: 349,
-      commission: 41.88,
-      date: DateTime(2026, 7, 22),
-    ),
-  ];
-
-  double _balance = 960;
+  final _hub = DemoHub.instance;
 
   @override
   Future<ResellerProfile> getProfile(String email) async {
+    final key = email.trim().toLowerCase();
+    final profile = _hub.resellerProfiles[key];
+    if (profile != null) return profile;
+    // Unapproved / unknown reseller shell
     return ResellerProfile(
-      code: 'VNA-LERATO',
-      status: 'approved',
-      totalEarned: 4280,
-      balance: _balance,
-      amountDueToDigititan: 312.5,
+      email: key,
+      name: key,
+      code: 'PENDING',
+      codeType: ResellerCodeType.beneficiary,
+      status: 'pending',
+      totalEarned: 0,
+      balance: 0,
+      amountDueToDigititan: 0,
       commissionRate: 12,
-      academyName: 'Lesedi Labatu Academy',
     );
   }
 
   @override
-  Future<List<ResellerClient>> getClients(String email) async =>
-      List.unmodifiable(_clients);
+  Future<List<ResellerClient>> getClients(String email) async {
+    final key = email.trim().toLowerCase();
+    return List.unmodifiable(_hub.resellerClients[key] ?? const []);
+  }
 
   @override
-  Future<List<ResellerSale>> getSales(String email) async =>
-      List.unmodifiable(_sales);
+  Future<List<ResellerSale>> getSales(String email) async {
+    final key = email.trim().toLowerCase();
+    return List.unmodifiable(_hub.resellerSales[key] ?? const []);
+  }
 
   @override
   Future<String> getMonthlyStatement(String email) async {
+    final profile = await getProfile(email);
+    final sales = await getSales(email);
+    final salesTotal = sales.fold<double>(0, (s, x) => s + x.amount);
+    final commission = sales.fold<double>(0, (s, x) => s + x.commission);
     return '''
 DIGITITAN / VILLAGE NETACAD — RESELLER STATEMENT (PROTOTYPE)
-Reseller: $email
-Code: VNA-LERATO
-Period: July 2026
+Reseller: ${profile.name} <$email>
+Code: ${profile.code} (${profile.codeType.label})
+Status: ${profile.status}
+Period: current demo month
 
-Sales total: R1,248.00
-Commission earned: R149.76
-Amount Digititan will pay reseller: R${_balance.toStringAsFixed(2)}
+Sales total: R${salesTotal.toStringAsFixed(2)}
+Commission earned: R${commission.toStringAsFixed(2)}
+Available balance: R${profile.balance.toStringAsFixed(2)}
 
-Money flow (locked decision): Digititan pays all resellers.
-Withdrawals: end of month with approval.
-Bank auto-debit from reseller accounts: later (not V1).
-Exact split % will be shown to resellers once leadership publishes final rates.
+Money flow: Digititan pays all resellers at month-end (with approval).
+Centre codes (VNA-C-*) vs Beneficiary codes (VNA-B-*) are tracked separately.
 ''';
   }
 
@@ -103,11 +63,24 @@ Exact split % will be shown to resellers once leadership publishes final rates.
     required String email,
     required double amount,
   }) async {
-    if (amount <= 0 || amount > _balance) {
+    final key = email.trim().toLowerCase();
+    final profile = _hub.resellerProfiles[key];
+    if (profile == null) throw Exception('Reseller profile not found');
+    if (amount <= 0 || amount > profile.balance) {
       throw Exception('Invalid withdrawal amount');
     }
-    _balance -= amount;
-    // ignore: avoid_print
-    print('WITHDRAWAL REQUESTED: $email amount=R$amount remaining=$_balance');
+    _hub.resellerProfiles[key] =
+        profile.copyWith(balance: profile.balance - amount);
+    _hub.withdrawals.insert(
+      0,
+      WithdrawalRequest(
+        id: 'w-${DateTime.now().millisecondsSinceEpoch}',
+        resellerEmail: key,
+        resellerName: profile.name,
+        amount: amount,
+        createdAt: DateTime.now(),
+      ),
+    );
+    _hub.log('Withdrawal requested $key R$amount (awaiting Super Admin)');
   }
 }

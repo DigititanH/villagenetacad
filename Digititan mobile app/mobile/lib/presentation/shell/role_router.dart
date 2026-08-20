@@ -34,7 +34,8 @@ class RoleRouter extends StatelessWidget {
           user: user,
           onLogout: onLogout,
         );
-      case UserRole.admin:
+      case UserRole.opsAdmin:
+      case UserRole.superAdmin:
         return AdminShell(
           container: container,
           user: user,

@@ -59,7 +59,7 @@ class AppContainer {
     academyRepository = DummyAcademyRepository();
     storeRepository = DummyStoreRepository();
     resellerRepository = DummyResellerRepository();
-    adminRepository = DummyAdminRepository(storeRepository);
+    adminRepository = DummyAdminRepository();
 
     signInWithEmail = SignInWithEmail(authRepository);
     registerWithEmail = RegisterWithEmail(authRepository, emailSender);

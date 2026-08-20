@@ -2,14 +2,9 @@ import '../../domain/entities/user.dart';
 import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/auth_repository.dart';
 
-/// Prototype implementation of AuthRepository.
-/// In-memory only — no real network. Good for screens + demos.
-///
-/// Polymorphism: same interface as future FirebaseAuthRepository.
 class DummyAuthRepository implements AuthRepository {
   User? _current;
 
-  /// Demo accounts for stakeholder walkthroughs.
   final Map<String, _StoredAccount> _accounts = {
     'customer@demo.com': _StoredAccount(
       password: 'demo123',
@@ -31,19 +26,38 @@ class DummyAuthRepository implements AuthRepository {
         emailVerified: true,
       ),
     ),
+    'ops@demo.com': _StoredAccount(
+      password: 'demo123',
+      user: const User(
+        id: 'u-ops',
+        name: 'Demo Ops Admin',
+        email: 'ops@demo.com',
+        role: UserRole.opsAdmin,
+        emailVerified: true,
+      ),
+    ),
     'admin@demo.com': _StoredAccount(
       password: 'demo123',
       user: const User(
-        id: 'u-admin',
-        name: 'Demo Admin',
+        id: 'u-ops-legacy',
+        name: 'Demo Ops Admin',
         email: 'admin@demo.com',
-        role: UserRole.admin,
+        role: UserRole.opsAdmin,
+        emailVerified: true,
+      ),
+    ),
+    'super@demo.com': _StoredAccount(
+      password: 'demo123',
+      user: const User(
+        id: 'u-super',
+        name: 'Demo Super Admin',
+        email: 'super@demo.com',
+        role: UserRole.superAdmin,
         emailVerified: true,
       ),
     ),
   };
 
-  /// email -> latest OTP (prototype only)
   final Map<String, String> _otps = {};
 
   @override
@@ -77,6 +91,9 @@ class DummyAuthRepository implements AuthRepository {
     if (_accounts.containsKey(key)) {
       throw Exception('An account with this email already exists');
     }
+    if (role.isAdmin) {
+      throw Exception('Admin accounts are created by Super Admin only');
+    }
 
     final user = User(
       id: 'u-${DateTime.now().millisecondsSinceEpoch}',
@@ -87,8 +104,6 @@ class DummyAuthRepository implements AuthRepository {
     );
 
     _accounts[key] = _StoredAccount(password: password, user: user);
-
-    // Fixed OTP for prototype predictability. Real system = random + expiry.
     _otps[key] = '123456';
     return user;
   }
@@ -123,8 +138,6 @@ class DummyAuthRepository implements AuthRepository {
 
   @override
   Future<User> signInWithGoogle() async {
-    // Placeholder until Firebase Google Sign-In is wired.
-    // For now: log in as verified customer demo user.
     final account = _accounts['customer@demo.com']!;
     _current = account.user;
     return account.user;
@@ -135,7 +148,6 @@ class DummyAuthRepository implements AuthRepository {
     _current = null;
   }
 
-  /// Prototype helper so Register use-case can read the OTP it "sent".
   String? debugOtpFor(String email) => _otps[email.trim().toLowerCase()];
 }
 

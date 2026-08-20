@@ -128,12 +128,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: DigititanColors.primary,
+                    ),
+                    onPressed: _loading
+                        ? null
+                        : () => _signInAs('ops@demo.com', 'demo123'),
+                    child: const Text('Sign in as Ops Admin'),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
                       backgroundColor: DigititanColors.primaryDark,
                     ),
                     onPressed: _loading
                         ? null
-                        : () => _signInAs('admin@demo.com', 'demo123'),
-                    child: const Text('Sign in as Admin'),
+                        : () => _signInAs('super@demo.com', 'demo123'),
+                    child: const Text('Sign in as Super Admin'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Demo tip: Customer checkout with code VNA-B-LERATO → see Reseller Sales update.',
+                    style: TextStyle(fontSize: 12),
                   ),
                   const SizedBox(height: 22),
                   Text('Or enter credentials', style: Theme.of(context).textTheme.titleSmall),

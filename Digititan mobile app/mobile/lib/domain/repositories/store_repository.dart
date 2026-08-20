@@ -24,6 +24,7 @@ abstract class StoreRepository {
   Future<ShopOrder> placeOrder({
     required String buyerEmail,
     required String buyerName,
+    String? referralCode,
   });
 
   Future<List<ShopOrder>> getOrdersFor(String email);

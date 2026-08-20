@@ -1,6 +1,7 @@
 import '../../domain/entities/programme_highlight.dart';
 import '../../domain/entities/training_offer.dart';
 import '../../domain/repositories/training_repository.dart';
+import 'demo_hub.dart';
 
 /// In-memory training catalogue for prototype demos.
 class DummyTrainingRepository implements TrainingRepository {
@@ -97,7 +98,20 @@ class DummyTrainingRepository implements TrainingRepository {
       'phone': phone,
       'at': DateTime.now().toIso8601String(),
     });
-    // ignore: avoid_print
-    print('INTEREST REGISTERED: $trainingId | $fullName | $email | $phone');
+    final offer = await getOfferById(trainingId);
+    DemoHub.instance.trainingInterests.insert(
+      0,
+      InterestLead(
+        id: 'ti-${DateTime.now().millisecondsSinceEpoch}',
+        subjectId: trainingId,
+        subjectTitle: offer?.title ?? trainingId,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        notes: '',
+        createdAt: DateTime.now(),
+      ),
+    );
+    DemoHub.instance.log('Training interest: ${offer?.title ?? trainingId} by $fullName');
   }
 }

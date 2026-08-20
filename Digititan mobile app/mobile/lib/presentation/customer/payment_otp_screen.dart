@@ -8,11 +8,13 @@ import 'order_detail_screen.dart';
 class PaymentOtpScreen extends StatefulWidget {
   final AppContainer container;
   final User user;
+  final String? referralCode;
 
   const PaymentOtpScreen({
     super.key,
     required this.container,
     required this.user,
+    this.referralCode,
   });
 
   @override
@@ -34,6 +36,7 @@ class _PaymentOtpScreenState extends State<PaymentOtpScreen> {
       buyerEmail: widget.user.email,
       buyerName: widget.user.name,
       otp: _otp.text,
+      referralCode: widget.referralCode,
     );
 
     setState(() => _loading = false);

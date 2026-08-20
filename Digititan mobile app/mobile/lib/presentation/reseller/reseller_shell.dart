@@ -167,17 +167,23 @@ class _ResellerShellState extends State<ResellerShell> {
         const SizedBox(height: 12),
         ListTile(
           title: const Text('Referral code'),
-          subtitle: Text(p.code),
+          subtitle: Text('${p.code}  ·  ${p.codeType.label}'),
           trailing: IconButton(
             icon: const Icon(Icons.copy),
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: p.code));
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Code copied')),
+                SnackBar(content: Text('${p.code} copied')),
               );
             },
           ),
+        ),
+        Text(
+          p.codeType == ResellerCodeType.centre
+              ? 'Centre code — for academies / centres (VNA-C-*)'
+              : 'Beneficiary code — for independent / beneficiary resellers (VNA-B-*)',
+          style: const TextStyle(fontSize: 12),
         ),
         ListTile(title: const Text('Total earned'), subtitle: Text('R${p.totalEarned.toStringAsFixed(2)}')),
         ListTile(title: const Text('Balance (payable by Digititan)'), subtitle: Text('R${p.balance.toStringAsFixed(2)}')),
@@ -224,7 +230,10 @@ class _ResellerShellState extends State<ResellerShell> {
         return Card(
           child: ListTile(
             title: Text(s.productName),
-            subtitle: Text('${s.clientName} · ${s.date.toIso8601String().substring(0, 10)}'),
+            subtitle: Text(
+              '${s.clientName} · ${s.date.toIso8601String().substring(0, 10)}'
+              '${s.referralCode == null ? '' : ' · ${s.referralCode}'}',
+            ),
             trailing: Text('+R${s.commission.toStringAsFixed(2)}'),
           ),
         );

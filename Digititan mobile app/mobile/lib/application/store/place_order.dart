@@ -10,6 +10,7 @@ class PlaceOrder {
     required String buyerEmail,
     required String buyerName,
     required String otp,
+    String? referralCode,
   }) async {
     if (!_repo.verifyPaymentOtp(buyerEmail, otp)) {
       return const Failure('Invalid payment OTP');
@@ -18,6 +19,7 @@ class PlaceOrder {
       final order = await _repo.placeOrder(
         buyerEmail: buyerEmail,
         buyerName: buyerName,
+        referralCode: referralCode,
       );
       return Success(order);
     } catch (e) {

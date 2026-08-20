@@ -1,5 +1,6 @@
 import '../../domain/entities/academy.dart';
 import '../../domain/repositories/academy_repository.dart';
+import 'demo_hub.dart';
 
 class DummyAcademyRepository implements AcademyRepository {
   static const provinces = [
@@ -203,8 +204,21 @@ class DummyAcademyRepository implements AcademyRepository {
     required String phone,
     required String notes,
   }) async {
-    // ignore: avoid_print
-    print('ACADEMY INTEREST: $academyId | $fullName | $email | $phone | $notes');
+    final academy = await getById(academyId);
+    DemoHub.instance.academyInterests.insert(
+      0,
+      InterestLead(
+        id: 'ai-${DateTime.now().millisecondsSinceEpoch}',
+        subjectId: academyId,
+        subjectTitle: academy?.name ?? academyId,
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        notes: notes,
+        createdAt: DateTime.now(),
+      ),
+    );
+    DemoHub.instance.log('Academy interest: ${academy?.name ?? academyId} by $fullName');
   }
 
   @override
@@ -215,9 +229,18 @@ class DummyAcademyRepository implements AcademyRepository {
     required String phone,
     required String province,
   }) async {
-    // ignore: avoid_print
-    print(
-      'ORG REGISTER: $organisationName | $contactName | $email | $phone | $province',
+    DemoHub.instance.orgApplications.insert(
+      0,
+      OrgApplication(
+        id: 'org-${DateTime.now().millisecondsSinceEpoch}',
+        organisationName: organisationName,
+        contactName: contactName,
+        email: email,
+        phone: phone,
+        province: province,
+        createdAt: DateTime.now(),
+      ),
     );
+    DemoHub.instance.log('Org application: $organisationName ($province)');
   }
 }

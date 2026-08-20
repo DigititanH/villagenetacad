@@ -30,6 +30,7 @@ class ShopOrder {
   final OrderStatus status;
   final DateTime createdAt;
   final List<String> trackingTimeline;
+  final String? referralCode;
 
   const ShopOrder({
     required this.id,
@@ -38,7 +39,24 @@ class ShopOrder {
     required this.status,
     required this.createdAt,
     required this.trackingTimeline,
+    this.referralCode,
   });
 
   double get total => items.fold(0, (sum, i) => sum + i.lineTotal);
+
+  ShopOrder copyWith({
+    OrderStatus? status,
+    List<String>? trackingTimeline,
+    String? referralCode,
+  }) {
+    return ShopOrder(
+      id: id,
+      buyerEmail: buyerEmail,
+      items: items,
+      status: status ?? this.status,
+      createdAt: createdAt,
+      trackingTimeline: trackingTimeline ?? this.trackingTimeline,
+      referralCode: referralCode ?? this.referralCode,
+    );
+  }
 }

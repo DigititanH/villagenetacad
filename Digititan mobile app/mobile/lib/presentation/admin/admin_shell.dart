@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
 import '../../domain/entities/product.dart';
+import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/widgets/demo_banner.dart';
 
+/// Ops Admin + Super Admin share this shell; tabs/actions gated by role.
 class AdminShell extends StatefulWidget {
   final AppContainer container;
   final User user;
@@ -28,8 +32,13 @@ class _AdminShellState extends State<AdminShell> {
   List<ShopOrder> _orders = [];
   List<PendingResellerApplication> _pending = [];
   List<Product> _products = [];
+  List<IssuedResellerCode> _codes = [];
+  List<WithdrawalRequest> _withdrawals = [];
+  List<String> _log = [];
   bool _loading = true;
   String? _error;
+
+  bool get _isSuper => widget.user.role.isSuperAdmin;
 
   @override
   void initState() {
@@ -44,12 +53,18 @@ class _AdminShellState extends State<AdminShell> {
       final orders = await admin.getAllOrders();
       final pending = await admin.getPendingResellers();
       final products = await admin.getProducts();
+      final codes = await admin.getIssuedCodes();
+      final withdrawals = await admin.getPendingWithdrawals();
+      final log = await admin.getActivityLog();
       if (!mounted) return;
       setState(() {
         _stats = stats;
         _orders = orders;
         _pending = pending;
         _products = products;
+        _codes = codes.cast<IssuedResellerCode>();
+        _withdrawals = withdrawals.cast<WithdrawalRequest>();
+        _log = log;
         _loading = false;
         _error = null;
       });
@@ -80,15 +95,44 @@ class _AdminShellState extends State<AdminShell> {
     if (status == null) return;
     await widget.container.adminRepository.updateOrderStatus(order.id, status);
     await _load();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${order.id} → ${status.name}')),
+    );
   }
 
-  Future<void> _approve(PendingResellerApplication app) async {
-    final code = await widget.container.adminRepository.approveReseller(app.id);
+  Future<void> _approveReseller(PendingResellerApplication app) async {
+    final type = await showDialog<ResellerCodeType>(
+      context: context,
+      builder: (_) => SimpleDialog(
+        title: Text('Issue code for ${app.name}'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, ResellerCodeType.centre),
+            child: const Text('Centre code (VNA-C-*)'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, ResellerCodeType.beneficiary),
+            child: const Text('Beneficiary code (VNA-B-*)'),
+          ),
+        ],
+      ),
+    );
+    if (type == null) return;
+    final code = await widget.container.adminRepository.approveReseller(
+      app.id,
+      codeType: type,
+    );
     await _load();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Approved ${app.name}. Code: $code')),
+      SnackBar(content: Text('Approved ${app.name}. Code: $code (${type.label})')),
     );
+  }
+
+  Future<void> _rejectReseller(PendingResellerApplication app) async {
+    await widget.container.adminRepository.rejectReseller(app.id);
+    await _load();
   }
 
   Future<void> _editPrice(Product product) async {
@@ -96,11 +140,11 @@ class _AdminShellState extends State<AdminShell> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Update price: ${product.name}'),
+        title: Text('Price: ${product.name}'),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'New price (ZAR)'),
+          decoration: const InputDecoration(labelText: 'ZAR'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
@@ -116,28 +160,75 @@ class _AdminShellState extends State<AdminShell> {
     await _load();
   }
 
+  Future<void> _addProduct() async {
+    final name = TextEditingController();
+    final category = TextEditingController(text: 'Hardware');
+    final summary = TextEditingController();
+    final price = TextEditingController(text: '299');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Add sample product'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: name, decoration: const InputDecoration(labelText: 'Name')),
+              TextField(controller: category, decoration: const InputDecoration(labelText: 'Category')),
+              TextField(controller: summary, decoration: const InputDecoration(labelText: 'Summary')),
+              TextField(
+                controller: price,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Price (ZAR)'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Add')),
+        ],
+      ),
+    );
+    if (ok != true || name.text.trim().isEmpty) return;
+    await widget.container.adminRepository.addProduct(
+      name: name.text.trim(),
+      category: category.text.trim(),
+      summary: summary.text.trim(),
+      price: double.parse(price.text),
+    );
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final tabs = <Tab>[
+      const Tab(text: 'Dashboard'),
+      const Tab(text: 'Orders'),
+      const Tab(text: 'Resellers'),
+      const Tab(text: 'Codes'),
+      const Tab(text: 'Products'),
+      if (_isSuper) const Tab(text: 'Payouts'),
+      if (_isSuper) const Tab(text: 'Activity'),
+    ];
+
     return DefaultTabController(
-      length: 4,
+      length: tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Admin'),
+          title: Text(widget.user.role.label),
           actions: [
             TextButton(
               onPressed: widget.onLogout,
               child: const Text('Logout', style: TextStyle(color: Colors.white)),
             ),
           ],
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Dashboard'),
-              Tab(text: 'Orders'),
-              Tab(text: 'Resellers'),
-              Tab(text: 'Products'),
-            ],
-          ),
+          bottom: TabBar(isScrollable: true, tabs: tabs),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _addProduct,
+          icon: const Icon(Icons.add),
+          label: const Text('Add product'),
         ),
         body: _loading
             ? const Center(child: CircularProgressIndicator())
@@ -145,9 +236,10 @@ class _AdminShellState extends State<AdminShell> {
                 ? Center(child: Text(_error!))
                 : Column(
                     children: [
-                      const DemoBanner(
-                        message:
-                            'Say aloud: second-level admin can update ops without developers.',
+                      DemoBanner(
+                        message: _isSuper
+                            ? 'Super Admin: oversight + payout approvals. Ops Admin can add/update day-to-day without you.'
+                            : 'Ops Admin: update orders, products, approve resellers (issue VNA-C / VNA-B codes) — no Super Admin needed.',
                       ),
                       Expanded(
                         child: TabBarView(
@@ -155,7 +247,10 @@ class _AdminShellState extends State<AdminShell> {
                             _dashboard(),
                             _ordersTab(),
                             _resellersTab(),
+                            _codesTab(),
                             _productsTab(),
+                            if (_isSuper) _payoutsTab(),
+                            if (_isSuper) _activityTab(),
                           ],
                         ),
                       ),
@@ -170,17 +265,18 @@ class _AdminShellState extends State<AdminShell> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Signed in as ${widget.user.name}'),
+        Text('${widget.user.name} · ${widget.user.email}'),
         const SizedBox(height: 12),
-        _stat('Total users', '${s.totalUsers}'),
-        _stat('Total revenue', 'R${s.totalRevenue.toStringAsFixed(0)}'),
-        _stat('Total orders', '${s.totalOrders}'),
+        _stat('Orders (live demo)', '${s.totalOrders}'),
+        _stat('Revenue (live demo)', 'R${s.totalRevenue.toStringAsFixed(0)}'),
         _stat('Pending orders', '${s.pendingOrders}'),
         _stat('Pending resellers', '${s.pendingResellers}'),
         _stat('Products', '${s.products}'),
+        _stat('Pending withdrawals', '${s.pendingWithdrawals}'),
+        _stat('Open leads', '${s.openLeads}'),
         const SizedBox(height: 12),
         const Text(
-          'Second-level admin can update content/orders without developers (meeting requirement).',
+          'Try: Customer checkout with code VNA-B-LERATO → Reseller Sales updates → Admin Orders shows the order.',
           style: TextStyle(fontSize: 12),
         ),
       ],
@@ -192,13 +288,19 @@ class _AdminShellState extends State<AdminShell> {
       );
 
   Widget _ordersTab() {
+    if (_orders.isEmpty) {
+      return const Center(child: Text('No orders yet — place one as Customer'));
+    }
     return ListView.builder(
       itemCount: _orders.length,
       itemBuilder: (context, i) {
         final o = _orders[i];
         return ListTile(
           title: Text(o.id),
-          subtitle: Text('${o.buyerEmail} · ${o.status.name} · R${o.total.toStringAsFixed(0)}'),
+          subtitle: Text(
+            '${o.buyerEmail} · ${o.status.name} · R${o.total.toStringAsFixed(0)}'
+            '${o.referralCode == null ? '' : ' · code ${o.referralCode}'}',
+          ),
           trailing: const Icon(Icons.edit),
           onTap: () => _updateOrder(o),
         );
@@ -215,19 +317,56 @@ class _AdminShellState extends State<AdminShell> {
       itemBuilder: (context, i) {
         final p = _pending[i];
         return Card(
-          child: ListTile(
-            title: Text(p.name),
-            subtitle: Text(
-              '${p.email}\n'
-              '${p.academyName ?? 'Independent / programme support'} · '
-              '${p.appliedAt.toIso8601String().substring(0, 10)}',
-            ),
-            isThreeLine: true,
-            trailing: ElevatedButton(
-              onPressed: () => _approve(p),
-              child: const Text('Approve'),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(p.name, style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => _approveReseller(p),
+                      child: const Text('Approve + issue code'),
+                    ),
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () => _rejectReseller(p),
+                      child: const Text('Reject'),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _codesTab() {
+    if (_codes.isEmpty) {
+      return const Center(child: Text('No codes issued yet'));
+    }
+    final sorted = [..._codes]..sort((a, b) => b.issuedAt.compareTo(a.issuedAt));
+    return ListView.builder(
+      itemCount: sorted.length,
+      itemBuilder: (context, i) {
+        final c = sorted[i];
+        return ListTile(
+          leading: Icon(
+            c.type == ResellerCodeType.centre ? Icons.apartment : Icons.person,
+          ),
+          title: Text(c.code),
+          subtitle: Text(
+            '${c.type.label} · ${c.resellerName} <${c.resellerEmail}>\n'
+            '${c.academyName ?? 'Independent'} · ${c.active ? 'active' : 'inactive'}',
+          ),
+          isThreeLine: true,
         );
       },
     );
@@ -240,11 +379,66 @@ class _AdminShellState extends State<AdminShell> {
         final p = _products[i];
         return ListTile(
           title: Text(p.name),
-          subtitle: Text('${p.category} · R${p.price.toStringAsFixed(0)}'),
+          subtitle: Text(
+            '${p.category} · R${p.price.toStringAsFixed(0)} · '
+            '${p.inStock ? 'In stock' : 'Out of stock'}',
+          ),
           trailing: const Icon(Icons.price_change_outlined),
           onTap: () => _editPrice(p),
+          onLongPress: () async {
+            await widget.container.adminRepository.setProductStock(p.id, !p.inStock);
+            await _load();
+          },
         );
       },
+    );
+  }
+
+  Widget _payoutsTab() {
+    if (_withdrawals.isEmpty) {
+      return const Center(child: Text('No pending withdrawals'));
+    }
+    return ListView.builder(
+      itemCount: _withdrawals.length,
+      itemBuilder: (context, i) {
+        final w = _withdrawals[i];
+        return Card(
+          child: ListTile(
+            title: Text('${w.resellerName} · R${w.amount.toStringAsFixed(0)}'),
+            subtitle: Text(w.resellerEmail),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    await widget.container.adminRepository.approveWithdrawal(w.id);
+                    await _load();
+                  },
+                  child: const Text('Approve'),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    await widget.container.adminRepository.rejectWithdrawal(w.id);
+                    await _load();
+                  },
+                  child: const Text('Reject'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _activityTab() {
+    if (_log.isEmpty) return const Center(child: Text('No activity yet'));
+    return ListView.builder(
+      itemCount: _log.length,
+      itemBuilder: (context, i) => ListTile(
+        dense: true,
+        title: Text(_log[i], style: const TextStyle(fontSize: 12)),
+      ),
     );
   }
 }

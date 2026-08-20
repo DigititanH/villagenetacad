@@ -1,61 +1,21 @@
 import '../../domain/entities/product.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
+import 'demo_hub.dart';
 
 class DummyStoreRepository implements StoreRepository {
-  final List<Product> _products = [
-    const Product(
-      id: 'p-laptop-bag',
-      name: 'Digititan Laptop Bag',
-      category: 'Accessories',
-      summary: 'Durable bag for academy and work use.',
-      price: 349,
-      isBestSeller: true,
-    ),
-    const Product(
-      id: 'p-headset',
-      name: 'Support Headset',
-      category: 'Hardware',
-      summary: 'Entry-level headset for IT support training labs.',
-      price: 499,
-      onPromotion: true,
-    ),
-    const Product(
-      id: 'p-network-kit',
-      name: 'Home Lab Network Kit',
-      category: 'Networking',
-      summary: 'Starter cables and tools for networking practice.',
-      price: 899,
-      isBestSeller: true,
-    ),
-    const Product(
-      id: 'p-hoodie',
-      name: 'Village NetAcad Hoodie',
-      category: 'Apparel',
-      summary: 'Programme hoodie for beneficiaries and ambassadors.',
-      price: 420,
-      onPromotion: true,
-    ),
-    const Product(
-      id: 'p-mouse',
-      name: 'Wireless Mouse',
-      category: 'Hardware',
-      summary: 'Simple wireless mouse for digital literacy classes.',
-      price: 199,
-    ),
-  ];
-
+  final _hub = DemoHub.instance;
   final Map<String, int> _cart = {};
-  final List<ShopOrder> _orders = [];
   final Map<String, String> _paymentOtps = {};
 
   @override
-  Future<List<Product>> getProducts() async => List.unmodifiable(_products);
+  Future<List<Product>> getProducts() async =>
+      List.unmodifiable(_hub.products);
 
   @override
   Future<Product?> getProduct(String id) async {
     try {
-      return _products.firstWhere((p) => p.id == id);
+      return _hub.products.firstWhere((p) => p.id == id);
     } catch (_) {
       return null;
     }
@@ -65,7 +25,7 @@ class DummyStoreRepository implements StoreRepository {
   List<CartLine> getCart() {
     final lines = <CartLine>[];
     for (final entry in _cart.entries) {
-      final product = _products.firstWhere((p) => p.id == entry.key);
+      final product = _hub.products.firstWhere((p) => p.id == entry.key);
       lines.add(CartLine(product: product, quantity: entry.value));
     }
     return lines;
@@ -94,7 +54,7 @@ class DummyStoreRepository implements StoreRepository {
   @override
   String startPaymentOtp(String email) {
     final key = email.trim().toLowerCase();
-    _paymentOtps[key] = '654321'; // fixed prototype OTP
+    _paymentOtps[key] = '654321';
     // ignore: avoid_print
     print('PAYMENT OTP for $key = 654321');
     return _paymentOtps[key]!;
@@ -110,51 +70,74 @@ class DummyStoreRepository implements StoreRepository {
   Future<ShopOrder> placeOrder({
     required String buyerEmail,
     required String buyerName,
+    String? referralCode,
   }) async {
     final lines = getCart();
-    if (lines.isEmpty) {
-      throw Exception('Cart is empty');
-    }
+    if (lines.isEmpty) throw Exception('Cart is empty');
+
+    final codeRaw = (referralCode ??
+            _hub.customerReferralCodes[buyerEmail.trim().toLowerCase()])
+        ?.trim()
+        .toUpperCase();
+    final issued = codeRaw == null || codeRaw.isEmpty
+        ? null
+        : _hub.findCode(codeRaw);
+
+    final items = lines
+        .map(
+          (l) => OrderItem(
+            productId: l.product.id,
+            productName: l.product.name,
+            quantity: l.quantity,
+            unitPrice: l.product.price,
+          ),
+        )
+        .toList();
 
     final order = ShopOrder(
       id: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
       buyerEmail: buyerEmail.trim().toLowerCase(),
-      items: lines
-          .map(
-            (l) => OrderItem(
-              productId: l.product.id,
-              productName: l.product.name,
-              quantity: l.quantity,
-              unitPrice: l.product.price,
-            ),
-          )
-          .toList(),
+      items: items,
       status: OrderStatus.paid,
       createdAt: DateTime.now(),
       trackingTimeline: [
         'Order placed',
         'Payment confirmed (simulated gateway + OTP)',
+        if (issued != null)
+          'Referral code ${issued.code} (${issued.type.label}) applied',
         'Processing at Digititan Store',
       ],
+      referralCode: issued?.code,
     );
-    _orders.insert(0, order);
+
+    _hub.orders.insert(0, order);
+    if (issued != null) {
+      _hub.customerReferralCodes[buyerEmail.trim().toLowerCase()] = issued.code;
+      _hub.attributeSale(
+        referralCode: issued.code,
+        buyerName: buyerName,
+        buyerEmail: buyerEmail,
+        items: items,
+        orderTotal: order.total,
+      );
+    }
+
     clearCart();
     _paymentOtps.remove(buyerEmail.trim().toLowerCase());
-    // ignore: avoid_print
-    print('ORDER PLACED: ${order.id} total=R${order.total} buyer=$buyerName');
+    _hub.log('Order ${order.id} placed R${order.total.toStringAsFixed(0)}');
     return order;
   }
 
   @override
   Future<List<ShopOrder>> getOrdersFor(String email) async {
     final key = email.trim().toLowerCase();
-    return _orders.where((o) => o.buyerEmail == key).toList(growable: false);
+    return _hub.orders.where((o) => o.buyerEmail == key).toList(growable: false);
   }
 
   @override
   Future<ShopOrder?> getOrder(String id) async {
     try {
-      return _orders.firstWhere((o) => o.id == id);
+      return _hub.orders.firstWhere((o) => o.id == id);
     } catch (_) {
       return null;
     }
@@ -162,11 +145,11 @@ class DummyStoreRepository implements StoreRepository {
 
   @override
   Future<void> updateProductPrice(String productId, double price) async {
-    final index = _products.indexWhere((p) => p.id == productId);
+    final index = _hub.products.indexWhere((p) => p.id == productId);
     if (index < 0) throw Exception('Product not found');
     if (price <= 0) throw Exception('Price must be greater than 0');
-    final old = _products[index];
-    _products[index] = Product(
+    final old = _hub.products[index];
+    _hub.products[index] = Product(
       id: old.id,
       name: old.name,
       category: old.category,
@@ -176,7 +159,13 @@ class DummyStoreRepository implements StoreRepository {
       isBestSeller: old.isBestSeller,
       onPromotion: old.onPromotion,
     );
-    // ignore: avoid_print
-    print('PRODUCT PRICE UPDATED: $productId -> R$price');
+  }
+
+  /// Validate + remember a referral code for this customer (prototype).
+  String? saveReferralCode(String buyerEmail, String rawCode) {
+    final issued = _hub.findCode(rawCode);
+    if (issued == null) return null;
+    _hub.customerReferralCodes[buyerEmail.trim().toLowerCase()] = issued.code;
+    return issued.code;
   }
 }
