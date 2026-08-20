@@ -16,7 +16,7 @@ class DigititanBrandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final logoSize = compact ? 56.0 : 120.0;
+    final logoSize = compact ? 72.0 : 176.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
