@@ -6,6 +6,7 @@ import '../../../domain/entities/user.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/utils/open_digititan_store.dart';
+import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 
 /// Leadership decision:
@@ -53,7 +54,22 @@ class _StoreTabState extends State<StoreTab> {
     });
   }
 
-  String _money(double v) => 'R${v.toStringAsFixed(0)}';
+  Widget _productSubtitle(Product p) {
+    final badges = <String>[
+      if (p.isBestSeller) 'Best seller',
+      if (p.onPromotion) 'Promo',
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(p.category),
+        const SizedBox(height: 2),
+        ProductPriceText(product: p, compact: true),
+        if (badges.isNotEmpty)
+          Text(badges.join(' · '), style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,11 +112,7 @@ class _StoreTabState extends State<StoreTab> {
                       (p) => Card(
                         child: ListTile(
                           title: Text(p.name),
-                          subtitle: Text(
-                            '${p.category} · ${_money(p.price)}'
-                            '${p.isBestSeller ? ' · Best seller' : ''}'
-                            '${p.onPromotion ? ' · Promo' : ''}',
-                          ),
+                          subtitle: _productSubtitle(p),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             Navigator.of(context).push(

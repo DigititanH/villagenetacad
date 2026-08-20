@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../../shared/widgets/product_price_text.dart';
 import 'checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
@@ -39,10 +40,16 @@ class _CartScreenState extends State<CartScreen> {
                       final line = _lines[i];
                       return ListTile(
                         title: Text(line.product.name),
-                        subtitle: Text(
-                          'R${line.product.price.toStringAsFixed(0)} × ${line.quantity}'
-                          ' = R${line.lineTotal.toStringAsFixed(0)}',
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ProductPriceText(product: line.product, compact: true),
+                            Text(
+                              '× ${line.quantity} = R${line.lineTotal.toStringAsFixed(0)}',
+                            ),
+                          ],
                         ),
+                        isThreeLine: true,
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

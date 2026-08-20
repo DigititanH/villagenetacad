@@ -9,6 +9,7 @@ import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/widgets/demo_banner.dart';
+import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 import '../training_detail_screen.dart';
 
@@ -212,10 +213,16 @@ class _HomeTabState extends State<HomeTab> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(p.name),
-      subtitle: Text(
-        '${p.category} · R${p.price.toStringAsFixed(0)}'
-        '${p.onPromotion ? ' · Promo' : ''}',
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(p.category),
+          ProductPriceText(product: p, compact: true),
+          if (p.onPromotion)
+            const Text('Promo', style: TextStyle(fontSize: 12)),
+        ],
       ),
+      isThreeLine: true,
       trailing: const Icon(Icons.chevron_right),
       onTap: () {
         Navigator.of(context).push(

@@ -42,7 +42,8 @@ class DemoHub {
         name: 'Support Headset',
         category: 'Hardware',
         summary: 'Entry-level headset for IT support training labs.',
-        price: 499,
+        price: 399,
+        compareAtPrice: 499,
         onPromotion: true,
       ),
       const Product(
@@ -58,7 +59,8 @@ class DemoHub {
         name: 'Village NetAcad Hoodie',
         category: 'Apparel',
         summary: 'Programme hoodie for beneficiaries and ambassadors.',
-        price: 420,
+        price: 349,
+        compareAtPrice: 420,
         onPromotion: true,
       ),
       const Product(

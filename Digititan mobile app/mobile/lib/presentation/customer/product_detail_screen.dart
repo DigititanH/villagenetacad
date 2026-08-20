@@ -4,6 +4,7 @@ import '../../app/injection.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/utils/open_digititan_store.dart';
+import '../../shared/widgets/product_price_text.dart';
 import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -56,7 +57,22 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     children: [
                       Text(_product!.name, style: Theme.of(context).textTheme.headlineSmall),
                       const SizedBox(height: 8),
-                      Text('${_product!.category} · R${_product!.price.toStringAsFixed(0)}'),
+                      Text(_product!.category),
+                      const SizedBox(height: 4),
+                      ProductPriceText(
+                        product: _product!,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      if (_product!.onPromotion) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          _product!.showsSalePrice ? 'On promotion' : 'Marked promo (set a lower price to show was/now)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Text(_product!.summary),
                       const SizedBox(height: 12),

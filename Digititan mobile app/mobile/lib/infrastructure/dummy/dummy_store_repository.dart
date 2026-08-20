@@ -150,16 +150,16 @@ class DummyStoreRepository implements StoreRepository {
     if (index < 0) throw Exception('Product not found');
     if (price <= 0) throw Exception('Price must be greater than 0');
     final old = _hub.products[index];
-    _hub.products[index] = Product(
-      id: old.id,
-      name: old.name,
-      category: old.category,
-      summary: old.summary,
-      price: price,
-      inStock: old.inStock,
-      isBestSeller: old.isBestSeller,
-      onPromotion: old.onPromotion,
-    );
+    if (price < old.price) {
+      final was = old.compareAtPrice != null && old.compareAtPrice! > old.price
+          ? old.compareAtPrice
+          : old.price;
+      _hub.products[index] = old.copyWith(price: price, compareAtPrice: was);
+    } else if (old.compareAtPrice != null && price >= old.compareAtPrice!) {
+      _hub.products[index] = old.copyWith(price: price, clearCompareAtPrice: true);
+    } else {
+      _hub.products[index] = old.copyWith(price: price);
+    }
   }
 
   /// Validate + remember a referral code for this customer (prototype).

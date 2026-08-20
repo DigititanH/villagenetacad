@@ -83,8 +83,25 @@ class DummyAdminRepository implements AdminRepository {
     final i = _hub.products.indexWhere((p) => p.id == productId);
     if (i < 0) throw Exception('Product not found');
     final p = _hub.products[i];
-    _hub.products[i] = p.copyWith(price: price);
-    _hub.log('Product ${p.name} price → R${price.toStringAsFixed(0)}');
+    _hub.products[i] = _withPriceChange(p, price);
+    _hub.log(
+      'Product ${p.name} price → R${price.toStringAsFixed(0)}'
+      '${_hub.products[i].compareAtPrice != null ? ' (was R${_hub.products[i].compareAtPrice!.toStringAsFixed(0)})' : ''}',
+    );
+  }
+
+  /// Dropping price keeps the previous amount as compare-at (strikethrough "was").
+  Product _withPriceChange(Product p, double price) {
+    if (price < p.price) {
+      final was = p.compareAtPrice != null && p.compareAtPrice! > p.price
+          ? p.compareAtPrice
+          : p.price;
+      return p.copyWith(price: price, compareAtPrice: was);
+    }
+    if (p.compareAtPrice != null && price >= p.compareAtPrice!) {
+      return p.copyWith(price: price, clearCompareAtPrice: true);
+    }
+    return p.copyWith(price: price);
   }
 
   @override
@@ -120,7 +137,9 @@ class DummyAdminRepository implements AdminRepository {
     final i = _hub.products.indexWhere((p) => p.id == productId);
     if (i < 0) throw Exception('Product not found');
     final p = _hub.products[i];
-    _hub.products[i] = p.copyWith(onPromotion: onPromotion);
+    _hub.products[i] = onPromotion
+        ? p.copyWith(onPromotion: true)
+        : p.copyWith(onPromotion: false, clearCompareAtPrice: true);
     _hub.log('Product ${p.name} promotion → $onPromotion');
   }
 

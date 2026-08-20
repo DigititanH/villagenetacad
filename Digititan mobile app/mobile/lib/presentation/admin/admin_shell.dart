@@ -10,6 +10,7 @@ import '../../domain/repositories/admin_repository.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
+import '../../shared/widgets/product_price_text.dart';
 
 /// Ops Admin + Super Admin share this shell; tabs/actions gated by role.
 class AdminShell extends StatefulWidget {
@@ -171,10 +172,23 @@ class _AdminShellState extends State<AdminShell> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text('Price: ${product.name}'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'ZAR'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'New price (ZAR)'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              product.showsSalePrice
+                  ? 'Current: was ${moneyZar(product.compareAtPrice!)} → now ${moneyZar(product.price)}'
+                  : 'Tip: lower the price while on promo to show ~~old~~ new on Store/Home.',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
@@ -188,6 +202,58 @@ class _AdminShellState extends State<AdminShell> {
       double.parse(controller.text),
     );
     await _load();
+  }
+
+  /// Mark promo and capture was/now so Store shows strikethrough.
+  Future<bool?> _markPromo(Product product) async {
+    final wasCtrl = TextEditingController(
+      text: (product.compareAtPrice ?? product.price).toStringAsFixed(0),
+    );
+    final nowCtrl = TextEditingController(text: product.price.toStringAsFixed(0));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Promo: ${product.name}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: wasCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Was price (struck through)',
+              ),
+            ),
+            TextField(
+              controller: nowCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Promo / now price',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Apply')),
+        ],
+      ),
+    );
+    if (ok != true) return false;
+    final was = double.parse(wasCtrl.text);
+    final now = double.parse(nowCtrl.text);
+    if (now >= was) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Promo price must be lower than was price')),
+      );
+      return false;
+    }
+    // Set price first (stores compare-at), then flag promo.
+    await widget.container.adminRepository.updateProductPrice(product.id, was);
+    await widget.container.adminRepository.updateProductPrice(product.id, now);
+    await widget.container.adminRepository.setProductPromotion(product.id, true);
+    return true;
   }
 
   Future<void> _addProduct() async {
@@ -410,11 +476,16 @@ class _AdminShellState extends State<AdminShell> {
         final p = _products[i];
         return ListTile(
           title: Text(p.name),
-          subtitle: Text(
-            '${p.category} · R${p.price.toStringAsFixed(0)} · '
-            '${p.inStock ? 'In stock' : 'Out of stock'}'
-            '${p.onPromotion ? ' · PROMO' : ''}'
-            '${p.isBestSeller ? ' · Best seller' : ''}',
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${p.category} · ${p.inStock ? 'In stock' : 'Out of stock'}'
+                '${p.onPromotion ? ' · PROMO' : ''}'
+                '${p.isBestSeller ? ' · Best seller' : ''}',
+              ),
+              ProductPriceText(product: p, compact: true),
+            ],
           ),
           isThreeLine: true,
           trailing: Row(
@@ -426,10 +497,15 @@ class _AdminShellState extends State<AdminShell> {
                   p.onPromotion ? Icons.local_offer : Icons.local_offer_outlined,
                 ),
                 onPressed: () async {
-                  await widget.container.adminRepository.setProductPromotion(
-                    p.id,
-                    !p.onPromotion,
-                  );
+                  if (p.onPromotion) {
+                    await widget.container.adminRepository.setProductPromotion(
+                      p.id,
+                      false,
+                    );
+                  } else {
+                    final ok = await _markPromo(p);
+                    if (ok != true) return;
+                  }
                   await _load();
                 },
               ),
