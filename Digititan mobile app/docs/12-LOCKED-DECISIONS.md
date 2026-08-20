@@ -23,8 +23,10 @@ Updated: 18 Aug 2026
 - Different codes for centres and beneficiaries
 - Independent seller contributions → general programme support account
 - Month-end: **Digititan pays all resellers**
+- **Withdrawals: last calendar day of the month only** (money locked until then; reseller enters amount to withdraw)
+- Reseller app shows **only money due to them** (their 53% or Centre 26%) — not full sale totals / other shares
 - Bank auto-debit: later (not V1)
-- Withdrawals: end of month (with approval)
+- Withdrawals still need Super Admin approval after request
 - **Locked split of each attributed sale:**
   - Reseller / Beneficiary **53%**
   - Centre **26%**

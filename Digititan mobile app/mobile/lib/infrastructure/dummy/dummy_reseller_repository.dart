@@ -83,8 +83,6 @@ class DummyResellerRepository implements ResellerRepository {
   @override
   Future<String> getMonthlyStatement(String email) async {
     final profile = await getProfile(email);
-    final sales = await getSales(email);
-    final salesTotal = sales.fold<double>(0, (s, x) => s + x.amount);
     if (!profile.isApproved) {
       return '''
 DIGITITAN / VILLAGE NETACAD — RESELLER APPLICATION
@@ -96,26 +94,23 @@ or Beneficiary (VNA-B-*) code before you can sell or manage clients.
 ''';
     }
     final sellerLabel = profile.codeType == ResellerCodeType.centre
-        ? 'Centre share (${RevenueSplit.centrePercent.toStringAsFixed(0)}%)'
-        : 'Reseller/Beneficiary share (${RevenueSplit.beneficiaryPercent.toStringAsFixed(0)}%)';
+        ? 'Your Centre earnings (26%)'
+        : 'Your earnings (53%)';
     return '''
-DIGITITAN / VILLAGE NETACAD — RESELLER STATEMENT (PROTOTYPE)
+DIGITITAN / VILLAGE NETACAD — YOUR EARNINGS STATEMENT
 Reseller: ${profile.name} <$email>
 Code: ${profile.code} (${profile.codeType.label})
-Status: ${profile.status}
 Period: current demo month
 
-Sales total: R${salesTotal.toStringAsFixed(2)}
+$sellerLabel
+Total earned (your share only): R${profile.totalEarned.toStringAsFixed(2)}
+Money due to you now: R${profile.balance.toStringAsFixed(2)}
 
-SPLIT (locked): Reseller/Beneficiary ${RevenueSplit.beneficiaryPercent.toStringAsFixed(0)}% · Centre ${RevenueSplit.centrePercent.toStringAsFixed(0)}% · Digititan/Village NetAcad ${RevenueSplit.digititanPercent.toStringAsFixed(0)}%
+You only see money due to you — not the full sale price or other shares.
 
-$sellerLabel earned: R${profile.totalEarned.toStringAsFixed(2)}
-Available balance (Digititan pays you): R${profile.balance.toStringAsFixed(2)}
-Centre allocation tracked: R${profile.centreShareTotal.toStringAsFixed(2)}
-Amount due to Digititan / Village NetAcad: R${profile.amountDueToDigititan.toStringAsFixed(2)}
-
-Money flow: Digititan pays resellers at month-end (with approval).
-Bank auto-debit: later (not V1).
+Withdrawals: last calendar day of the month only
+(next unlock: ${DateTime(DateTime.now().year, DateTime.now().month + 1, 0).toIso8601String().substring(0, 10)}).
+Super Admin still approves the payout.
 ''';
   }
 
@@ -129,6 +124,7 @@ Bank auto-debit: later (not V1).
     if (profile == null || !profile.isApproved) {
       throw Exception('Reseller must be approved before requesting withdrawal');
     }
+    // Calendar gate is enforced in UI; keep amount validation here.
     if (amount <= 0 || amount > profile.balance) {
       throw Exception('Invalid withdrawal amount');
     }

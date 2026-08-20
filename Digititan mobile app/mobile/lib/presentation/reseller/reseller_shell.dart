@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/widgets/demo_banner.dart';
 
 class ResellerShell extends StatefulWidget {
@@ -28,6 +29,11 @@ class _ResellerShellState extends State<ResellerShell> {
   List<ResellerSale> _sales = [];
   bool _loading = true;
   String? _error;
+  /// Demo-only: unlock withdrawal before real last day for walkthroughs.
+  bool _demoSimulateMonthEnd = false;
+
+  bool get _withdrawalOpen =>
+      AppConfig.isLastDayOfMonth() || _demoSimulateMonthEnd;
 
   @override
   void initState() {
@@ -78,15 +84,42 @@ class _ResellerShellState extends State<ResellerShell> {
   }
 
   Future<void> _withdraw() async {
-    final controller = TextEditingController(text: '200');
+    if (!_withdrawalOpen) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Withdrawals open only on the last day of the month '
+            '(${AppConfig.lastDayLabel()}). Your money stays locked until then.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final available = _profile?.balance ?? 0;
+    final controller = TextEditingController(
+      text: available > 0 ? available.toStringAsFixed(0) : '0',
+    );
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Request withdrawal'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Amount (ZAR)'),
+        title: const Text('Withdraw (month-end)'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Money due to you: R${available.toStringAsFixed(2)}\n'
+              'Enter how much you want to withdraw today.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Amount (ZAR)'),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -95,7 +128,7 @@ class _ResellerShellState extends State<ResellerShell> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Submit'),
+            child: const Text('Request withdrawal'),
           ),
         ],
       ),
@@ -111,7 +144,7 @@ class _ResellerShellState extends State<ResellerShell> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Withdrawal requested (prototype / needs Super Admin)'),
+          content: Text('Withdrawal requested — Super Admin must approve'),
         ),
       );
     } catch (e) {
@@ -284,7 +317,7 @@ class _ResellerShellState extends State<ResellerShell> {
                     children: [
                       DemoBanner(
                         message: approved
-                            ? 'Share your code at Customer checkout. Update client statuses so you can follow up.'
+                            ? 'You only see money due to you. Withdrawals unlock on the last day of the month.'
                             : 'Apply → wait for Ops Admin approve + code → then manage clients & sales.',
                       ),
                       Expanded(
@@ -353,6 +386,9 @@ class _ResellerShellState extends State<ResellerShell> {
 
   Widget _dashboard() {
     final p = _profile!;
+    final shareLabel = p.codeType == ResellerCodeType.centre
+        ? 'Your Centre earnings (26% of each sale)'
+        : 'Your earnings (53% of each sale)';
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -361,7 +397,7 @@ class _ResellerShellState extends State<ResellerShell> {
         if (p.academyName != null) Text('Academy: ${p.academyName}'),
         const SizedBox(height: 12),
         ListTile(
-          title: const Text('Referral code'),
+          title: const Text('Your referral code'),
           subtitle: Text('${p.code}  ·  ${p.codeType.label}'),
           trailing: IconButton(
             icon: const Icon(Icons.copy),
@@ -374,64 +410,62 @@ class _ResellerShellState extends State<ResellerShell> {
             },
           ),
         ),
-        Text(
-          p.codeType == ResellerCodeType.centre
-              ? 'Centre code — earns Centre slice (26%) on attributed sales'
-              : 'Beneficiary code — earns Reseller/Beneficiary slice (53%) on attributed sales',
-          style: const TextStyle(fontSize: 12),
-        ),
         const SizedBox(height: 8),
-        const Text(
-          'Split (locked): Beneficiary 53% · Centre 26% · Digititan/VNA 21%',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(shareLabel, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 4),
+                Text(
+                  'R${p.balance.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'This is the money due to you — only your share is shown.',
+                  style: TextStyle(fontSize: 12),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _withdrawalOpen
+                      ? 'Withdrawal open today (last day of month). Enter the amount you need.'
+                      : 'Locked until ${AppConfig.lastDayLabel()} (last day of the month).',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _withdrawalOpen ? Colors.green.shade800 : Colors.orange.shade900,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
-        _moneyTile(
-          'Your share earned',
-          'R${p.totalEarned.toStringAsFixed(2)}',
-          p.codeType == ResellerCodeType.centre ? 'Centre 26%' : 'Beneficiary 53%',
-        ),
-        _moneyTile(
-          'Balance (Digititan pays you)',
-          'R${p.balance.toStringAsFixed(2)}',
-          'Withdraw at month-end with approval',
-        ),
-        _moneyTile(
-          'Centre allocation tracked',
-          'R${p.centreShareTotal.toStringAsFixed(2)}',
-          'Centre slice 26%',
-        ),
-        _moneyTile(
-          'Due to Digititan / Village NetAcad',
-          'R${p.amountDueToDigititan.toStringAsFixed(2)}',
-          'Digititan slice 21%',
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Money flow: Digititan pays resellers at month-end (with approval).\n'
-          'Bank auto-debit: later (not V1).',
-          style: TextStyle(fontSize: 12),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Demo: simulate last day of month'),
+          subtitle: const Text('For walkthrough only — real rule is last calendar day'),
+          value: _demoSimulateMonthEnd,
+          onChanged: (v) => setState(() => _demoSimulateMonthEnd = v),
         ),
         const SizedBox(height: 8),
         ElevatedButton(
-          onPressed: _showStatement,
-          child: const Text('View monthly statement'),
+          onPressed: _withdrawalOpen ? _withdraw : null,
+          child: Text(
+            _withdrawalOpen
+                ? 'Withdraw — enter amount'
+                : 'Withdraw locked until month-end',
+          ),
         ),
-        OutlinedButton(
-          onPressed: _withdraw,
-          child: const Text('Request month-end withdrawal'),
+        TextButton(
+          onPressed: _showStatement,
+          child: const Text('View my earnings statement'),
         ),
       ],
-    );
-  }
-
-  Widget _moneyTile(String title, String value, String subtitle) {
-    return Card(
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
-      ),
     );
   }
 
@@ -505,7 +539,10 @@ class _ResellerShellState extends State<ResellerShell> {
               '${s.clientName} · ${s.date.toIso8601String().substring(0, 10)}'
               '${s.referralCode == null ? '' : ' · ${s.referralCode}'}',
             ),
-            trailing: Text('+R${s.commission.toStringAsFixed(2)}'),
+            trailing: Text(
+              '+R${s.commission.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         );
       },

@@ -12,7 +12,9 @@ Updated: 20 Aug 2026
 
 - `VNA-B-*` sellers earn the **53%** slice  
 - `VNA-C-*` sellers earn the **26%** Centre slice  
-- Every attributed sale also tracks Digititan **21%** as amount due  
+- Every attributed sale also tracks Digititan **21%** internally  
+- **Reseller UI:** only shows money due to them (their share)  
+- **Withdrawals:** last day of the month only; reseller enters the amount; Super Admin approves  
 
 ## Exact reseller journey (meeting-aligned)
 
