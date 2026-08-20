@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../app/injection.dart';
 import '../../../domain/entities/user.dart';
+import '../../../domain/enums/user_role.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/theme/digititan_theme.dart';
-import '../../../shared/widgets/demo_banner.dart';
 import '../my_orders_screen.dart';
 
 class ProfileTab extends StatelessWidget {
