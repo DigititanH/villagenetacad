@@ -8,7 +8,7 @@ if (-not (Test-Path ".\mobile\pubspec.yaml")) {
 }
 
 # Pin to commit so GitHub CDN cannot serve stale files
-$sha = "REPLACE_SHA"
+$sha = "32712b252e0dfbc96a55fe674c1a10df0e9f27d5"
 $base = "https://raw.githubusercontent.com/DigititanH/villagenetacad/$sha/Digititan%20mobile%20app"
 
 $pairs = @(
