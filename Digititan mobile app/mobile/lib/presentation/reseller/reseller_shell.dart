@@ -306,13 +306,17 @@ class _ResellerShellState extends State<ResellerShell> {
 
   Widget _pendingView() {
     final p = _profile!;
+    final rejected = p.status == 'rejected';
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Icon(Icons.hourglass_top, size: 48),
+        Icon(
+          rejected ? Icons.block : Icons.hourglass_top,
+          size: 48,
+        ),
         const SizedBox(height: 12),
         Text(
-          'Application pending',
+          rejected ? 'Application rejected' : 'Application pending',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
@@ -321,20 +325,24 @@ class _ResellerShellState extends State<ResellerShell> {
         Text(p.email),
         if (p.academyName != null) Text('Academy: ${p.academyName}'),
         const SizedBox(height: 16),
-        const Text(
-          'Ops Admin must approve your reseller application and issue a '
-          'Centre code (VNA-C-*) or Beneficiary code (VNA-B-*).\n\n'
-          'Until then you cannot share a referral code, manage clients, '
-          'or earn commission.\n\n'
-          'Demo tip: logout → Sign in as Ops Admin → Resellers tab → '
-          'Approve → pick Centre or Beneficiary → then come back here and tap Refresh.',
+        Text(
+          rejected
+              ? 'Ops Admin rejected this reseller application. Contact Digititan '
+                  'support / re-apply with a different account if needed.'
+              : 'Ops Admin must approve your reseller application and issue a '
+                  'Centre code (VNA-C-*) or Beneficiary code (VNA-B-*).\n\n'
+                  'Until then you cannot share a referral code, manage clients, '
+                  'or earn commission.\n\n'
+                  'Demo tip: logout → Sign in as Ops Admin → Resellers tab → '
+                  'Approve → pick Centre or Beneficiary → then come back here and tap Refresh.',
         ),
         const SizedBox(height: 16),
-        ElevatedButton.icon(
-          onPressed: _load,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Check approval status'),
-        ),
+        if (!rejected)
+          ElevatedButton.icon(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Check approval status'),
+          ),
         TextButton(
           onPressed: _showStatement,
           child: const Text('View application summary'),
