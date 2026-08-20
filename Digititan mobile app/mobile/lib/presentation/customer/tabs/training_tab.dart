@@ -53,31 +53,34 @@ class _TrainingTabState extends State<TrainingTab> {
           ? const Center(child: CircularProgressIndicator())
           : _error != null
               ? Center(child: Text(_error!))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(12),
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   itemCount: _offers.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
                   itemBuilder: (context, i) {
                     final o = _offers[i];
-                    return Card(
-                      child: ListTile(
-                        title: Text(o.title),
-                        subtitle: Text(
-                          '${o.category} · ${o.level} · ${o.hours}h'
-                          '${o.recruitmentOpen ? ' · Recruiting' : ''}',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => TrainingDetailScreen(
-                                container: widget.container,
-                                user: widget.user,
-                                trainingId: o.id,
-                              ),
-                            ),
-                          );
-                        },
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        o.title,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
+                      subtitle: Text(
+                        '${o.category} · ${o.level} · ${o.hours}h'
+                        '${o.recruitmentOpen ? ' · Recruiting' : ''}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => TrainingDetailScreen(
+                              container: widget.container,
+                              user: widget.user,
+                              trainingId: o.id,
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

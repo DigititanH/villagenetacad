@@ -46,7 +46,7 @@ Future<void> openDigititanStore(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tap the blue link to open the store:'),
+          Text('Tap the link to open the store:'),
           SizedBox(height: 12),
           DigititanStoreLink(),
           SizedBox(height: 12),
@@ -88,9 +88,10 @@ class DigititanStoreLink extends StatelessWidget {
       child: Text(
         url,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.blue.shade800,
+              color: const Color(0xFF13418A),
               decoration: TextDecoration.underline,
-              decorationColor: Colors.blue.shade800,
+              decorationColor: const Color(0xFF13418A),
+              fontWeight: FontWeight.w600,
             ),
       ),
     );

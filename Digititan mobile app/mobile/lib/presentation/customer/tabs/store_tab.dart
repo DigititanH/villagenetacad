@@ -5,7 +5,9 @@ import '../../../domain/entities/product.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
+import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/utils/open_digititan_store.dart';
+import '../../../shared/widgets/demo_banner.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 
@@ -44,31 +46,14 @@ class _StoreTabState extends State<StoreTab> {
       _loading = false;
       switch (result) {
         case Success(:final data):
-          // Sample only: best sellers / promos first, then the rest (max 4).
-          final featured = data.where((p) => p.isBestSeller || p.onPromotion).toList();
+          final featured =
+              data.where((p) => p.isBestSeller || p.onPromotion).toList();
           final rest = data.where((p) => !p.isBestSeller && !p.onPromotion);
-          _products = [...featured, ...rest].take(4).toList();
+          _products = [...featured, ...rest];
         case Failure(:final message):
           _error = message;
       }
     });
-  }
-
-  Widget _productSubtitle(Product p) {
-    final badges = <String>[
-      if (p.isBestSeller) 'Best seller',
-      if (p.onPromotion) 'Promo',
-    ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(p.category),
-        const SizedBox(height: 2),
-        ProductPriceText(product: p, compact: true),
-        if (badges.isNotEmpty)
-          Text(badges.join(' · '), style: const TextStyle(fontSize: 12)),
-      ],
-    );
   }
 
   @override
@@ -80,62 +65,80 @@ class _StoreTabState extends State<StoreTab> {
           : _error != null
               ? Center(child: Text(_error!))
               : ListView(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                   children: [
-                    Card(
-                      color: Colors.blue.shade50,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              AppConfig.storeModeMessage,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            const DigititanStoreLink(),
-                            const SizedBox(height: 10),
-                            ElevatedButton.icon(
-                              onPressed: () => openDigititanStore(context),
-                              icon: const Icon(Icons.open_in_browser),
-                              label: const Text('Open Digititan Store website'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    QuietNotice(message: AppConfig.storeModeMessage),
                     const SizedBox(height: 12),
-                    Text('Sample products', style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    ..._products.map(
-                      (p) => Card(
-                        child: ListTile(
-                          title: Text(p.name),
-                          subtitle: _productSubtitle(p),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ProductDetailScreen(
-                                  container: widget.container,
-                                  user: widget.user,
-                                  productId: p.id,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                    ElevatedButton.icon(
+                      onPressed: () => openDigititanStore(context),
+                      icon: const Icon(Icons.open_in_browser),
+                      label: const Text('Open Digititan Store'),
                     ),
+                    const SizedBox(height: 4),
+                    const DigititanStoreLink(),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Note: In-app cart/checkout remains available as prototype demo only.\n'
-                      'Production shopping path = website.',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    const SectionHeader(title: 'Sample catalogue'),
+                    ..._products.map(_productTile),
                   ],
                 ),
+    );
+  }
+
+  Widget _productTile(Product p) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: DigititanColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ProductDetailScreen(
+                  container: widget.container,
+                  user: widget.user,
+                  productId: p.id,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: DigititanColors.muted),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p.name,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        [
+                          p.category,
+                          if (p.isBestSeller) 'Best seller',
+                          if (p.onPromotion) 'Promo',
+                        ].join(' · '),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 6),
+                      ProductPriceText(product: p, compact: true),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: DigititanColors.primary),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -5,14 +5,13 @@ class AppConfig {
 
   /// Prototype notice shown in Store tab.
   static const storeModeMessage =
-      'Sample products only. Full shopping is on the Digititan Store website. '
-      'Tap the blue link or the button to open it.';
+      'Browse sample products here. Full shopping is on the Digititan Store website.';
 
   static const emailOtpDemo = '123456';
   static const paymentOtpDemo = '654321';
 
   static const demoModeLine =
-      'PROTOTYPE DEMO - dummy data. Branding later. Website + mobile = one ecosystem.';
+      'Presentation demo · sample data · mobile + website ecosystem';
 
   /// Grand: withdrawals only on the last calendar day of the month.
   static bool isLastDayOfMonth([DateTime? now]) {

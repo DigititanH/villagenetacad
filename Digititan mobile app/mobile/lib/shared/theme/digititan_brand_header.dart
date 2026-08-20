@@ -13,64 +13,66 @@ class DigititanBrandHeader extends StatelessWidget {
     this.tagline,
   });
 
+  static const logoAsset = 'assets/branding/logo.png';
+
   @override
   Widget build(BuildContext context) {
-    final logoSize = compact ? 56.0 : 140.0;
+    final logoSize = compact ? 56.0 : 120.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(compact ? 8 : 16),
-          child: Image.asset(
-            'assets/branding/VillageNetAcadTransparentBackground.png',
+        Image.asset(
+          logoAsset,
+          width: logoSize,
+          height: logoSize,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Container(
             width: logoSize,
             height: logoSize,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Container(
-              width: logoSize,
-              height: logoSize,
-              alignment: Alignment.center,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
               color: DigititanColors.primaryDark,
-              child: Text(
-                'D',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: logoSize * 0.45,
-                  fontWeight: FontWeight.w800,
-                ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'D',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: logoSize * 0.45,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
         ),
-        SizedBox(height: compact ? 8 : 14),
+        SizedBox(height: compact ? 8 : 12),
         Text(
-          'powered by',
+          'DIGITITAN',
           style: TextStyle(
-            fontSize: compact ? 11 : 12,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 1.2,
-            color: DigititanColors.foreground.withOpacity(0.7),
+            fontSize: compact ? 22 : 30,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 3.0,
+            color: DigititanColors.primaryDark,
           ),
         ),
         SizedBox(height: compact ? 2 : 4),
         Text(
-          'DIGITITAN',
+          'Village NetAcad',
           style: TextStyle(
-            fontSize: compact ? 20 : 28,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2.4,
-            color: DigititanColors.primaryDark,
+            fontSize: compact ? 13 : 15,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.4,
+            color: DigititanColors.foreground.withOpacity(0.75),
           ),
         ),
         if (tagline != null) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             tagline!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              height: 1.35,
-              color: DigititanColors.foreground,
+            style: TextStyle(
+              fontSize: compact ? 12 : 13,
+              height: 1.4,
+              color: DigititanColors.foreground.withOpacity(0.8),
             ),
           ),
         ],

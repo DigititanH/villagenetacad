@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/user.dart';
+import '../../shared/theme/digititan_theme.dart';
 import '../../shared/utils/open_digititan_store.dart';
+import '../../shared/widgets/demo_banner.dart';
 import '../../shared/widgets/product_price_text.dart';
 import 'cart_screen.dart';
 
@@ -44,79 +46,78 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = _product;
     return Scaffold(
-      appBar: AppBar(title: const Text('Product sample')),
+      appBar: AppBar(title: const Text('Product')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _product == null
+          : p == null
               ? const Center(child: Text('Product not found'))
-              : Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(_product!.name, style: Theme.of(context).textTheme.headlineSmall),
-                      const SizedBox(height: 8),
-                      Text(_product!.category),
-                      const SizedBox(height: 4),
-                      ProductPriceText(
-                        product: _product!,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      if (_product!.onPromotion) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _product!.showsSalePrice ? 'On promotion' : 'Marked promo (set a lower price to show was/now)',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
+                  children: [
+                    Text(p.name, style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 6),
+                    Text(p.category, style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 10),
+                    ProductPriceText(
+                      product: p,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      Text(_product!.summary),
-                      const SizedBox(height: 12),
+                    ),
+                    if (p.onPromotion && p.showsSalePrice) ...[
+                      const SizedBox(height: 6),
                       const Text(
-                        'Leadership decision: full purchase happens on Digititan Store website.',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      const SizedBox(height: 8),
-                      const DigititanStoreLink(),
-                      const Spacer(),
-                      ElevatedButton.icon(
-                        onPressed: () => openDigititanStore(context),
-                        icon: const Icon(Icons.open_in_browser),
-                        label: const Text('Open Digititan Store website'),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: !_product!.inStock
-                            ? null
-                            : () {
-                                widget.container.storeRepository.addToCart(_product!);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Added to prototype demo cart (not production path)'),
-                                  ),
-                                );
-                              },
-                        child: const Text('Add to prototype demo cart'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => CartScreen(
-                                container: widget.container,
-                                user: widget.user,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text('Open prototype demo cart'),
+                        'On promotion',
+                        style: TextStyle(
+                          color: DigititanColors.accent,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
-                  ),
+                    const SizedBox(height: 16),
+                    Text(p.summary, style: const TextStyle(height: 1.4)),
+                    const SizedBox(height: 18),
+                    QuietNotice(
+                      message:
+                          'Full purchase happens on the Digititan Store website.',
+                    ),
+                    const SizedBox(height: 10),
+                    const DigititanStoreLink(),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => openDigititanStore(context),
+                      icon: const Icon(Icons.open_in_browser),
+                      label: const Text('Open Digititan Store'),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: !p.inStock
+                          ? null
+                          : () {
+                              widget.container.storeRepository.addToCart(p);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Added to demo cart')),
+                              );
+                            },
+                      child: const Text('Add to demo cart'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CartScreen(
+                              container: widget.container,
+                              user: widget.user,
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('View demo cart'),
+                    ),
+                  ],
                 ),
     );
   }

@@ -340,8 +340,8 @@ class _AdminShellState extends State<AdminShell> {
                     children: [
                       DemoBanner(
                         message: _isSuper
-                            ? 'Super Admin: oversight + payout approvals. Ops Admin can add/update day-to-day without you.'
-                            : 'Ops Admin: update orders, products, approve resellers (issue VNA-C / VNA-B codes) — no Super Admin needed.',
+                            ? 'Super Admin · oversight + payouts'
+                            : 'Ops Admin · orders, products, reseller codes',
                       ),
                       Expanded(
                         child: TabBarView(
@@ -365,29 +365,62 @@ class _AdminShellState extends State<AdminShell> {
   Widget _dashboard() {
     final s = _stats!;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
       children: [
-        Text('${widget.user.name} · ${widget.user.email}'),
-        const SizedBox(height: 12),
-        _stat('Orders (live demo)', '${s.totalOrders}'),
-        _stat('Revenue (live demo)', 'R${s.totalRevenue.toStringAsFixed(0)}'),
-        _stat('Pending orders', '${s.pendingOrders}'),
-        _stat('Pending resellers', '${s.pendingResellers}'),
-        _stat('Products', '${s.products}'),
-        _stat('Pending withdrawals', '${s.pendingWithdrawals}'),
-        _stat('Open leads', '${s.openLeads}'),
-        const SizedBox(height: 12),
-        const Text(
-          'Try: Customer checkout with code VNA-B-LERATO → Reseller Sales updates → Admin Orders shows the order.',
-          style: TextStyle(fontSize: 12),
+        Text(
+          widget.user.name,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        Text(widget.user.email, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.45,
+          children: [
+            MetricTile(
+              label: 'Orders',
+              value: '${s.totalOrders}',
+              icon: Icons.receipt_long_outlined,
+            ),
+            MetricTile(
+              label: 'Revenue',
+              value: 'R${s.totalRevenue.toStringAsFixed(0)}',
+              icon: Icons.payments_outlined,
+            ),
+            MetricTile(
+              label: 'Pending orders',
+              value: '${s.pendingOrders}',
+              icon: Icons.hourglass_empty,
+            ),
+            MetricTile(
+              label: 'Pending resellers',
+              value: '${s.pendingResellers}',
+              icon: Icons.person_add_alt_1_outlined,
+            ),
+            MetricTile(
+              label: 'Products',
+              value: '${s.products}',
+              icon: Icons.inventory_2_outlined,
+            ),
+            MetricTile(
+              label: 'Withdrawals',
+              value: '${s.pendingWithdrawals}',
+              icon: Icons.account_balance_wallet_outlined,
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        QuietNotice(
+          message:
+              'Walkthrough: Customer checkout with VNA-B-LERATO → Reseller Sales → Orders tab.',
         ),
       ],
     );
   }
-
-  Widget _stat(String label, String value) => Card(
-        child: ListTile(title: Text(label), trailing: Text(value)),
-      );
 
   Widget _ordersTab() {
     if (_orders.isEmpty) {

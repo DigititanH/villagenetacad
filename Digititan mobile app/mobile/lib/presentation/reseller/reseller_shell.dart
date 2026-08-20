@@ -5,6 +5,7 @@ import '../../app/injection.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/config/app_config.dart';
+import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 
 class ResellerShell extends StatefulWidget {
@@ -317,8 +318,8 @@ class _ResellerShellState extends State<ResellerShell> {
                     children: [
                       DemoBanner(
                         message: approved
-                            ? 'You only see money due to you. Withdrawals unlock on the last day of the month.'
-                            : 'Apply → wait for Ops Admin approve + code → then manage clients & sales.',
+                            ? 'Your share only · withdraw on month-end'
+                            : 'Awaiting Ops approval + referral code',
                       ),
                       Expanded(
                         child: TabBarView(
@@ -341,35 +342,33 @@ class _ResellerShellState extends State<ResellerShell> {
     final p = _profile!;
     final rejected = p.status == 'rejected';
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
       children: [
         Icon(
           rejected ? Icons.block : Icons.hourglass_top,
-          size: 48,
+          size: 44,
+          color: DigititanColors.primary,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
         Text(
           rejected ? 'Application rejected' : 'Application pending',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
-        Text('Hi ${widget.user.name.split(' ').first},'),
-        Text(p.name),
-        Text(p.email),
-        if (p.academyName != null) Text('Academy: ${p.academyName}'),
+        Text(p.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(p.email, style: Theme.of(context).textTheme.bodySmall),
+        if (p.academyName != null) ...[
+          const SizedBox(height: 4),
+          Text('Academy: ${p.academyName}'),
+        ],
         const SizedBox(height: 16),
         Text(
           rejected
-              ? 'Ops Admin rejected this reseller application. Contact Digititan '
-                  'support / re-apply with a different account if needed.'
-              : 'Ops Admin must approve your reseller application and issue a '
-                  'Centre code (VNA-C-*) or Beneficiary code (VNA-B-*).\n\n'
-                  'Until then you cannot share a referral code, manage clients, '
-                  'or earn commission.\n\n'
-                  'Demo tip: logout → Sign in as Ops Admin → Resellers tab → '
-                  'Approve → pick Centre or Beneficiary → then come back here and tap Refresh.',
+              ? 'Ops Admin rejected this application. Contact Digititan support if you need to re-apply.'
+              : 'Ops Admin will approve your application and issue a Beneficiary (VNA-B) or Centre (VNA-C) code. Until then clients and earnings stay locked.',
+          style: const TextStyle(height: 1.4),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         if (!rejected)
           ElevatedButton.icon(
             onPressed: _load,
@@ -387,83 +386,125 @@ class _ResellerShellState extends State<ResellerShell> {
   Widget _dashboard() {
     final p = _profile!;
     final shareLabel = p.codeType == ResellerCodeType.centre
-        ? 'Your Centre earnings (26% of each sale)'
-        : 'Your earnings (53% of each sale)';
+        ? 'Centre earnings · 26%'
+        : 'Your earnings · 53%';
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
-        Text('Hi ${widget.user.name.split(' ').first}'),
-        Text('Status: ${p.status}'),
-        if (p.academyName != null) Text('Academy: ${p.academyName}'),
+        Text(
+          'Hi ${widget.user.name.split(' ').first}',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          p.academyName == null ? 'Status: ${p.status}' : '${p.status} · ${p.academyName}',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: DigititanColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: DigititanColors.muted),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Referral code',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      p.code,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    Text(p.codeType.label, style: Theme.of(context).textTheme.bodySmall),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.copy),
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: p.code));
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${p.code} copied')),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 12),
-        ListTile(
-          title: const Text('Your referral code'),
-          subtitle: Text('${p.code}  ·  ${p.codeType.label}'),
-          trailing: IconButton(
-            icon: const Icon(Icons.copy),
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: p.code));
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${p.code} copied')),
-              );
-            },
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: DigititanColors.primaryDark,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                shareLabel,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'R${p.balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _withdrawalOpen
+                    ? 'Withdrawal open today'
+                    : 'Locked until ${AppConfig.lastDayLabel()}',
+                style: TextStyle(
+                  color: _withdrawalOpen
+                      ? DigititanColors.teal
+                      : Colors.white.withOpacity(0.75),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(shareLabel, style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 4),
-                Text(
-                  'R${p.balance.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'This is the money due to you — only your share is shown.',
-                  style: TextStyle(fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _withdrawalOpen
-                      ? 'Withdrawal open today (last day of month). Enter the amount you need.'
-                      : 'Locked until ${AppConfig.lastDayLabel()} (last day of the month).',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _withdrawalOpen ? Colors.green.shade800 : Colors.orange.shade900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Demo: simulate last day of month'),
-          subtitle: const Text('For walkthrough only — real rule is last calendar day'),
+          title: const Text('Simulate month-end'),
+          subtitle: const Text('Demo only'),
           value: _demoSimulateMonthEnd,
           onChanged: (v) => setState(() => _demoSimulateMonthEnd = v),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         ElevatedButton(
           onPressed: _withdrawalOpen ? _withdraw : null,
           child: Text(
-            _withdrawalOpen
-                ? 'Withdraw — enter amount'
-                : 'Withdraw locked until month-end',
+            _withdrawalOpen ? 'Withdraw' : 'Withdraw locked',
           ),
         ),
         TextButton(
           onPressed: _showStatement,
-          child: const Text('View my earnings statement'),
+          child: const Text('Earnings statement'),
         ),
       ],
     );

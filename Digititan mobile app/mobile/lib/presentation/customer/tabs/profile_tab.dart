@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/injection.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/config/app_config.dart';
+import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/widgets/demo_banner.dart';
 import '../my_orders_screen.dart';
 
@@ -22,57 +23,73 @@ class ProfileTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 28),
         children: [
-          const DemoBanner(
-            message:
-                'Switch roles: Logout → Sign in as Customer / Reseller / Admin.',
+          CircleAvatar(
+            radius: 32,
+            backgroundColor: DigititanColors.primaryDark,
+            child: Text(
+              user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ListView(
-                children: [
-                  Text(user.name, style: Theme.of(context).textTheme.titleLarge),
-                  Text(user.email),
-                  Text('Role: ${user.role.name}'),
-                  const SizedBox(height: 16),
-                  Text('Demo cheat sheet', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Text(
+          const SizedBox(height: 14),
+          Text(user.name, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 4),
+          Text(user.email, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 4),
+          Text(
+            user.role.label,
+            style: const TextStyle(
+              color: DigititanColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 22),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MyOrdersScreen(
+                    container: container,
+                    user: user,
+                  ),
+                ),
+              );
+            },
+            child: const Text('My orders'),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: onLogout,
+            child: const Text('Logout'),
+          ),
+          const SizedBox(height: 20),
+          Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: Text(
+                'Demo reference',
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
                     'Email OTP: ${AppConfig.emailOtpDemo}\n'
                     'Payment OTP: ${AppConfig.paymentOtpDemo}\n'
-                    'Store website: ${AppConfig.digititanStoreUrl}\n'
-                    'Password for all demo accounts: demo123',
+                    'Password: demo123\n'
+                    'Store: ${AppConfig.digititanStoreUrl}',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Pillars: Training · Academies · Store\n'
-                    'Shopping production path = website (samples in-app).\n'
-                    'Donations: out of scope.',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  const SizedBox(height: 24),
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => MyOrdersScreen(
-                            container: container,
-                            user: user,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('My orders'),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: onLogout,
-                    child: const Text('Logout'),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
