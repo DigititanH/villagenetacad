@@ -1,4 +1,4 @@
-# Month-end polish: splits 53/26/21 + Home/Academies/Ops promo
+# Month-end polish: splits 53-26-21 + Home/Academies/Ops promo
 # Run from: S:\WORK\Digititan mobile app
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -32,10 +32,15 @@ if (-not (Test-Path $docsDest)) { New-Item -ItemType Directory -Path $docsDest |
 Copy-Item (Join-Path $docsSrc "12-LOCKED-DECISIONS.md") $docsDest -Force
 Copy-Item (Join-Path $docsSrc "18-RESELLER-CODES-AND-DUAL-ADMIN.md") $docsDest -Force
 
-$hit = Select-String -Path (Join-Path $libDest "domain\entities\revenue_split.dart") -Pattern "beneficiaryPercent = 53" -SimpleMatch
-if ($null -eq $hit) { Write-Error "Sync failed — revenue_split.dart missing 53%." }
+$checkFile = Join-Path $libDest "domain\entities\revenue_split.dart"
+$hit = Select-String -Path $checkFile -Pattern "beneficiaryPercent = 53" -SimpleMatch
+if ($null -eq $hit) { Write-Error "Sync failed - revenue_split.dart missing 53 percent." }
 
-Write-Host "SUCCESS - month-end polish synced (53/26/21 splits + Home/Academies/Ops)." -ForegroundColor Green
+$promoHit = Select-String -Path (Join-Path $libDest "domain\entities\product.dart") -Pattern "compareAtPrice" -SimpleMatch
+if ($null -eq $promoHit) { Write-Error "Sync failed - product.dart missing compareAtPrice." }
+
+Write-Host "SUCCESS - month-end polish synced." -ForegroundColor Green
+Write-Host "Includes: 53/26/21 splits, Home, Academies, Ops, promo strikethrough prices."
 Write-Host "  cd mobile"
 Write-Host "  flutter clean"
 Write-Host "  flutter pub get"
