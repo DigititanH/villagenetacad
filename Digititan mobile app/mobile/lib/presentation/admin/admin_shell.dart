@@ -8,6 +8,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
+import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 
 /// Ops Admin + Super Admin share this shell; tabs/actions gated by role.
@@ -223,7 +224,13 @@ class _AdminShellState extends State<AdminShell> {
               child: const Text('Logout', style: TextStyle(color: Colors.white)),
             ),
           ],
-          bottom: TabBar(isScrollable: true, tabs: tabs),
+          bottom: TabBar(
+            isScrollable: true,
+            tabs: tabs,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: DigititanColors.teal,
+          ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _addProduct,
