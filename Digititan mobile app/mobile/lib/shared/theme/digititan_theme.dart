@@ -57,7 +57,9 @@ class DigititanTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: DigititanColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(48),
+          // Do NOT use Size.fromHeight — that sets width to infinity and
+          // crashes buttons inside Row/Wrap/ListTile trailing.
+          minimumSize: const Size(48, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
@@ -65,7 +67,7 @@ class DigititanTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: DigititanColors.primary,
           side: const BorderSide(color: DigititanColors.primary),
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(48, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
