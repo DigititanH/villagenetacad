@@ -83,16 +83,7 @@ class DummyAdminRepository implements AdminRepository {
     final i = _hub.products.indexWhere((p) => p.id == productId);
     if (i < 0) throw Exception('Product not found');
     final p = _hub.products[i];
-    _hub.products[i] = Product(
-      id: p.id,
-      name: p.name,
-      category: p.category,
-      summary: p.summary,
-      price: price,
-      inStock: p.inStock,
-      isBestSeller: p.isBestSeller,
-      onPromotion: p.onPromotion,
-    );
+    _hub.products[i] = p.copyWith(price: price);
     _hub.log('Product ${p.name} price → R${price.toStringAsFixed(0)}');
   }
 
@@ -120,16 +111,17 @@ class DummyAdminRepository implements AdminRepository {
     final i = _hub.products.indexWhere((p) => p.id == productId);
     if (i < 0) throw Exception('Product not found');
     final p = _hub.products[i];
-    _hub.products[i] = Product(
-      id: p.id,
-      name: p.name,
-      category: p.category,
-      summary: p.summary,
-      price: p.price,
-      inStock: inStock,
-      isBestSeller: p.isBestSeller,
-      onPromotion: p.onPromotion,
-    );
+    _hub.products[i] = p.copyWith(inStock: inStock);
+    _hub.log('Product ${p.name} stock → $inStock');
+  }
+
+  @override
+  Future<void> setProductPromotion(String productId, bool onPromotion) async {
+    final i = _hub.products.indexWhere((p) => p.id == productId);
+    if (i < 0) throw Exception('Product not found');
+    final p = _hub.products[i];
+    _hub.products[i] = p.copyWith(onPromotion: onPromotion);
+    _hub.log('Product ${p.name} promotion → $onPromotion');
   }
 
   @override

@@ -1,4 +1,5 @@
 import '../../domain/entities/reseller.dart';
+import '../../domain/entities/revenue_split.dart';
 import '../../domain/repositories/reseller_repository.dart';
 import 'demo_hub.dart';
 
@@ -10,7 +11,6 @@ class DummyResellerRepository implements ResellerRepository {
     final key = email.trim().toLowerCase();
     final profile = _hub.resellerProfiles[key];
     if (profile != null) return profile;
-    // Unknown reseller email — treat as not applied yet / pending shell
     return ResellerProfile(
       email: key,
       name: key,
@@ -20,7 +20,8 @@ class DummyResellerRepository implements ResellerRepository {
       totalEarned: 0,
       balance: 0,
       amountDueToDigititan: 0,
-      commissionRate: 0,
+      centreShareTotal: 0,
+      commissionRate: RevenueSplit.beneficiaryPercent,
     );
   }
 
@@ -84,7 +85,6 @@ class DummyResellerRepository implements ResellerRepository {
     final profile = await getProfile(email);
     final sales = await getSales(email);
     final salesTotal = sales.fold<double>(0, (s, x) => s + x.amount);
-    final commission = sales.fold<double>(0, (s, x) => s + x.commission);
     if (!profile.isApproved) {
       return '''
 DIGITITAN / VILLAGE NETACAD — RESELLER APPLICATION
@@ -95,6 +95,9 @@ Ops Admin must approve this application and issue a Centre (VNA-C-*)
 or Beneficiary (VNA-B-*) code before you can sell or manage clients.
 ''';
     }
+    final sellerLabel = profile.codeType == ResellerCodeType.centre
+        ? 'Centre share (${RevenueSplit.centrePercent.toStringAsFixed(0)}%)'
+        : 'Reseller/Beneficiary share (${RevenueSplit.beneficiaryPercent.toStringAsFixed(0)}%)';
     return '''
 DIGITITAN / VILLAGE NETACAD — RESELLER STATEMENT (PROTOTYPE)
 Reseller: ${profile.name} <$email>
@@ -103,12 +106,16 @@ Status: ${profile.status}
 Period: current demo month
 
 Sales total: R${salesTotal.toStringAsFixed(2)}
-Commission earned: R${commission.toStringAsFixed(2)}
+
+SPLIT (locked): Reseller/Beneficiary ${RevenueSplit.beneficiaryPercent.toStringAsFixed(0)}% · Centre ${RevenueSplit.centrePercent.toStringAsFixed(0)}% · Digititan/Village NetAcad ${RevenueSplit.digititanPercent.toStringAsFixed(0)}%
+
+$sellerLabel earned: R${profile.totalEarned.toStringAsFixed(2)}
 Available balance (Digititan pays you): R${profile.balance.toStringAsFixed(2)}
+Centre allocation tracked: R${profile.centreShareTotal.toStringAsFixed(2)}
 Amount due to Digititan / Village NetAcad: R${profile.amountDueToDigititan.toStringAsFixed(2)}
 
-Money flow: Digititan pays all resellers at month-end (with approval).
-Centre codes (VNA-C-*) vs Beneficiary codes (VNA-B-*) are tracked separately.
+Money flow: Digititan pays resellers at month-end (with approval).
+Bank auto-debit: later (not V1).
 ''';
   }
 

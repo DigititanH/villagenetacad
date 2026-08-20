@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/injection.dart';
+import '../../../domain/entities/product.dart';
 import '../../../domain/entities/programme_highlight.dart';
 import '../../../domain/entities/training_offer.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
+import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/widgets/demo_banner.dart';
+import '../product_detail_screen.dart';
 import '../training_detail_screen.dart';
 
 class HomeTab extends StatefulWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onOpenTraining;
+  final VoidCallback? onOpenStore;
 
   const HomeTab({
     super.key,
     required this.container,
     required this.user,
     required this.onOpenTraining,
+    this.onOpenStore,
   });
 
   @override
@@ -28,6 +33,8 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   List<ProgrammeHighlight> _programmes = [];
   List<TrainingOffer> _offers = [];
+  List<Product> _bestSellers = [];
+  List<Product> _promos = [];
   String? _error;
   bool _loading = true;
 
@@ -40,10 +47,13 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _load() async {
     final programmesResult = await widget.container.getProgrammes();
     final offersResult = await widget.container.getTrainingOffers();
+    final products = await widget.container.storeRepository.getProducts();
     if (!mounted) return;
 
     setState(() {
       _loading = false;
+      _bestSellers = products.where((p) => p.isBestSeller).take(4).toList();
+      _promos = products.where((p) => p.onPromotion).take(4).toList();
       switch (programmesResult) {
         case Success(:final data):
           _programmes = data;
@@ -59,8 +69,17 @@ class _HomeTabState extends State<HomeTab> {
     });
   }
 
+  ProgrammeHighlight? get _recruiting {
+    try {
+      return _programmes.firstWhere((p) => p.isRecruiting);
+    } catch (_) {
+      return _programmes.isEmpty ? null : _programmes.first;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final recruiting = _recruiting;
     return Scaffold(
       appBar: AppBar(title: const Text('Home')),
       body: _loading
@@ -69,7 +88,7 @@ class _HomeTabState extends State<HomeTab> {
               children: [
                 const DemoBanner(
                   message:
-                      'Pillars: Training · Academies · Store. Learning is in a separate LMS.',
+                      'Home: programme CTA · best sellers · promotions. Then Training · Academies · Store.',
                 ),
                 Expanded(
                   child: ListView(
@@ -79,8 +98,6 @@ class _HomeTabState extends State<HomeTab> {
                         'Hi ${widget.user.name.split(' ').first},',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: 4),
-                      const Text('Home hub — programmes, training, store previews.'),
                       Text(
                         AppConfig.demoModeLine,
                         style: const TextStyle(fontSize: 11),
@@ -89,61 +106,87 @@ class _HomeTabState extends State<HomeTab> {
                         const SizedBox(height: 8),
                         Text(_error!, style: const TextStyle(color: Colors.red)),
                       ],
-                      const SizedBox(height: 16),
-                      Text('Current programmes', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      ..._programmes.map(
-                        (p) => Card(
-                          child: ListTile(
-                            title: Text(p.title),
-                            subtitle: Text(p.subtitle),
-                            trailing: p.isRecruiting
-                                ? const Chip(label: Text('Recruiting'))
-                                : null,
+                      if (recruiting != null) ...[
+                        const SizedBox(height: 12),
+                        Material(
+                          color: DigititanColors.primaryDark,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
                             onTap: widget.onOpenTraining,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Text('Featured training', style: Theme.of(context).textTheme.titleMedium),
-                          const Spacer(),
-                          TextButton(onPressed: widget.onOpenTraining, child: const Text('See all')),
-                        ],
-                      ),
-                      ..._offers.map(
-                        (o) => Card(
-                          child: ListTile(
-                            title: Text(o.title),
-                            subtitle: Text('${o.category} · ${o.level} · ${o.hours}h'),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => TrainingDetailScreen(
-                                    container: widget.container,
-                                    user: widget.user,
-                                    trainingId: o.id,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Programme open',
+                                    style: TextStyle(
+                                      color: DigititanColors.teal,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    recruiting.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    recruiting.subtitle,
+                                    style: const TextStyle(color: Colors.white70),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  FilledButton(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: DigititanColors.accent,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(48, 40),
+                                    ),
+                                    onPressed: widget.onOpenTraining,
+                                    child: const Text('Register interest now'),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 16),
-                      const Card(
-                        child: ListTile(
-                          title: Text('Best sellers / Promotions'),
-                          subtitle: Text(
-                            'Sample products in Store tab. Full shopping = Digititan Store website link.',
-                          ),
-                        ),
-                      ),
-                      const Card(
-                        child: ListTile(
-                          title: Text('Academies'),
-                          subtitle: Text('Province filter + academy list in Academies tab.'),
+                      _sectionHeader('Best sellers', onSeeAll: widget.onOpenStore),
+                      if (_bestSellers.isEmpty)
+                        const Text('No best sellers flagged yet.')
+                      else
+                        ..._bestSellers.map(_productTile),
+                      const SizedBox(height: 16),
+                      _sectionHeader('Promotions', onSeeAll: widget.onOpenStore),
+                      if (_promos.isEmpty)
+                        const Text('No promotions flagged yet — Ops can toggle specials.')
+                      else
+                        ..._promos.map(_productTile),
+                      const SizedBox(height: 16),
+                      _sectionHeader('Featured training', onSeeAll: widget.onOpenTraining),
+                      ..._offers.map(
+                        (o) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(o.title),
+                          subtitle: Text('${o.category} · ${o.level} · ${o.hours}h'),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => TrainingDetailScreen(
+                                  container: widget.container,
+                                  user: widget.user,
+                                  trainingId: o.id,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -151,6 +194,40 @@ class _HomeTabState extends State<HomeTab> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _sectionHeader(String title, {VoidCallback? onSeeAll}) {
+    return Row(
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const Spacer(),
+        if (onSeeAll != null)
+          TextButton(onPressed: onSeeAll, child: const Text('See all')),
+      ],
+    );
+  }
+
+  Widget _productTile(Product p) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(p.name),
+      subtitle: Text(
+        '${p.category} · R${p.price.toStringAsFixed(0)}'
+        '${p.onPromotion ? ' · Promo' : ''}',
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(
+              container: widget.container,
+              user: widget.user,
+              productId: p.id,
+            ),
+          ),
+        );
+      },
     );
   }
 }

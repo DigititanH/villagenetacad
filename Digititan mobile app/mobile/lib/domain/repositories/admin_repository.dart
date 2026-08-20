@@ -62,6 +62,7 @@ abstract class AdminRepository {
     required double price,
   });
   Future<void> setProductStock(String productId, bool inStock);
+  Future<void> setProductPromotion(String productId, bool onPromotion);
 
   Future<List<IssuedResellerCode>> getIssuedCodes();
   Future<List<dynamic>> getPendingWithdrawals();

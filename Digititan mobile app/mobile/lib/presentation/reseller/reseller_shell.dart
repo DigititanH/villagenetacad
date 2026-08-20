@@ -376,25 +376,39 @@ class _ResellerShellState extends State<ResellerShell> {
         ),
         Text(
           p.codeType == ResellerCodeType.centre
-              ? 'Centre code — for academies / centres (VNA-C-*)'
-              : 'Beneficiary code — for independent / beneficiary resellers (VNA-B-*)',
+              ? 'Centre code — earns Centre slice (26%) on attributed sales'
+              : 'Beneficiary code — earns Reseller/Beneficiary slice (53%) on attributed sales',
           style: const TextStyle(fontSize: 12),
         ),
-        ListTile(
-          title: const Text('Total earned'),
-          subtitle: Text('R${p.totalEarned.toStringAsFixed(2)}'),
-        ),
-        ListTile(
-          title: const Text('Balance (payable by Digititan)'),
-          subtitle: Text('R${p.balance.toStringAsFixed(2)}'),
-        ),
-        ListTile(
-          title: const Text('Commission rate'),
-          subtitle: Text('${p.commissionRate}%'),
-        ),
+        const SizedBox(height: 8),
         const Text(
-          'Money flow (locked): Digititan pays resellers.\n'
-          'Withdrawals: end of month, with approval.\n'
+          'Split (locked): Beneficiary 53% · Centre 26% · Digititan/VNA 21%',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        _moneyTile(
+          'Your share earned',
+          'R${p.totalEarned.toStringAsFixed(2)}',
+          p.codeType == ResellerCodeType.centre ? 'Centre 26%' : 'Beneficiary 53%',
+        ),
+        _moneyTile(
+          'Balance (Digititan pays you)',
+          'R${p.balance.toStringAsFixed(2)}',
+          'Withdraw at month-end with approval',
+        ),
+        _moneyTile(
+          'Centre allocation tracked',
+          'R${p.centreShareTotal.toStringAsFixed(2)}',
+          'Centre slice 26%',
+        ),
+        _moneyTile(
+          'Due to Digititan / Village NetAcad',
+          'R${p.amountDueToDigititan.toStringAsFixed(2)}',
+          'Digititan slice 21%',
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Money flow: Digititan pays resellers at month-end (with approval).\n'
           'Bank auto-debit: later (not V1).',
           style: TextStyle(fontSize: 12),
         ),
@@ -408,6 +422,16 @@ class _ResellerShellState extends State<ResellerShell> {
           child: const Text('Request month-end withdrawal'),
         ),
       ],
+    );
+  }
+
+  Widget _moneyTile(String title, String value, String subtitle) {
+    return Card(
+      child: ListTile(
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ),
     );
   }
 

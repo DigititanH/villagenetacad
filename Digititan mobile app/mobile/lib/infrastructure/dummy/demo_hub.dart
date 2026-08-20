@@ -1,5 +1,6 @@
 import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
+import '../../domain/entities/revenue_split.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/admin_repository.dart';
 
@@ -108,10 +109,11 @@ class DemoHub {
       code: seedCode.code,
       codeType: ResellerCodeType.beneficiary,
       status: 'approved',
-      totalEarned: 4280,
-      balance: 960,
-      amountDueToDigititan: 312.5,
-      commissionRate: 12,
+      totalEarned: 476.47, // ~53% of R899 seeded sale
+      balance: 476.47,
+      amountDueToDigititan: 188.79, // ~21% of R899
+      centreShareTotal: 233.74, // ~26% of R899
+      commissionRate: RevenueSplit.beneficiaryPercent,
       academyName: 'Lesedi Labatu Academy',
     );
     resellerClients['reseller@demo.com'] = [
@@ -146,7 +148,7 @@ class DemoHub {
         clientName: 'Nomsa Dlamini',
         productName: 'Home Lab Network Kit',
         amount: 899,
-        commission: 107.88,
+        commission: RevenueSplit.beneficiaryShare(899),
         date: DateTime(2026, 8, 1),
         referralCode: seedCode.code,
       ),
@@ -227,7 +229,8 @@ class DemoHub {
       totalEarned: 0,
       balance: 0,
       amountDueToDigititan: 0,
-      commissionRate: 0,
+      centreShareTotal: 0,
+      commissionRate: RevenueSplit.beneficiaryPercent,
       academyName: academyName?.trim().isEmpty == true ? null : academyName?.trim(),
     );
     resellerClients.putIfAbsent(key, () => []);
@@ -309,6 +312,9 @@ class DemoHub {
       issuedAt: DateTime.now(),
     );
     codesByValue[code] = issued;
+    final sellerRate = type == ResellerCodeType.centre
+        ? RevenueSplit.centrePercent
+        : RevenueSplit.beneficiaryPercent;
     resellerProfiles[app.email.toLowerCase()] = ResellerProfile(
       email: app.email.toLowerCase(),
       name: app.name,
@@ -318,7 +324,8 @@ class DemoHub {
       totalEarned: 0,
       balance: 0,
       amountDueToDigititan: 0,
-      commissionRate: type == ResellerCodeType.centre ? 10 : 12,
+      centreShareTotal: 0,
+      commissionRate: sellerRate,
       academyName: app.academyName,
     );
     resellerClients.putIfAbsent(app.email.toLowerCase(), () => []);
@@ -341,8 +348,15 @@ class DemoHub {
     final profile = resellerProfiles[email];
     if (profile == null) return;
 
-    final rate = profile.commissionRate / 100.0;
-    final commission = orderTotal * rate;
+    final digititanCut = RevenueSplit.digititanShare(orderTotal);
+    final centreCut = RevenueSplit.centreShare(orderTotal);
+    final beneficiaryCut = RevenueSplit.beneficiaryShare(orderTotal);
+
+    // Centre codes earn the Centre 26% slice; Beneficiary codes earn 53%.
+    final sellerCut = issued.type == ResellerCodeType.centre
+        ? centreCut
+        : beneficiaryCut;
+
     final productNames = items.map((i) => i.productName).join(', ');
 
     resellerSales.putIfAbsent(email, () => []);
@@ -353,7 +367,7 @@ class DemoHub {
         clientName: buyerName,
         productName: productNames,
         amount: orderTotal,
-        commission: commission,
+        commission: sellerCut,
         date: DateTime.now(),
         referralCode: issued.code,
       ),
@@ -377,10 +391,20 @@ class DemoHub {
     }
 
     resellerProfiles[email] = profile.copyWith(
-      totalEarned: profile.totalEarned + commission,
-      balance: profile.balance + commission,
+      totalEarned: profile.totalEarned + sellerCut,
+      balance: profile.balance + sellerCut,
+      amountDueToDigititan: profile.amountDueToDigititan + digititanCut,
+      centreShareTotal: profile.centreShareTotal + centreCut,
+      commissionRate: issued.type == ResellerCodeType.centre
+          ? RevenueSplit.centrePercent
+          : RevenueSplit.beneficiaryPercent,
     );
-    log('Sale attributed to ${issued.code}: R${orderTotal.toStringAsFixed(0)} → commission R${commission.toStringAsFixed(2)}');
+    log(
+      'Sale ${issued.code}: R${orderTotal.toStringAsFixed(0)} → '
+      'seller R${sellerCut.toStringAsFixed(2)} · '
+      'centre R${centreCut.toStringAsFixed(2)} · '
+      'Digititan R${digititanCut.toStringAsFixed(2)}',
+    );
   }
 }
 

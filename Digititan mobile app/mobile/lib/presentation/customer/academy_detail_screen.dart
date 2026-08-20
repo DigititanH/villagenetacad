@@ -125,20 +125,26 @@ class _AcademyDetailScreenState extends State<AcademyDetailScreen> {
                         ),
                       ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => AcademyRegisterScreen(
-                              container: widget.container,
-                              user: widget.user,
-                              academy: _academy!,
+                    if (!_academy!.isActive)
+                      const Text(
+                        'This academy is inactive — registration is closed.',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => AcademyRegisterScreen(
+                                container: widget.container,
+                                user: widget.user,
+                                academy: _academy!,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: const Text('Register / apply to academy'),
-                    ),
+                          );
+                        },
+                        child: const Text('Register / apply to academy'),
+                      ),
                   ],
                 ),
     );

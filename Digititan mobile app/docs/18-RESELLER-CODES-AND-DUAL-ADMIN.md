@@ -2,6 +2,18 @@
 
 Updated: 20 Aug 2026
 
+## Revenue split (locked)
+
+| Slice | % |
+|---|---|
+| Reseller / Beneficiary | 53% |
+| Centre | 26% |
+| Digititan / Village NetAcad | 21% |
+
+- `VNA-B-*` sellers earn the **53%** slice  
+- `VNA-C-*` sellers earn the **26%** Centre slice  
+- Every attributed sale also tracks Digititan **21%** as amount due  
+
 ## Exact reseller journey (meeting-aligned)
 
 1. **Apply** — Register → choose *Reseller* → optional academy → Create / Apply  

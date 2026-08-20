@@ -375,6 +375,7 @@ class _AdminShellState extends State<AdminShell> {
 
   Widget _productsTab() {
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 88),
       itemCount: _products.length,
       itemBuilder: (context, i) {
         final p = _products[i];
@@ -382,10 +383,34 @@ class _AdminShellState extends State<AdminShell> {
           title: Text(p.name),
           subtitle: Text(
             '${p.category} · R${p.price.toStringAsFixed(0)} · '
-            '${p.inStock ? 'In stock' : 'Out of stock'}',
+            '${p.inStock ? 'In stock' : 'Out of stock'}'
+            '${p.onPromotion ? ' · PROMO' : ''}'
+            '${p.isBestSeller ? ' · Best seller' : ''}',
           ),
-          trailing: const Icon(Icons.price_change_outlined),
-          onTap: () => _editPrice(p),
+          isThreeLine: true,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: p.onPromotion ? 'Remove promo' : 'Mark promo/special',
+                icon: Icon(
+                  p.onPromotion ? Icons.local_offer : Icons.local_offer_outlined,
+                ),
+                onPressed: () async {
+                  await widget.container.adminRepository.setProductPromotion(
+                    p.id,
+                    !p.onPromotion,
+                  );
+                  await _load();
+                },
+              ),
+              IconButton(
+                tooltip: 'Edit price',
+                icon: const Icon(Icons.price_change_outlined),
+                onPressed: () => _editPrice(p),
+              ),
+            ],
+          ),
           onLongPress: () async {
             await widget.container.adminRepository.setProductStock(p.id, !p.inStock);
             await _load();

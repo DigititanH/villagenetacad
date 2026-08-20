@@ -18,4 +18,22 @@ class Product {
     this.isBestSeller = false,
     this.onPromotion = false,
   });
+
+  Product copyWith({
+    double? price,
+    bool? inStock,
+    bool? isBestSeller,
+    bool? onPromotion,
+  }) {
+    return Product(
+      id: id,
+      name: name,
+      category: category,
+      summary: summary,
+      price: price ?? this.price,
+      inStock: inStock ?? this.inStock,
+      isBestSeller: isBestSeller ?? this.isBestSeller,
+      onPromotion: onPromotion ?? this.onPromotion,
+    );
+  }
 }

@@ -27,6 +27,8 @@ class AcademiesTab extends StatefulWidget {
 
 class _AcademiesTabState extends State<AcademiesTab> {
   String? _province;
+  /// all | active | inactive
+  String _statusFilter = 'all';
   List<Academy> _all = [];
   List<Academy> _filtered = [];
   bool _loading = true;
@@ -58,11 +60,16 @@ class _AcademiesTabState extends State<AcademiesTab> {
   }
 
   void _applyFilter() {
-    if (_province == null || _province == 'All') {
-      _filtered = List.of(_all);
-    } else {
-      _filtered = _all.where((a) => a.province == _province).toList();
+    Iterable<Academy> list = _all;
+    if (_province != null && _province != 'All') {
+      list = list.where((a) => a.province == _province);
     }
+    if (_statusFilter == 'active') {
+      list = list.where((a) => a.isActive);
+    } else if (_statusFilter == 'inactive') {
+      list = list.where((a) => !a.isActive);
+    }
+    _filtered = list.toList();
   }
 
   void _selectProvince(String province) {
@@ -142,10 +149,42 @@ class _AcademiesTabState extends State<AcademiesTab> {
                     ),
                     const Divider(height: 1),
                     Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                      child: Wrap(
+                        spacing: 8,
+                        children: [
+                          ChoiceChip(
+                            label: const Text('All'),
+                            selected: _statusFilter == 'all',
+                            onSelected: (_) => setState(() {
+                              _statusFilter = 'all';
+                              _applyFilter();
+                            }),
+                          ),
+                          ChoiceChip(
+                            label: const Text('Active'),
+                            selected: _statusFilter == 'active',
+                            onSelected: (_) => setState(() {
+                              _statusFilter = 'active';
+                              _applyFilter();
+                            }),
+                          ),
+                          ChoiceChip(
+                            label: const Text('Inactive'),
+                            selected: _statusFilter == 'inactive',
+                            onSelected: (_) => setState(() {
+                              _statusFilter = 'inactive';
+                              _applyFilter();
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
                       child: Text(
                         _province == null
-                            ? 'All academies (${_filtered.length})'
+                            ? 'Academies (${_filtered.length})'
                             : 'Academies in $_province (${_filtered.length})',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
@@ -153,7 +192,7 @@ class _AcademiesTabState extends State<AcademiesTab> {
                     Expanded(
                       child: _filtered.isEmpty
                           ? const Center(
-                              child: Text('No academies in this province yet.'),
+                              child: Text('No academies match this filter.'),
                             )
                           : ListView.builder(
                               padding: const EdgeInsets.all(12),
@@ -162,9 +201,11 @@ class _AcademiesTabState extends State<AcademiesTab> {
                                 final a = _filtered[i];
                                 return Card(
                                   child: ListTile(
-                                    leading: const Icon(
+                                    leading: Icon(
                                       Icons.location_on,
-                                      color: Color(0xFFC62828),
+                                      color: a.isActive
+                                          ? const Color(0xFFC62828)
+                                          : Colors.grey,
                                     ),
                                     title: Text(a.name),
                                     subtitle: Text(
@@ -174,7 +215,16 @@ class _AcademiesTabState extends State<AcademiesTab> {
                                       ' · ${a.events.length} event(s)',
                                     ),
                                     isThreeLine: true,
-                                    trailing: const Icon(Icons.chevron_right),
+                                    trailing: Chip(
+                                      label: Text(
+                                        a.isActive ? 'Active' : 'Inactive',
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                      backgroundColor: a.isActive
+                                          ? const Color(0xFF2C9F58).withValues(alpha: 0.15)
+                                          : Colors.grey.shade200,
+                                    ),
                                     onTap: () => _openAcademy(a),
                                   ),
                                 );

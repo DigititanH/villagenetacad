@@ -51,9 +51,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               : ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    if (widget.justPlaced)
-                      const Text('Payment confirmed (prototype).'),
-                    const SizedBox(height: 8),
+                    if (widget.justPlaced) ...[
+                      const Text(
+                        'Sale confirmed (prototype payment + OTP).',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      if (_order!.referralCode != null)
+                        Text(
+                          'Attributed to reseller code ${_order!.referralCode} '
+                          '(split: Beneficiary 53% · Centre 26% · Digititan/VNA 21%).',
+                        )
+                      else
+                        const Text('No reseller code on this order.'),
+                      const SizedBox(height: 8),
+                    ],
                     Text(_order!.id, style: Theme.of(context).textTheme.titleLarge),
                     Text('Status: ${_order!.status.name}'),
                     Text('Total: R${_order!.total.toStringAsFixed(0)}'),

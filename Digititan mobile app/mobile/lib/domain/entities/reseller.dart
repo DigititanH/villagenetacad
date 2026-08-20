@@ -74,10 +74,14 @@ class ResellerProfile {
   final String name;
   final String code;
   final ResellerCodeType codeType;
-  final String status; // pending | approved
+  final String status; // pending | approved | rejected
   final double totalEarned;
   final double balance;
+  /// Running total of Digititan/Village NetAcad 21% share from this code's sales.
   final double amountDueToDigititan;
+  /// Running total of Centre 26% share (beneficiary sales) or own centre cut.
+  final double centreShareTotal;
+  /// Seller cut percent: 53 beneficiary / 26 centre.
   final double commissionRate;
   final String? academyName;
 
@@ -91,6 +95,7 @@ class ResellerProfile {
     required this.balance,
     required this.amountDueToDigititan,
     required this.commissionRate,
+    this.centreShareTotal = 0,
     this.academyName,
   });
 
@@ -105,6 +110,7 @@ class ResellerProfile {
     ResellerCodeType? codeType,
     String? academyName,
     double? amountDueToDigititan,
+    double? centreShareTotal,
     double? commissionRate,
   }) {
     return ResellerProfile(
@@ -116,6 +122,7 @@ class ResellerProfile {
       totalEarned: totalEarned ?? this.totalEarned,
       balance: balance ?? this.balance,
       amountDueToDigititan: amountDueToDigititan ?? this.amountDueToDigititan,
+      centreShareTotal: centreShareTotal ?? this.centreShareTotal,
       commissionRate: commissionRate ?? this.commissionRate,
       academyName: academyName ?? this.academyName,
     );

@@ -29,6 +29,7 @@ class _CustomerShellState extends State<CustomerShell> {
   int _index = 0;
 
   void _goTraining() => setState(() => _index = 1);
+  void _goStore() => setState(() => _index = 3);
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,7 @@ class _CustomerShellState extends State<CustomerShell> {
         container: widget.container,
         user: widget.user,
         onOpenTraining: _goTraining,
+        onOpenStore: _goStore,
       ),
       TrainingTab(container: widget.container, user: widget.user),
       AcademiesTab(container: widget.container, user: widget.user),
