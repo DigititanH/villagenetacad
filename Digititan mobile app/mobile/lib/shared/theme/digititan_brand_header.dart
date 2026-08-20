@@ -5,12 +5,10 @@ import 'digititan_theme.dart';
 /// Digititan wordmark + logo mark for branded screens.
 class DigititanBrandHeader extends StatelessWidget {
   final bool compact;
-  final String? tagline;
 
   const DigititanBrandHeader({
     super.key,
     this.compact = false,
-    this.tagline,
   });
 
   static const logoAsset =
@@ -47,6 +45,16 @@ class DigititanBrandHeader extends StatelessWidget {
         ),
         SizedBox(height: compact ? 8 : 12),
         Text(
+          'Powered by',
+          style: TextStyle(
+            fontSize: compact ? 11 : 12,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 1.2,
+            color: DigititanColors.foreground.withOpacity(0.7),
+          ),
+        ),
+        SizedBox(height: compact ? 2 : 4),
+        Text(
           'DIGITITAN',
           style: TextStyle(
             fontSize: compact ? 22 : 30,
@@ -55,28 +63,6 @@ class DigititanBrandHeader extends StatelessWidget {
             color: DigititanColors.primaryDark,
           ),
         ),
-        SizedBox(height: compact ? 2 : 4),
-        Text(
-          'Village NetAcad',
-          style: TextStyle(
-            fontSize: compact ? 13 : 15,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
-            color: DigititanColors.foreground.withOpacity(0.75),
-          ),
-        ),
-        if (tagline != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            tagline!,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: compact ? 12 : 13,
-              height: 1.4,
-              color: DigititanColors.foreground.withOpacity(0.8),
-            ),
-          ),
-        ],
       ],
     );
   }

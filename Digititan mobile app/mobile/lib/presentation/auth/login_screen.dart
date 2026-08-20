@@ -85,9 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
                 children: [
-                  const DigititanBrandHeader(
-                    tagline: "Building Africa's Technological Tomorrow",
-                  ),
+                  const DigititanBrandHeader(),
                   const SizedBox(height: 28),
                   Text(
                     'Sign in',
