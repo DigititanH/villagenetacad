@@ -13,7 +13,8 @@ class DigititanBrandHeader extends StatelessWidget {
     this.tagline,
   });
 
-  static const logoAsset = 'assets/branding/logo.png';
+  static const logoAsset =
+      'assets/branding/VillageNetAcadTransparentBackground.png';
 
   @override
   Widget build(BuildContext context) {
