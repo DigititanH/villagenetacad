@@ -34,7 +34,7 @@ if (Test-Path $brandSrc) {
   Copy-Item (Join-Path $brandSrc "*") $brandDest -Force
 }
 
-$hit = Select-String -Path (Join-Path $libDest "presentation\auth\login_screen.dart") -Pattern "_RoleButton" -SimpleMatch
+$hit = Select-String -Path (Join-Path $libDest "presentation\auth\login_screen.dart") -Pattern "Demo login details" -SimpleMatch
 if ($null -eq $hit) { Write-Error "Sync failed - login polish missing." }
 
 Write-Host "SUCCESS - presentation frontend clean synced." -ForegroundColor Green
