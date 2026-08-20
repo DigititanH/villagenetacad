@@ -1,96 +1,76 @@
-# Sync FULL mobile/lib from GitHub so laptop matches cloud (fixes partial-sync compile errors).
+# Full sync: download branch ZIP and replace mobile\lib (fixes partial-sync build errors).
 # Run from: S:\WORK\Digititan mobile app
 $ErrorActionPreference = "Stop"
+
 if (-not (Test-Path ".\mobile\pubspec.yaml")) {
   Write-Error "Wrong folder. cd to S:\WORK\Digititan mobile app then rerun."
 }
-$base = "https://raw.githubusercontent.com/DigititanH/villagenetacad/cursor/reseller-apply-client-pipeline-09ad/Digititan%20mobile%20app"
-$files = @(
-  "mobile/lib/app/app.dart",
-  "mobile/lib/app/injection.dart",
-  "mobile/lib/application/academy/get_academies.dart",
-  "mobile/lib/application/academy/register_academy_interest.dart",
-  "mobile/lib/application/academy/register_academy_organisation.dart",
-  "mobile/lib/application/auth/register_with_email.dart",
-  "mobile/lib/application/auth/sign_in_with_email.dart",
-  "mobile/lib/application/auth/sign_in_with_google.dart",
-  "mobile/lib/application/auth/verify_email_otp.dart",
-  "mobile/lib/application/store/get_my_orders.dart",
-  "mobile/lib/application/store/get_products.dart",
-  "mobile/lib/application/store/place_order.dart",
-  "mobile/lib/application/training/get_programmes.dart",
-  "mobile/lib/application/training/get_training_offers.dart",
-  "mobile/lib/application/training/register_training_interest.dart",
-  "mobile/lib/domain/entities/academy.dart",
-  "mobile/lib/domain/entities/product.dart",
-  "mobile/lib/domain/entities/programme_highlight.dart",
-  "mobile/lib/domain/entities/reseller.dart",
-  "mobile/lib/domain/entities/shop_order.dart",
-  "mobile/lib/domain/entities/training_offer.dart",
-  "mobile/lib/domain/entities/user.dart",
-  "mobile/lib/domain/enums/user_role.dart",
-  "mobile/lib/domain/repositories/academy_repository.dart",
-  "mobile/lib/domain/repositories/admin_repository.dart",
-  "mobile/lib/domain/repositories/auth_repository.dart",
-  "mobile/lib/domain/repositories/email_sender.dart",
-  "mobile/lib/domain/repositories/reseller_repository.dart",
-  "mobile/lib/domain/repositories/store_repository.dart",
-  "mobile/lib/domain/repositories/training_repository.dart",
-  "mobile/lib/infrastructure/dummy/demo_hub.dart",
-  "mobile/lib/infrastructure/dummy/dummy_academy_repository.dart",
-  "mobile/lib/infrastructure/dummy/dummy_admin_repository.dart",
-  "mobile/lib/infrastructure/dummy/dummy_auth_repository.dart",
-  "mobile/lib/infrastructure/dummy/dummy_reseller_repository.dart",
-  "mobile/lib/infrastructure/dummy/dummy_store_repository.dart",
-  "mobile/lib/infrastructure/dummy/dummy_training_repository.dart",
-  "mobile/lib/infrastructure/email/console_email_sender.dart",
-  "mobile/lib/main.dart",
-  "mobile/lib/presentation/admin/admin_shell.dart",
-  "mobile/lib/presentation/auth/login_screen.dart",
-  "mobile/lib/presentation/auth/otp_screen.dart",
-  "mobile/lib/presentation/auth/register_screen.dart",
-  "mobile/lib/presentation/customer/academy_detail_screen.dart",
-  "mobile/lib/presentation/customer/academy_register_screen.dart",
-  "mobile/lib/presentation/customer/cart_screen.dart",
-  "mobile/lib/presentation/customer/checkout_screen.dart",
-  "mobile/lib/presentation/customer/customer_shell.dart",
-  "mobile/lib/presentation/customer/my_orders_screen.dart",
-  "mobile/lib/presentation/customer/order_detail_screen.dart",
-  "mobile/lib/presentation/customer/organisation_register_screen.dart",
-  "mobile/lib/presentation/customer/payment_otp_screen.dart",
-  "mobile/lib/presentation/customer/product_detail_screen.dart",
-  "mobile/lib/presentation/customer/register_interest_screen.dart",
-  "mobile/lib/presentation/customer/tabs/academies_tab.dart",
-  "mobile/lib/presentation/customer/tabs/home_tab.dart",
-  "mobile/lib/presentation/customer/tabs/profile_tab.dart",
-  "mobile/lib/presentation/customer/tabs/store_tab.dart",
-  "mobile/lib/presentation/customer/tabs/training_tab.dart",
-  "mobile/lib/presentation/customer/training_detail_screen.dart",
-  "mobile/lib/presentation/customer/widgets/sa_province_paths.dart",
-  "mobile/lib/presentation/customer/widgets/south_africa_academies_map.dart",
-  "mobile/lib/presentation/home/home_placeholder_screen.dart",
-  "mobile/lib/presentation/reseller/reseller_shell.dart",
-  "mobile/lib/presentation/shell/role_router.dart",
-  "mobile/lib/shared/config/app_config.dart",
-  "mobile/lib/shared/result/result.dart",
-  "mobile/lib/shared/theme/digititan_brand_header.dart",
-  "mobile/lib/shared/theme/digititan_theme.dart",
-  "mobile/lib/shared/utils/open_digititan_store.dart",
-  "mobile/lib/shared/widgets/demo_banner.dart",
-  "docs/18-RESELLER-CODES-AND-DUAL-ADMIN.md",
-  "docs/19-LIVE-DEMO-RESELLER-ADMIN.md",
-)
-$ok = 0
-foreach ($rel in $files) {
-  $url = "$base/" + ($rel -replace " ", "%20")
-  $dest = Join-Path (Get-Location) ($rel -replace "/", "\")
-  $dir = Split-Path $dest -Parent
-  if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-  Write-Host "GET $rel"
-  Invoke-WebRequest -Uri $url -OutFile $dest
-  $ok++
+
+$zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/cursor/reseller-apply-client-pipeline-09ad"
+$zipPath = Join-Path $env:TEMP "digititan-reseller-journey.zip"
+$extractRoot = Join-Path $env:TEMP "digititan-reseller-journey"
+
+Write-Host "Downloading reseller journey branch zip..."
+Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
+
+if (Test-Path $extractRoot) {
+  Remove-Item $extractRoot -Recurse -Force
 }
+Expand-Archive -Path $zipPath -DestinationPath $extractRoot -Force
+
+$repoRoot = Get-ChildItem $extractRoot -Directory | Select-Object -First 1
+if ($null -eq $repoRoot) {
+  Write-Error "Zip extract failed - no folder found."
+}
+
+$libSrc = Join-Path $repoRoot.FullName "Digititan mobile app\mobile\lib"
+$docsSrc = Join-Path $repoRoot.FullName "Digititan mobile app\docs"
+if (-not (Test-Path $libSrc)) {
+  Write-Error "Unexpected zip layout. Missing: $libSrc"
+}
+
+# Prove critical files exist before replacing
+$mustHave = @(
+  "domain\entities\shop_order.dart",
+  "domain\repositories\admin_repository.dart",
+  "presentation\shell\role_router.dart",
+  "presentation\customer\payment_otp_screen.dart",
+  "infrastructure\dummy\demo_hub.dart"
+)
+foreach ($rel in $mustHave) {
+  $p = Join-Path $libSrc $rel
+  if (-not (Test-Path $p)) {
+    Write-Error "Zip missing required file: $rel"
+  }
+}
+
+$libDest = Join-Path (Get-Location) "mobile\lib"
+Write-Host "Replacing $libDest ..."
+if (Test-Path $libDest) {
+  Remove-Item $libDest -Recurse -Force
+}
+Copy-Item $libSrc $libDest -Recurse -Force
+
+$docsDest = Join-Path (Get-Location) "docs"
+if (-not (Test-Path $docsDest)) {
+  New-Item -ItemType Directory -Path $docsDest | Out-Null
+}
+Copy-Item (Join-Path $docsSrc "18-RESELLER-CODES-AND-DUAL-ADMIN.md") $docsDest -Force
+Copy-Item (Join-Path $docsSrc "19-LIVE-DEMO-RESELLER-ADMIN.md") $docsDest -Force
+
+# Sanity check on laptop copy
+$check = Select-String -Path (Join-Path $libDest "domain\entities\shop_order.dart") -Pattern "referralCode" -SimpleMatch
+if ($null -eq $check) {
+  Write-Error "After copy, shop_order.dart still has no referralCode - sync failed."
+}
+$check2 = Select-String -Path (Join-Path $libDest "presentation\shell\role_router.dart") -Pattern "opsAdmin" -SimpleMatch
+if ($null -eq $check2) {
+  Write-Error "After copy, role_router.dart still has no opsAdmin - sync failed."
+}
+
 Write-Host ""
-Write-Host "SUCCESS - Synced $ok files (full lib + reseller docs)." -ForegroundColor Green
+Write-Host "SUCCESS - mobile\lib fully replaced from GitHub branch." -ForegroundColor Green
 Write-Host '  cd "S:\WORK\Digititan mobile app\mobile"'
+Write-Host "  flutter clean"
+Write-Host "  flutter pub get"
 Write-Host "  flutter run"
