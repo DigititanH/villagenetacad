@@ -313,6 +313,7 @@ class _AdminShellState extends State<AdminShell> {
       return const Center(child: Text('No pending reseller applications'));
     }
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
       itemCount: _pending.length,
       itemBuilder: (context, i) {
         final p = _pending[i];
@@ -320,20 +321,21 @@ class _AdminShellState extends State<AdminShell> {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(p.name, style: Theme.of(context).textTheme.titleMedium),
-                Text(
-                  '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
-                ),
-                const SizedBox(height: 8),
-                Row(
+                const SizedBox(height: 4),
+                Text(p.email),
+                Text(p.academyName ?? 'Independent / programme support'),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     ElevatedButton(
                       onPressed: () => _approveReseller(p),
                       child: const Text('Approve + issue code'),
                     ),
-                    const SizedBox(width: 8),
                     TextButton(
                       onPressed: () => _rejectReseller(p),
                       child: const Text('Reject'),
