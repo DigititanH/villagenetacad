@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
+import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../infrastructure/dummy/dummy_store_repository.dart';

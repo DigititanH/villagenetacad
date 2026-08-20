@@ -1,4 +1,5 @@
 import '../../domain/entities/product.dart';
+import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
 import 'demo_hub.dart';
