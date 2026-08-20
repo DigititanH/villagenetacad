@@ -103,18 +103,44 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Future<void> _approveReseller(PendingResellerApplication app) async {
+    final linked = (app.academyName ?? '').trim();
     final type = await showDialog<ResellerCodeType>(
       context: context,
       builder: (_) => SimpleDialog(
         title: Text('Issue code for ${app.name}'),
         children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, ResellerCodeType.centre),
-            child: const Text('Centre code (VNA-C-*)'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+            child: Text(
+              linked.isEmpty
+                  ? 'Who is selling?\n'
+                      '• Individual person → Beneficiary (VNA-B-*) — earns 53%\n'
+                      '• Centre / academy organisation → Centre (VNA-C-*) — earns 26%\n\n'
+                      'If an individual is linked to a centre, still choose Beneficiary; '
+                      'the linked centre gets the 26% slice from their sales.'
+                  : 'Applicant listed centre: $linked\n\n'
+                      'Who is selling?\n'
+                      '• Individual person (e.g. Sipho) → Beneficiary (VNA-B-*) — earns 53%\n'
+                      '  (linked centre still gets 26% from their sales)\n'
+                      '• Centre / academy organisation → Centre (VNA-C-*) — earns 26%',
+              style: const TextStyle(fontSize: 13, height: 1.35),
+            ),
           ),
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, ResellerCodeType.beneficiary),
-            child: const Text('Beneficiary code (VNA-B-*)'),
+            child: const ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text('Beneficiary — VNA-B-*'),
+              subtitle: Text('Individual reseller · earns 53%'),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, ResellerCodeType.centre),
+            child: const ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text('Centre — VNA-C-*'),
+              subtitle: Text('Centre / academy organisation · earns 26%'),
+            ),
           ),
         ],
       ),
@@ -126,8 +152,11 @@ class _AdminShellState extends State<AdminShell> {
     );
     await _load();
     if (!mounted) return;
+    final tip = type == ResellerCodeType.beneficiary
+        ? 'Individual code. Linked centre (if any) still gets 26% on their sales.'
+        : 'Centre organisation code — centre earns 26%.';
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Approved ${app.name}. Code: $code (${type.label})')),
+      SnackBar(content: Text('Approved ${app.name}. Code: $code. $tip')),
     );
   }
 

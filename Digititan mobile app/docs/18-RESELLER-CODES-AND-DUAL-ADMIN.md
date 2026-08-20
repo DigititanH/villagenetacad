@@ -34,10 +34,12 @@ Use this when you only need to demo attribution, not the apply/approve path.
 
 ## Reseller codes
 
-| Type | Prefix | Who |
-|---|---|---|
-| Centre | `VNA-C-*` | Academies / centres |
-| Beneficiary | `VNA-B-*` | Independent / beneficiary resellers |
+| Type | Prefix | Who | Earns |
+|---|---|---|---|
+| Beneficiary | `VNA-B-*` | **Individual** reseller (e.g. Sipho) | **53%** |
+| Centre | `VNA-C-*` | **Centre / academy organisation** as the seller | **26%** |
+
+If an individual is linked to a centre, they still get **VNA-B-***; the linked centre receives the **26%** slice from that person's sales. Do **not** give the individual a C-code just because they have a centre.
 
 ## What reseller can do (not full admin CRUD)
 

@@ -118,9 +118,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Reseller journey: Apply → Ops Admin approves → you receive a '
-                'Centre (VNA-C-*) or Beneficiary (VNA-B-*) code → then you can '
-                'manage clients and earn from sales with that code.',
+                'Reseller journey: Apply → Ops Admin approves → you receive a code.\n'
+                'Individuals get Beneficiary (VNA-B-*, 53%). '
+                'Centre organisations get Centre (VNA-C-*, 26%). '
+                'If you list a centre, you still get B as an individual — '
+                'that centre gets 26% from your sales.',
                 style: TextStyle(fontSize: 12),
               ),
             ],
