@@ -520,8 +520,8 @@ class _ResellerShellState extends State<ResellerShell> {
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Text(
-            'No sales yet.\nWhen a customer checks out with your referral code, '
-            'the sale appears here automatically.',
+            'No sales yet.\nWhen a customer checks out with your code, '
+            'your earnings (your share only) appear here.',
             textAlign: TextAlign.center,
           ),
         ),
