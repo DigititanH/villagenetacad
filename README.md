@@ -6,7 +6,7 @@ The website is a React SPA talking to a PHP JSON API. There was no product docum
 
 | Doc | What’s in it |
 |-----|----------------|
-| **[docs/DATA-SHARING.md](docs/DATA-SHARING.md)** | How website + mobile share **one** MySQL/API (no data migration) |
+| **[docs/DATA-SHARING.md](docs/DATA-SHARING.md)** | Same MySQL/API for web + mobile; checkout stays on the website |
 | **[docs/HOW-THE-APP-WORKS.md](docs/HOW-THE-APP-WORKS.md)** | Product, architecture, roles, screens, checkout, PayFast, data model |
 | **[docs/API.md](docs/API.md)** | Full `/api/*` contract (auth, bodies, status codes) |
 | **[docs/MOBILE-APP-GUIDE.md](docs/MOBILE-APP-GUIDE.md)** | Screen checklist and how to reuse this API from a native app |

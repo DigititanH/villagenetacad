@@ -1,25 +1,30 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LogIn } from "lucide-react";
+import { safeNextPath, defaultPathForRole } from "../lib/redirect";
 import toast from "react-hot-toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
+
+  useEffect(() => {
+    if (user && nextPath) navigate(nextPath, { replace: true });
+  }, [user, nextPath, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await login(email.trim().toLowerCase(), password);
-      toast.success(`Welcome back, ${user.name}!`);
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "reseller") navigate("/reseller/dashboard");
-      else navigate("/");
+      const loggedIn = await login(email.trim().toLowerCase(), password);
+      toast.success(`Welcome back, ${loggedIn.name}!`);
+      navigate(nextPath || defaultPathForRole(loggedIn.role));
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     }
@@ -34,7 +39,11 @@ export default function Login() {
             <LogIn size={24} className="text-white" />
           </div>
           <h1 className="text-2xl font-black bg-gradient-to-r from-burnt-400 to-burnt-600 bg-clip-text text-transparent">Welcome Back</h1>
-          <p className="text-sm text-gray-400 mt-1">Sign in to your Village Netacad account</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {nextPath === "/cart" || nextPath === "/checkout"
+              ? "Sign in with the same account you use in the app to continue checkout."
+              : "Sign in to your Village Netacad account"}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

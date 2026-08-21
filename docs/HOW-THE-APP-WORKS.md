@@ -45,7 +45,7 @@ Default seeded admin (after migrate): `admin@villagenetacad.com` / `Admin123!`
                           one MySQL + /uploads
 ```
 
-A second client (the phone) does **not** get a second database. See [DATA-SHARING.md](./DATA-SHARING.md).
+A second client (the phone) does **not** get a second database. See [DATA-SHARING.md](./DATA-SHARING.md). The app writes to the same `cart` table; **checkout stays on the website** (`/login?next=/cart`). PayFast still talks only to PHP (`POST /api/payfast/notify`).
 
 **Production hosting:** one PHP process serves both the built React files (`frontend/dist` copied into `backend-php/public`) and the JSON API. There is **no Node.js on the server**. Document root is `backend-php/public`.
 

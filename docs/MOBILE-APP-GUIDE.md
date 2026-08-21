@@ -2,7 +2,9 @@
 
 Use this when building a **native or cross-platform app** that should feel like the Village NetAcad website.
 
-**Do not rebuild the backend, and do not migrate data onto the phone.** Point the app at the same PHP API. The website is a thin client; almost all rules and **all shop data** live on the server. Same login → same cart, orders, and reseller wallet.
+**Do not rebuild the backend, and do not migrate data onto the phone.** Point the app at the same production PHP API. Same login → same cart, orders, and reseller wallet.
+
+**Do not take payment in the app.** Browse and add to cart on the phone; open the live website (`/login?next=/cart`) so they sign in with the same details and check out with PayFast there. See [DATA-SHARING.md](./DATA-SHARING.md).
 
 Details: [DATA-SHARING.md](./DATA-SHARING.md) · [HOW-THE-APP-WORKS.md](./HOW-THE-APP-WORKS.md) · [API.md](./API.md)
 
@@ -14,8 +16,7 @@ Anything that can:
 
 - Call HTTPS JSON APIs
 - Store a JWT securely (Keychain / Keystore / `expo-secure-store`, not plain AsyncStorage in production)
-- Open an external browser or WebView for PayFast (hosted payment page)
-- Deep-link back to `payment/success` and `payment/cancel`
+- Open the **production website** in the system browser for checkout (`/login?next=/cart`)
 
 React Native / Expo, Flutter, or Kotlin+Swift are all fine. The web app is React, so React Native reuses the most mental model (`AuthContext`, `CartContext`, axios interceptors).
 
@@ -60,10 +61,10 @@ Logged-in extras (profile menu on web):
 - [ ] Forgot password
 - [ ] Shop list: search, category slug, sort `newest | price_asc | price_desc`
 - [ ] Product detail: image, price, stock, size/color pickers, add to cart, wishlist heart, reviews + write review
-- [ ] Cart: qty +/-, size select, remove, referral code field, checkout CTA
-- [ ] Checkout: street, city, province, zip, phone, referral (required unless admin), PayFast
-- [ ] Payment success / cancel (deep links)
-- [ ] My orders (status colours: pending / processing / shipped / delivered / cancelled)
+- [ ] Cart: qty +/-, size select, remove, referral code field
+- [ ] Checkout CTA opens the website: `{ORIGIN}/login?next=/cart` (no PayFast / no `POST /api/orders` in the app)
+- [ ] My orders (read-only history from `GET /api/orders/my-orders`; new purchases appear after web checkout)
+- [ ] Wishlist
 - [ ] Wishlist
 - [ ] Global search (`GET /search?q=`, debounce 300ms, min 2 chars)
 - [ ] Capture `?ref=` (and universal links like `https://site/shop?ref=CODE`) into local referral storage
@@ -128,43 +129,31 @@ Login branching (same as web):
 
 ## Referral (required for checkout)
 
-1. Persist last referral code (web: `localStorage.reseller_referral_code`).
-2. If the app is opened via `.../shop?ref=VNA-XXXX` (or a custom scheme), save it.
-3. Show the field on Cart and Checkout.
-4. Non-admins cannot submit an order without a code that the API accepts (`400 Invalid or inactive reseller referral code`).
+1. Persist last reseller `ref` code on the phone (website uses `localStorage.reseller_referral_code`).
+2. If the app is opened via `.../shop?ref=VNA-XXXX`, save it.
+3. Before opening the website for checkout, prefer `{ORIGIN}/shop?ref={code}` then cart, **or** they can type the code on the website cart (required for non-admins).
+
+Reseller share text: `Shop Village NetAcad: {WEB_ORIGIN}/shop?ref={code}`
 
 Reseller share text: `Shop Village NetAcad: {WEB_ORIGIN}/shop?ref={code}`
 
 ---
 
-## PayFast on mobile (critical)
+## Checkout: send them to the website (no PayFast in the app)
 
-The website does **not** use a card-number SDK. It:
+Cart lines are already in MySQL after `POST /api/cart`. Payment stays on the production site.
 
-1. Gets `{ url, fields }` from the API
-2. Builds a hidden HTML form
-3. `POST`s to PayFast’s hosted page
-4. User pays on PayFast
-5. PayFast redirects the **browser** to `{CLIENT_URL}/payment/success?...`
-6. PayFast separately hits `{API}/api/payfast/notify` (ITN) — this is what actually marks the order paid
+1. User taps Checkout in the app.
+2. App opens the system browser to `{ORIGIN}/login?next=/cart`.
+3. They sign in with the **same email and password**.
+4. Website `Login` reads `next=/cart` and sends them to the cart (this is implemented in `frontend/src/pages/Login.jsx`).
+5. `GET /api/cart` loads the items they added on the phone.
+6. They proceed to `/checkout` and PayFast as they do today.
+7. Back in the app, pull-to-refresh My Orders — the new order is there.
 
-On mobile you must recreate step 2–5:
+Do **not** call `POST /api/orders` or `/api/payfast/*` from the mobile client.
 
-**Option A — in-app WebView**
-
-Load a tiny HTML document that auto-submits the form (same as `frontend/src/lib/payfast.js`). Intercept navigation to your success/cancel URLs, then close the WebView and show native success.
-
-**Option B — system browser (`ASWebAuthenticationSession` / Chrome Custom Tabs / `expo-web-browser`)**
-
-Same form POST, then listen for the return URL via app links.
-
-`CLIENT_URL` on the server must be a URL PayFast can redirect to **and** that the app can catch (universal links recommended). If `CLIENT_URL` stays the website, the user lands in a mobile browser on the **web** success page — that still works, but is not a native success screen.
-
-ITN is independent of the app. After return, **poll** `GET /api/orders/{id}` every 3s for up to 30s until `payment_status === "paid"` (the website does this). Show “confirming payment…” meanwhile.
-
-Donations: same pattern; create donation then POST `data.url` / `data.fields`.
-
-Sandbox vs live is entirely server `.env` (`PAYFAST_SANDBOX`). The app does not embed merchant keys.
+Donations: open `{ORIGIN}/login?next=/donation` (or `/donation` if they may already be logged in in that browser).
 
 ---
 
@@ -189,6 +178,7 @@ Visual language on web: dark glass UI, burnt-orange (`burnt-500/600`) accents, l
 
 These APIs work but have **no screens** today. Implement only if you want the app to go *beyond* the web app:
 
+- In-app PayFast / `POST /api/orders` (checkout is website-only)
 - Reseller withdrawals + admin withdrawal queue
 - In-app notifications
 - Email verify + reset-password pages (API exists; web never shipped the UI)
@@ -201,10 +191,8 @@ These APIs work but have **no screens** today. Implement only if you want the ap
 | Variable (app) | Meaning |
 |----------------|---------|
 | `API_URL` | e.g. `https://villagenetacad.co.za/api` |
-| `ORIGIN` | same host without `/api`, for images and referral links |
-| `CLIENT_RETURN_URL` | must match what PHP puts on PayFast `return_url` (today driven by server `CLIENT_URL`) |
-
-If PayFast return URLs must open the app, the **server** `CLIENT_URL` / PayFast payload may need a one-line change later (deep link). Until then, reuse the website return URLs.
+| `ORIGIN` | same host without `/api`, for images, referral links, and checkout |
+| `CHECKOUT_URL` | `{ORIGIN}/login?next=/cart` |
 
 ---
 
