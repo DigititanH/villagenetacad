@@ -2,9 +2,9 @@
 
 Use this when building a **native or cross-platform app** that should feel like the Village NetAcad website.
 
-**Do not rebuild the backend.** Point the app at the same PHP API. The website is a thin client; almost all rules live on the server.
+**Do not rebuild the backend, and do not migrate data onto the phone.** Point the app at the same PHP API. The website is a thin client; almost all rules and **all shop data** live on the server. Same login → same cart, orders, and reseller wallet.
 
-Details: [HOW-THE-APP-WORKS.md](./HOW-THE-APP-WORKS.md) · contract: [API.md](./API.md)
+Details: [DATA-SHARING.md](./DATA-SHARING.md) · [HOW-THE-APP-WORKS.md](./HOW-THE-APP-WORKS.md) · [API.md](./API.md)
 
 ---
 

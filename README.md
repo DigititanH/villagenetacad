@@ -6,6 +6,7 @@ The website is a React SPA talking to a PHP JSON API. There was no product docum
 
 | Doc | What’s in it |
 |-----|----------------|
+| **[docs/DATA-SHARING.md](docs/DATA-SHARING.md)** | How website + mobile share **one** MySQL/API (no data migration) |
 | **[docs/HOW-THE-APP-WORKS.md](docs/HOW-THE-APP-WORKS.md)** | Product, architecture, roles, screens, checkout, PayFast, data model |
 | **[docs/API.md](docs/API.md)** | Full `/api/*` contract (auth, bodies, status codes) |
 | **[docs/MOBILE-APP-GUIDE.md](docs/MOBILE-APP-GUIDE.md)** | Screen checklist and how to reuse this API from a native app |
@@ -16,7 +17,7 @@ The website is a React SPA talking to a PHP JSON API. There was no product docum
 frontend/       React app (Vite) — built into backend-php/public for production
 backend-php/    PHP API + SQLite + serves the website from public/
 deploy/         Afrihost + Azure upload scripts and production .env templates
-docs/           Local PHP setup on Windows
+docs/           How the app works, API, mobile + data-sharing guides; Windows PHP setup
 ```
 
 ## Local development

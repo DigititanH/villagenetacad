@@ -6,6 +6,7 @@ There is almost no product documentation in the repo besides deploy guides. Ever
 
 If you are building a mobile app that behaves like the website, also read:
 
+- [DATA-SHARING.md](./DATA-SHARING.md) — **no data migration**; both apps use this same API and MySQL
 - [MOBILE-APP-GUIDE.md](./MOBILE-APP-GUIDE.md) — screen-by-screen map and what to reuse
 - [API.md](./API.md) — full HTTP contract (auth, bodies, status codes)
 
@@ -31,21 +32,20 @@ Default seeded admin (after migrate): `admin@villagenetacad.com` / `Admin123!`
 ## High-level architecture
 
 ```
-┌─────────────────────────┐         JSON /api/*          ┌──────────────────────────┐
-│  React SPA (Vite)       │  Bearer JWT + CORS           │  PHP 8.1+ API            │
-│  frontend/src           │ ───────────────────────────► │  backend-php/            │
-│                         │                              │  custom router, no       │
-│  localStorage: token,   │  POST form (hidden fields)   │  Composer / Node on host │
-│  user, referral code    │ ───────────────────────────► │                          │
-└─────────────────────────┘         PayFast hosted pay   └────────────┬─────────────┘
-                                                                      │
-                         PayFast ITN (server-to-server)               │
-                         POST /api/payfast/notify  ◄──────────────────┤
-                                                                      │
-                                                                      ▼
-                                                           MySQL / MariaDB
-                                                           + file uploads
+┌─────────────────────────┐                              ┌─────────────────────────┐
+│  React website          │                              │  Mobile app (future)    │
+│  frontend/src           │                              │  same JSON calls        │
+└───────────┬─────────────┘                              └───────────┬─────────────┘
+            │  HTTPS /api/*  Bearer JWT                              │
+            └────────────────────────┬───────────────────────────────┘
+                                     ▼
+                          PHP API  backend-php/
+                                     │
+                                     ▼
+                          one MySQL + /uploads
 ```
+
+A second client (the phone) does **not** get a second database. See [DATA-SHARING.md](./DATA-SHARING.md).
 
 **Production hosting:** one PHP process serves both the built React files (`frontend/dist` copied into `backend-php/public`) and the JSON API. There is **no Node.js on the server**. Document root is `backend-php/public`.
 
