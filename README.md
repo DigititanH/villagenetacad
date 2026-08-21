@@ -1,6 +1,14 @@
 # Village NetAcad
 
-Shop and support platform for **Afrihost** (cPanel) or **Microsoft Azure App Service** (Linux PHP 8.2+ + SQLite). No Node.js on the server.
+Shop, donations, and reseller platform for **Afrihost** (cPanel) or **Microsoft Azure App Service** (Linux PHP 8.2+). No Node.js on the server.
+
+The website is a React SPA talking to a PHP JSON API. There was no product documentation in the repo; these guides reverse-engineer how the live app actually works (needed to build a matching mobile app):
+
+| Doc | What’s in it |
+|-----|----------------|
+| **[docs/HOW-THE-APP-WORKS.md](docs/HOW-THE-APP-WORKS.md)** | Product, architecture, roles, screens, checkout, PayFast, data model |
+| **[docs/API.md](docs/API.md)** | Full `/api/*` contract (auth, bodies, status codes) |
+| **[docs/MOBILE-APP-GUIDE.md](docs/MOBILE-APP-GUIDE.md)** | Screen checklist and how to reuse this API from a native app |
 
 ## Project layout
 
