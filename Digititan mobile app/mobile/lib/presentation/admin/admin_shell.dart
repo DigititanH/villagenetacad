@@ -206,6 +206,20 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Future<void> _openResellerProfile(ResellerProfile profile) async {
+    // Pending applications must go through the approve/issue-code flow.
+    if (profile.isPending) {
+      PendingResellerApplication? pending;
+      for (final p in _pending) {
+        if (p.email.toLowerCase() == profile.email.toLowerCase()) {
+          pending = p;
+          break;
+        }
+      }
+      if (pending != null) {
+        await _openPendingReseller(pending);
+        return;
+      }
+    }
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => ResellerProfileDetailScreen(
@@ -545,8 +559,11 @@ class _AdminShellState extends State<AdminShell> {
           ..._pending.map((p) {
             return ListTile(
               title: Text(p.name),
-              subtitle: const Text('Under review'),
-              trailing: const Icon(Icons.chevron_right),
+              subtitle: Text(p.email),
+              trailing: FilledButton(
+                onPressed: () => _approveReseller(p),
+                child: const Text('Approve'),
+              ),
               onTap: () => _openPendingReseller(p),
             );
           }),
@@ -601,8 +618,18 @@ class _AdminShellState extends State<AdminShell> {
           ...pending.map((a) {
             return ListTile(
               title: Text(a.name),
-              subtitle: const Text('Under review'),
-              trailing: const Icon(Icons.chevron_right),
+              subtitle: Text(a.email),
+              trailing: FilledButton(
+                onPressed: () async {
+                  await widget.container.adminRepository.approveAmbassador(a.id);
+                  await _load();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${a.name} approved')),
+                  );
+                },
+                child: const Text('Approve'),
+              ),
               onTap: () => _openAmbassador(a),
             );
           }),
