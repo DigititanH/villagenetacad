@@ -11,6 +11,8 @@ import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 import '../../shared/widgets/product_price_text.dart';
+import 'ambassador_detail_screen.dart';
+import 'reseller_detail_screen.dart';
 
 /// Ops Admin + Super Admin share this shell; tabs/actions gated by role.
 class AdminShell extends StatefulWidget {
@@ -172,45 +174,44 @@ class _AdminShellState extends State<AdminShell> {
     await _load();
   }
 
-  Future<void> _approveAmbassador(AmbassadorApplication app) async {
-    await widget.container.adminRepository.approveAmbassador(app.id);
-    await _load();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${app.name} is now an official ambassador')),
-    );
-  }
-
-  Future<void> _rejectAmbassador(AmbassadorApplication app) async {
-    await widget.container.adminRepository.rejectAmbassador(app.id);
-    await _load();
-  }
-
-  Future<void> _confirmDeactivate({
-    required String title,
-    required String body,
-    required Future<void> Function() action,
-  }) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: Text(body),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Deactivate')),
-        ],
+  Future<void> _openAmbassador(AmbassadorApplication app) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AmbassadorDetailScreen(
+          container: widget.container,
+          applicationId: app.id,
+        ),
       ),
     );
-    if (ok != true) return;
-    await action();
-    await _load();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Deactivated — account locked until reactivated or Digititan unlocks'),
+    if (changed == true) await _load();
+  }
+
+  Future<void> _openPendingReseller(PendingResellerApplication app) async {
+    final action = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => PendingResellerDetailScreen(
+          container: widget.container,
+          application: app,
+        ),
       ),
     );
+    if (action == 'approve') {
+      await _approveReseller(app);
+    } else if (action == 'reject') {
+      await _rejectReseller(app);
+    }
+  }
+
+  Future<void> _openResellerProfile(ResellerProfile profile) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ResellerProfileDetailScreen(
+          container: widget.container,
+          email: profile.email,
+        ),
+      ),
+    );
+    if (changed == true) await _load();
   }
 
   Future<void> _editPrice(Product product) async {
@@ -508,7 +509,7 @@ class _AdminShellState extends State<AdminShell> {
         Text('Pending applications', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 4),
         Text(
-          'Approve → issues VNA-B-* / VNA-C-* code. Long-press to reject.',
+          'Tap a name to review details, then approve or reject.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -519,31 +520,18 @@ class _AdminShellState extends State<AdminShell> {
           )
         else
           ..._pending.map((p) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  isThreeLine: true,
-                  title: Text(p.name),
-                  subtitle: Text(
-                    '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
-                  ),
-                  trailing: TextButton(
-                    onPressed: () => _approveReseller(p),
-                    child: const Text('Approve'),
-                  ),
-                  onLongPress: () => _rejectReseller(p),
-                ),
-              ),
+            return ListTile(
+              title: Text(p.name),
+              subtitle: const Text('Under review'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openPendingReseller(p),
             );
           }),
         const SizedBox(height: 16),
         Text('All resellers', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 4),
         Text(
-          'Deactivate locks login and disables their referral code.',
+          'Tap a name for full details, deactivate, or unlock.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -551,54 +539,15 @@ class _AdminShellState extends State<AdminShell> {
           const Text('No reseller profiles yet')
         else
           ...profiles.map((p) {
-            final deactivated = p.isDeactivated;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  isThreeLine: true,
-                  leading: Icon(
-                    deactivated ? Icons.lock_outline : Icons.storefront_outlined,
-                    color: deactivated ? Colors.redAccent : null,
-                  ),
-                  title: Text(p.name),
-                  subtitle: Text(
-                    '${p.email}\n'
-                    '${p.code} · ${p.codeType.label} · ${p.status}'
-                    '${p.academyName == null ? '' : ' · ${p.academyName}'}'
-                    '\nEarned R${p.totalEarned.toStringAsFixed(0)} · balance R${p.balance.toStringAsFixed(0)}',
-                  ),
-                  trailing: deactivated
-                      ? TextButton(
-                          onPressed: () async {
-                            await widget.container.adminRepository
-                                .reactivateReseller(p.email);
-                            await _load();
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${p.name} reactivated')),
-                            );
-                          },
-                          child: const Text('Unlock'),
-                        )
-                      : TextButton(
-                          onPressed: p.status == 'approved'
-                              ? () => _confirmDeactivate(
-                                    title: 'Deactivate ${p.name}?',
-                                    body:
-                                        'They will be locked out of login and their code '
-                                        '(${p.code}) will stop working until you unlock them '
-                                        'or Digititan reactivates the account.',
-                                    action: () => widget.container.adminRepository
-                                        .deactivateReseller(p.email),
-                                  )
-                              : null,
-                          child: const Text('Deactivate'),
-                        ),
-                ),
+            return ListTile(
+              leading: Icon(
+                p.isDeactivated ? Icons.lock_outline : Icons.storefront_outlined,
+                color: p.isDeactivated ? Colors.redAccent : null,
               ),
+              title: Text(p.name),
+              subtitle: Text(p.status),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openResellerProfile(p),
             );
           }),
       ],
@@ -616,7 +565,7 @@ class _AdminShellState extends State<AdminShell> {
         Text('Pending applications', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 4),
         Text(
-          'You apply → under review → Ops Admin approves → official ambassador.',
+          'Tap a name to open their application and approve or reject.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -627,39 +576,18 @@ class _AdminShellState extends State<AdminShell> {
           )
         else
           ...pending.map((a) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  isThreeLine: true,
-                  title: Text(a.name),
-                  subtitle: Text(
-                    '${a.email} · ${a.phone}\n${a.motivation}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextButton(
-                        onPressed: () => _rejectAmbassador(a),
-                        child: const Text('Reject'),
-                      ),
-                      FilledButton(
-                        onPressed: () => _approveAmbassador(a),
-                        child: const Text('Approve'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            return ListTile(
+              title: Text(a.name),
+              subtitle: const Text('Under review'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openAmbassador(a),
             );
           }),
         const SizedBox(height: 16),
         Text('All ambassadors', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 4),
         Text(
-          'Full list with details. Deactivate locks their login until unlocked.',
+          'Tap a name for full details, deactivate, or unlock.',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -667,56 +595,26 @@ class _AdminShellState extends State<AdminShell> {
           const Text('No ambassador applications yet')
         else
           ...all.map((a) {
-            final deactivated = a.isDeactivated;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  isThreeLine: true,
-                  leading: Icon(
-                    deactivated
-                        ? Icons.lock_outline
-                        : a.isApproved
-                            ? Icons.verified_outlined
-                            : Icons.pending_outlined,
-                    color: deactivated ? Colors.redAccent : null,
-                  ),
-                  title: Text(a.name),
-                  subtitle: Text(
-                    '${a.email}\n'
-                    '${a.phone} · ${a.status}\n'
-                    '${a.motivation}',
-                  ),
-                  trailing: deactivated
-                      ? TextButton(
-                          onPressed: () async {
-                            await widget.container.adminRepository
-                                .reactivateAmbassador(a.id);
-                            await _load();
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${a.name} reactivated')),
-                            );
-                          },
-                          child: const Text('Unlock'),
-                        )
-                      : a.isApproved
-                          ? TextButton(
-                              onPressed: () => _confirmDeactivate(
-                                title: 'Deactivate ${a.name}?',
-                                body:
-                                    'They will be locked out of login until you unlock '
-                                    'them or they contact Digititan.',
-                                action: () => widget.container.adminRepository
-                                    .deactivateAmbassador(a.id),
-                              ),
-                              child: const Text('Deactivate'),
-                            )
-                          : null,
-                ),
+            final label = switch (a.status) {
+              'approved' => 'Approved',
+              'under_review' => 'Under review',
+              'rejected' => 'Rejected',
+              'deactivated' => 'Deactivated',
+              _ => a.status,
+            };
+            return ListTile(
+              leading: Icon(
+                a.isDeactivated
+                    ? Icons.lock_outline
+                    : a.isApproved
+                        ? Icons.verified_outlined
+                        : Icons.pending_outlined,
+                color: a.isDeactivated ? Colors.redAccent : null,
               ),
+              title: Text(a.name),
+              subtitle: Text(label),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openAmbassador(a),
             );
           }),
       ],
