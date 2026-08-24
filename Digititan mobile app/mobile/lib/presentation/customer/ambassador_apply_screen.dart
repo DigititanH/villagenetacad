@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
-import 'verify_ambassador_screen.dart';
 
 class AmbassadorApplyScreen extends StatefulWidget {
   const AmbassadorApplyScreen({super.key});
@@ -92,19 +91,9 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Ops Admin will review your ambassador application. '
-              'Buyers can verify approved ambassadors in the app.',
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const VerifyAmbassadorScreen(),
-                  ),
-                );
-              },
-              child: const Text('Open public ambassador verify'),
+              'Ops Admin must approve ambassador applications. '
+              'Until then you are not an official Village NetAcad ambassador. '
+              'Buyers should never pay cash to anyone claiming to be an ambassador.',
             ),
           ] else ...[
             TextField(

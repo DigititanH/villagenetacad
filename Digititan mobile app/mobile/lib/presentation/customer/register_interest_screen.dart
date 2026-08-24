@@ -9,8 +9,6 @@ import '../../shared/theme/digititan_theme.dart';
 const _genderOptions = [
   'Female',
   'Male',
-  'Non-binary',
-  'Prefer not to say',
 ];
 
 class RegisterInterestScreen extends StatefulWidget {
