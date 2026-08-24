@@ -7,6 +7,7 @@ import '../../shared/result/result.dart';
 import '../../shared/theme/digititan_brand_header.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
+import 'account_deactivated_screen.dart';
 import 'register_screen.dart';
 
 /// Branded Auth UI — presentation-first layout for stakeholder demos.
@@ -30,6 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   String? _error;
 
+  bool _isDeactivatedMessage(String message) =>
+      message.toLowerCase().contains('deactivated');
+
   Future<void> _signInEmail() async {
     setState(() {
       _loading = true;
@@ -46,7 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
       case Success(:final data):
         widget.onLoggedIn(data);
       case Failure(:final message):
-        setState(() => _error = message);
+        if (_isDeactivatedMessage(message)) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => AccountDeactivatedScreen(
+                email: _email.text.trim().toLowerCase(),
+              ),
+            ),
+          );
+        } else {
+          setState(() => _error = message);
+        }
     }
   }
 
