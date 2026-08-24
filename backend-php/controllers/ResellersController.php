@@ -38,6 +38,46 @@ class ResellersController
         Response::json($row);
     }
 
+    /**
+     * Public buyer trust check — QR / referral code (meeting feedback).
+     * Exposes only non-sensitive fields so customers can confirm a reseller is legit.
+     */
+    public static function verify(array $params): void
+    {
+        $code = strtoupper(trim($params['code'] ?? ''));
+        if ($code === '') {
+            Response::error('Referral code is required', 400);
+        }
+
+        $row = Database::queryGet(
+            "SELECT rp.referral_code, rp.status, rp.academy, rp.commission_rate,
+                    r.name, r.is_approved
+             FROM reseller_profiles rp
+             JOIN registrations r ON rp.user_id = r.id
+             WHERE UPPER(rp.referral_code) = ?",
+            [$code]
+        );
+
+        if (!$row) {
+            Response::error('Reseller not found for this code', 404);
+        }
+
+        $approved = ($row['status'] ?? '') === 'approved'
+            || ($row['is_approved'] ?? '') === 'approved';
+
+        Response::json([
+            'legit' => $approved,
+            'code' => $row['referral_code'],
+            'name' => $row['name'],
+            'status' => $approved ? 'approved' : ($row['status'] ?? 'pending'),
+            'academy' => $row['academy'] ?? null,
+            'verify_payload' => 'vna://verify/' . $row['referral_code'],
+            'message' => $approved
+                ? 'Verified Digititan / Village NetAcad reseller'
+                : 'This reseller is not approved yet',
+        ]);
+    }
+
     public static function commissions(): void
     {
         Auth::authorize('reseller');
@@ -80,6 +120,9 @@ class ResellersController
         $profile = Database::queryGet('SELECT id, wallet_balance FROM reseller_profiles WHERE user_id = ?', [Auth::$user['id']]);
         if (!$profile) {
             Response::error('Profile not found', 404);
+        }
+        if ($amount < 100) {
+            Response::error('Minimum withdrawal is R100', 400);
         }
         if ($amount > (float) $profile['wallet_balance']) {
             Response::error('Insufficient balance', 400);
