@@ -33,6 +33,8 @@ class _AdminShellState extends State<AdminShell> {
   AdminStats? _stats;
   List<ShopOrder> _orders = [];
   List<PendingResellerApplication> _pending = [];
+  List<ResellerProfile> _resellerProfiles = [];
+  List<AmbassadorApplication> _ambassadors = [];
   List<Product> _products = [];
   List<IssuedResellerCode> _codes = [];
   List<WithdrawalRequest> _withdrawals = [];
@@ -54,6 +56,8 @@ class _AdminShellState extends State<AdminShell> {
       final stats = await admin.getStats();
       final orders = await admin.getAllOrders();
       final pending = await admin.getPendingResellers();
+      final resellerProfiles = await admin.getResellerProfiles();
+      final ambassadors = await admin.getAmbassadorApplications();
       final products = await admin.getProducts();
       final codes = await admin.getIssuedCodes();
       final withdrawals = await admin.getPendingWithdrawals();
@@ -63,6 +67,8 @@ class _AdminShellState extends State<AdminShell> {
         _stats = stats;
         _orders = orders;
         _pending = pending;
+        _resellerProfiles = resellerProfiles;
+        _ambassadors = ambassadors.cast<AmbassadorApplication>();
         _products = products;
         _codes = codes.cast<IssuedResellerCode>();
         _withdrawals = withdrawals.cast<WithdrawalRequest>();
@@ -164,6 +170,47 @@ class _AdminShellState extends State<AdminShell> {
   Future<void> _rejectReseller(PendingResellerApplication app) async {
     await widget.container.adminRepository.rejectReseller(app.id);
     await _load();
+  }
+
+  Future<void> _approveAmbassador(AmbassadorApplication app) async {
+    await widget.container.adminRepository.approveAmbassador(app.id);
+    await _load();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${app.name} is now an official ambassador')),
+    );
+  }
+
+  Future<void> _rejectAmbassador(AmbassadorApplication app) async {
+    await widget.container.adminRepository.rejectAmbassador(app.id);
+    await _load();
+  }
+
+  Future<void> _confirmDeactivate({
+    required String title,
+    required String body,
+    required Future<void> Function() action,
+  }) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Deactivate')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await action();
+    await _load();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Deactivated — account locked until reactivated or Digititan unlocks'),
+      ),
+    );
   }
 
   Future<void> _editPrice(Product product) async {
@@ -302,6 +349,7 @@ class _AdminShellState extends State<AdminShell> {
       const Tab(text: 'Dashboard'),
       const Tab(text: 'Orders'),
       const Tab(text: 'Resellers'),
+      const Tab(text: 'Ambassadors'),
       const Tab(text: 'Codes'),
       const Tab(text: 'Products'),
       if (_isSuper) const Tab(text: 'Payouts'),
@@ -341,7 +389,7 @@ class _AdminShellState extends State<AdminShell> {
                       DemoBanner(
                         message: _isSuper
                             ? 'Super Admin · oversight + payouts'
-                            : 'Ops Admin · orders, products, reseller codes',
+                            : 'Ops Admin · orders, resellers, ambassadors, codes',
                       ),
                       Expanded(
                         child: TabBarView(
@@ -349,6 +397,7 @@ class _AdminShellState extends State<AdminShell> {
                             _dashboard(),
                             _ordersTab(),
                             _resellersTab(),
+                            _ambassadorsTab(),
                             _codesTab(),
                             _productsTab(),
                             if (_isSuper) _payoutsTab(),
@@ -402,6 +451,11 @@ class _AdminShellState extends State<AdminShell> {
               icon: Icons.person_add_alt_1_outlined,
             ),
             MetricTile(
+              label: 'Pending ambassadors',
+              value: '${s.pendingAmbassadors}',
+              icon: Icons.campaign_outlined,
+            ),
+            MetricTile(
               label: 'Products',
               value: '${s.products}',
               icon: Icons.inventory_2_outlined,
@@ -416,7 +470,9 @@ class _AdminShellState extends State<AdminShell> {
         const SizedBox(height: 14),
         QuietNotice(
           message:
-              'Walkthrough: Customer checkout with VNA-B-LERATO → Reseller Sales → Orders tab.',
+              'Ops: Resellers tab = approve + deactivate. '
+              'Ambassadors tab = approve applications + list/deactivate. '
+              'Deactivated users cannot log in until reactivated.',
         ),
       ],
     );
@@ -444,36 +500,226 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Widget _resellersTab() {
-    if (_pending.isEmpty) {
-      return const Center(child: Text('No pending reseller applications'));
-    }
-    return ListView.separated(
+    final profiles = [..._resellerProfiles]
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
-      itemCount: _pending.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, i) {
-        final p = _pending[i];
-        return Material(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(12),
-          child: ListTile(
-            isThreeLine: true,
-            title: Text(p.name),
-            subtitle: Text(
-              '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
-            ),
-            trailing: TextButton(
-              style: TextButton.styleFrom(
-                minimumSize: const Size(64, 40),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      children: [
+        Text('Pending applications', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'Approve → issues VNA-B-* / VNA-C-* code. Long-press to reject.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        if (_pending.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('No pending reseller applications'),
+          )
+        else
+          ..._pending.map((p) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  isThreeLine: true,
+                  title: Text(p.name),
+                  subtitle: Text(
+                    '${p.email}\n${p.academyName ?? 'Independent / programme support'}',
+                  ),
+                  trailing: TextButton(
+                    onPressed: () => _approveReseller(p),
+                    child: const Text('Approve'),
+                  ),
+                  onLongPress: () => _rejectReseller(p),
+                ),
               ),
-              onPressed: () => _approveReseller(p),
-              child: const Text('Approve'),
-            ),
-            onLongPress: () => _rejectReseller(p),
-          ),
-        );
-      },
+            );
+          }),
+        const SizedBox(height: 16),
+        Text('All resellers', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'Deactivate locks login and disables their referral code.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        if (profiles.isEmpty)
+          const Text('No reseller profiles yet')
+        else
+          ...profiles.map((p) {
+            final deactivated = p.isDeactivated;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  isThreeLine: true,
+                  leading: Icon(
+                    deactivated ? Icons.lock_outline : Icons.storefront_outlined,
+                    color: deactivated ? Colors.redAccent : null,
+                  ),
+                  title: Text(p.name),
+                  subtitle: Text(
+                    '${p.email}\n'
+                    '${p.code} · ${p.codeType.label} · ${p.status}'
+                    '${p.academyName == null ? '' : ' · ${p.academyName}'}'
+                    '\nEarned R${p.totalEarned.toStringAsFixed(0)} · balance R${p.balance.toStringAsFixed(0)}',
+                  ),
+                  trailing: deactivated
+                      ? TextButton(
+                          onPressed: () async {
+                            await widget.container.adminRepository
+                                .reactivateReseller(p.email);
+                            await _load();
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${p.name} reactivated')),
+                            );
+                          },
+                          child: const Text('Unlock'),
+                        )
+                      : TextButton(
+                          onPressed: p.status == 'approved'
+                              ? () => _confirmDeactivate(
+                                    title: 'Deactivate ${p.name}?',
+                                    body:
+                                        'They will be locked out of login and their code '
+                                        '(${p.code}) will stop working until you unlock them '
+                                        'or Digititan reactivates the account.',
+                                    action: () => widget.container.adminRepository
+                                        .deactivateReseller(p.email),
+                                  )
+                              : null,
+                          child: const Text('Deactivate'),
+                        ),
+                ),
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _ambassadorsTab() {
+    final pending =
+        _ambassadors.where((a) => a.status == 'under_review').toList();
+    final all = [..._ambassadors]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 88),
+      children: [
+        Text('Pending applications', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'You apply → under review → Ops Admin approves → official ambassador.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        if (pending.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text('No ambassador applications under review'),
+          )
+        else
+          ...pending.map((a) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  isThreeLine: true,
+                  title: Text(a.name),
+                  subtitle: Text(
+                    '${a.email} · ${a.phone}\n${a.motivation}',
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton(
+                        onPressed: () => _rejectAmbassador(a),
+                        child: const Text('Reject'),
+                      ),
+                      FilledButton(
+                        onPressed: () => _approveAmbassador(a),
+                        child: const Text('Approve'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        const SizedBox(height: 16),
+        Text('All ambassadors', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'Full list with details. Deactivate locks their login until unlocked.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        if (all.isEmpty)
+          const Text('No ambassador applications yet')
+        else
+          ...all.map((a) {
+            final deactivated = a.isDeactivated;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  isThreeLine: true,
+                  leading: Icon(
+                    deactivated
+                        ? Icons.lock_outline
+                        : a.isApproved
+                            ? Icons.verified_outlined
+                            : Icons.pending_outlined,
+                    color: deactivated ? Colors.redAccent : null,
+                  ),
+                  title: Text(a.name),
+                  subtitle: Text(
+                    '${a.email}\n'
+                    '${a.phone} · ${a.status}\n'
+                    '${a.motivation}',
+                  ),
+                  trailing: deactivated
+                      ? TextButton(
+                          onPressed: () async {
+                            await widget.container.adminRepository
+                                .reactivateAmbassador(a.id);
+                            await _load();
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${a.name} reactivated')),
+                            );
+                          },
+                          child: const Text('Unlock'),
+                        )
+                      : a.isApproved
+                          ? TextButton(
+                              onPressed: () => _confirmDeactivate(
+                                title: 'Deactivate ${a.name}?',
+                                body:
+                                    'They will be locked out of login until you unlock '
+                                    'them or they contact Digititan.',
+                                action: () => widget.container.adminRepository
+                                    .deactivateAmbassador(a.id),
+                              ),
+                              child: const Text('Deactivate'),
+                            )
+                          : null,
+                ),
+              ),
+            );
+          }),
+      ],
     );
   }
 

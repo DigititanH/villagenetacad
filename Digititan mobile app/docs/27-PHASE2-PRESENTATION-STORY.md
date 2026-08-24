@@ -13,6 +13,8 @@ Dummy data is fine.
 | SMS + Email OTP | Register OTP / Payment OTP channel picker |
 | LMS gender fields | Training interest / Academy register forms |
 | Ambassador apply + verify + no-cash | Profile → Become / Verify ambassador |
+| Ops: approve ambassadors + deactivate | `ops@demo.com` → Ambassadors tab |
+| Ops: all resellers + deactivate/lockout | `ops@demo.com` → Resellers tab (All resellers) |
 | Academy performance rankings | Academies → leaderboard icon |
 | Purchase T&Cs + Pinnacle warranty | Product detail |
 | Simulated notifications | Profile → Notifications |

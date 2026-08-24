@@ -231,7 +231,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - Delivered → please review  
 - Reseller sale confirmation  
 - Recruitment / “we’re looking for young people” on Home  
-- Ops Admin: products, promos, prices, order status, reseller approval, academy content, ambassador queue  
+- Ops Admin: products, promos, prices, order status, reseller approval + deactivate/lockout, academy content, ambassador queue + list + deactivate  
 - Super Admin: system/config (devs)  
 
 ### Meeting Wave 3 insert

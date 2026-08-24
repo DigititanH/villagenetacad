@@ -74,7 +74,7 @@ class ResellerProfile {
   final String name;
   final String code;
   final ResellerCodeType codeType;
-  final String status; // pending | approved | rejected
+  final String status; // pending | approved | rejected | deactivated
   final double totalEarned;
   final double balance;
   /// Running total of Digititan/Village NetAcad 21% share from this code's sales.
@@ -101,6 +101,7 @@ class ResellerProfile {
 
   bool get isApproved => status == 'approved';
   bool get isPending => status == 'pending';
+  bool get isDeactivated => status == 'deactivated';
 
   ResellerProfile copyWith({
     double? totalEarned,

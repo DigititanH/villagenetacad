@@ -95,7 +95,11 @@ class _VerifyAmbassadorScreenState extends State<VerifyAmbassadorScreen> {
                   Text(
                     _hit!.status == 'approved'
                         ? 'Approved ambassador'
-                        : 'Under review',
+                        : _hit!.status == 'deactivated'
+                            ? 'Deactivated — not official'
+                            : _hit!.status == 'rejected'
+                                ? 'Not approved'
+                                : 'Under review',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: _hit!.status == 'approved'

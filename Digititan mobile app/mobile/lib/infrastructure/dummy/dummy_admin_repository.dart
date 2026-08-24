@@ -25,6 +25,9 @@ class DummyAdminRepository implements AdminRepository {
       totalOrders: _hub.orders.length,
       pendingOrders: pendingOrders,
       pendingResellers: _hub.pendingResellers.length,
+      pendingAmbassadors: _hub.ambassadorApplications
+          .where((a) => a.status == 'under_review')
+          .length,
       products: _hub.products.length,
       pendingWithdrawals:
           _hub.withdrawals.where((w) => w.status == 'pending').length,
@@ -72,6 +75,49 @@ class DummyAdminRepository implements AdminRepository {
       _hub.resellerProfiles[key] = existing.copyWith(status: 'rejected');
     }
     _hub.log('Reseller application ${app.email} rejected');
+  }
+
+  @override
+  Future<List<AmbassadorApplication>> getAmbassadorApplications({
+    String? status,
+  }) async {
+    final all = List<AmbassadorApplication>.of(_hub.ambassadorApplications);
+    if (status == null || status.isEmpty) return List.unmodifiable(all);
+    return List.unmodifiable(all.where((a) => a.status == status));
+  }
+
+  @override
+  Future<void> approveAmbassador(String applicationId) async {
+    _hub.approveAmbassador(applicationId);
+  }
+
+  @override
+  Future<void> rejectAmbassador(String applicationId) async {
+    _hub.rejectAmbassador(applicationId);
+  }
+
+  @override
+  Future<void> deactivateAmbassador(String applicationId) async {
+    _hub.deactivateAmbassador(applicationId);
+  }
+
+  @override
+  Future<void> reactivateAmbassador(String applicationId) async {
+    _hub.reactivateAmbassador(applicationId);
+  }
+
+  @override
+  Future<List<ResellerProfile>> getResellerProfiles() async =>
+      List.unmodifiable(_hub.resellerProfiles.values.toList());
+
+  @override
+  Future<void> deactivateReseller(String email) async {
+    _hub.deactivateReseller(email);
+  }
+
+  @override
+  Future<void> reactivateReseller(String email) async {
+    _hub.reactivateReseller(email);
   }
 
   @override

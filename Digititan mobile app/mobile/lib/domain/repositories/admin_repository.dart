@@ -24,6 +24,7 @@ class AdminStats {
   final int totalOrders;
   final int pendingOrders;
   final int pendingResellers;
+  final int pendingAmbassadors;
   final int products;
   final int pendingWithdrawals;
   final int openLeads;
@@ -34,6 +35,7 @@ class AdminStats {
     required this.totalOrders,
     required this.pendingOrders,
     required this.pendingResellers,
+    this.pendingAmbassadors = 0,
     required this.products,
     this.pendingWithdrawals = 0,
     this.openLeads = 0,
@@ -52,6 +54,18 @@ abstract class AdminRepository {
     required ResellerCodeType codeType,
   });
   Future<void> rejectReseller(String applicationId);
+
+  /// Ambassador applications (Ops Admin queue). Optional status filter.
+  Future<List<dynamic>> getAmbassadorApplications({String? status});
+  Future<void> approveAmbassador(String applicationId);
+  Future<void> rejectAmbassador(String applicationId);
+  Future<void> deactivateAmbassador(String applicationId);
+  Future<void> reactivateAmbassador(String applicationId);
+
+  /// All reseller profiles (approved / pending / rejected / deactivated).
+  Future<List<ResellerProfile>> getResellerProfiles();
+  Future<void> deactivateReseller(String email);
+  Future<void> reactivateReseller(String email);
 
   Future<List<Product>> getProducts();
   Future<void> updateProductPrice(String productId, double price);

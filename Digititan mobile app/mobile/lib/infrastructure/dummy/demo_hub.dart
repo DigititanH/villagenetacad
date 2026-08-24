@@ -27,6 +27,9 @@ class DemoHub {
   final List<AmbassadorApplication> ambassadorApplications = [];
   final List<AcademyPerformanceStat> academyStats = [];
 
+  /// Emails locked out of login until Ops/Super Admin reactivates (or Digititan unlocks).
+  final Set<String> deactivatedEmails = {};
+
   /// Customer email -> last used / saved referral code
   final Map<String, String> customerReferralCodes = {};
 
@@ -303,6 +306,70 @@ class DemoHub {
     return hit;
   }
 
+  bool isLoginLocked(String email) =>
+      deactivatedEmails.contains(email.trim().toLowerCase());
+
+  void lockLogin(String email) {
+    deactivatedEmails.add(email.trim().toLowerCase());
+  }
+
+  void unlockLogin(String email) {
+    deactivatedEmails.remove(email.trim().toLowerCase());
+  }
+
+  void deactivateReseller(String email) {
+    final key = email.trim().toLowerCase();
+    final profile = resellerProfiles[key];
+    if (profile != null) {
+      resellerProfiles[key] = profile.copyWith(status: 'deactivated');
+    }
+    for (final c in codesByValue.values) {
+      if (c.resellerEmail == key) c.active = false;
+    }
+    lockLogin(key);
+    log('Reseller deactivated $key — login locked');
+  }
+
+  void reactivateReseller(String email) {
+    final key = email.trim().toLowerCase();
+    final profile = resellerProfiles[key];
+    if (profile != null && profile.status == 'deactivated') {
+      resellerProfiles[key] = profile.copyWith(status: 'approved');
+    }
+    for (final c in codesByValue.values) {
+      if (c.resellerEmail == key) c.active = true;
+    }
+    unlockLogin(key);
+    log('Reseller reactivated $key — login unlocked');
+  }
+
+  void approveAmbassador(String applicationId) {
+    final app = ambassadorApplications.firstWhere((a) => a.id == applicationId);
+    app.status = 'approved';
+    unlockLogin(app.email);
+    log('Ambassador approved ${app.email}');
+  }
+
+  void rejectAmbassador(String applicationId) {
+    final app = ambassadorApplications.firstWhere((a) => a.id == applicationId);
+    app.status = 'rejected';
+    log('Ambassador rejected ${app.email}');
+  }
+
+  void deactivateAmbassador(String applicationId) {
+    final app = ambassadorApplications.firstWhere((a) => a.id == applicationId);
+    app.status = 'deactivated';
+    lockLogin(app.email);
+    log('Ambassador deactivated ${app.email} — login locked');
+  }
+
+  void reactivateAmbassador(String applicationId) {
+    final app = ambassadorApplications.firstWhere((a) => a.id == applicationId);
+    app.status = 'approved';
+    unlockLogin(app.email);
+    log('Ambassador reactivated ${app.email} — login unlocked');
+  }
+
   /// Apply → pending. Admin must approve before a real VNA-C/VNA-B code exists.
   void applyReseller({
     required String name,
@@ -566,7 +633,8 @@ class AmbassadorApplication {
   final String phone;
   final String motivation;
   final DateTime createdAt;
-  String status; // under_review | approved | rejected
+  /// under_review | approved | rejected | deactivated
+  String status;
 
   AmbassadorApplication({
     required this.id,
@@ -577,6 +645,10 @@ class AmbassadorApplication {
     required this.createdAt,
     this.status = 'under_review',
   });
+
+  bool get isUnderReview => status == 'under_review';
+  bool get isApproved => status == 'approved';
+  bool get isDeactivated => status == 'deactivated';
 }
 
 class AcademyPerformanceStat {

@@ -1,6 +1,7 @@
 import '../../domain/entities/user.dart';
 import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/auth_repository.dart';
+import 'demo_hub.dart';
 
 class DummyAuthRepository implements AuthRepository {
   User? _current;
@@ -23,6 +24,16 @@ class DummyAuthRepository implements AuthRepository {
         name: 'Demo Reseller',
         email: 'reseller@demo.com',
         role: UserRole.reseller,
+        emailVerified: true,
+      ),
+    ),
+    'lerato.ambassador@example.com': _StoredAccount(
+      password: 'demo123',
+      user: const User(
+        id: 'u-ambassador',
+        name: 'Lerato Dube',
+        email: 'lerato.ambassador@example.com',
+        role: UserRole.customer,
         emailVerified: true,
       ),
     ),
@@ -69,6 +80,12 @@ class DummyAuthRepository implements AuthRepository {
     required String password,
   }) async {
     final key = email.trim().toLowerCase();
+    if (DemoHub.instance.isLoginLocked(key)) {
+      throw Exception(
+        'This account is deactivated. Contact Digititan to request unlock, '
+        'or wait until an Ops Admin reactivates you.',
+      );
+    }
     final account = _accounts[key];
     if (account == null || account.password != password) {
       throw Exception('Invalid email or password');
