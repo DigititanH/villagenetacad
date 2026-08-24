@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/enums/user_role.dart';
 import 'tabs/academies_tab.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/profile_tab.dart';
@@ -14,6 +15,7 @@ class CustomerShell extends StatefulWidget {
   final User user;
   final VoidCallback onLogout;
   final ValueChanged<User>? onDemoUserSwitched;
+  final ValueChanged<AppHat>? onSwitchHat;
 
   const CustomerShell({
     super.key,
@@ -21,6 +23,7 @@ class CustomerShell extends StatefulWidget {
     required this.user,
     required this.onLogout,
     this.onDemoUserSwitched,
+    this.onSwitchHat,
   });
 
   @override
@@ -49,7 +52,8 @@ class _CustomerShellState extends State<CustomerShell> {
         container: widget.container,
         user: widget.user,
         onLogout: widget.onLogout,
-        onSessionUserChanged: widget.onDemoUserSwitched,
+        onDemoUserSwitched: widget.onDemoUserSwitched,
+        onSwitchHat: widget.onSwitchHat,
       ),
     ];
 

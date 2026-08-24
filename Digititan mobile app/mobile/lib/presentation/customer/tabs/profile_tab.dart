@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../app/injection.dart';
 import '../../../domain/entities/user.dart';
 import '../../../domain/enums/user_role.dart';
+import '../../../infrastructure/dummy/demo_hub.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/theme/digititan_theme.dart';
-import '../../../shared/utils/approved_role_switch.dart';
 import '../ambassador_apply_screen.dart';
 import '../become_reseller_screen.dart';
 import '../legal_hub_screen.dart';
@@ -18,23 +18,25 @@ class ProfileTab extends StatelessWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
-  /// Updates the live session user (demo switch + approved Customer↔Reseller).
-  final ValueChanged<User>? onSessionUserChanged;
+  final ValueChanged<User>? onDemoUserSwitched;
+  final ValueChanged<AppHat>? onSwitchHat;
 
   const ProfileTab({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
-    this.onSessionUserChanged,
+    this.onDemoUserSwitched,
+    this.onSwitchHat,
   });
 
   @override
   Widget build(BuildContext context) {
-    final approvedReseller = ApprovedRoleSwitch.isApprovedReseller(user.email);
-    final pendingReseller = ApprovedRoleSwitch.isPendingReseller(user.email);
-    final approvedAmbassador =
-        ApprovedRoleSwitch.isApprovedAmbassador(user.email);
+    final hub = DemoHub.instance;
+    final approvedReseller = hub.isApprovedReseller(user.email);
+    final pendingReseller =
+        hub.resellerProfiles[user.email.toLowerCase()]?.isPending == true;
+    final approvedAmbassador = hub.isApprovedAmbassador(user.email);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -59,7 +61,7 @@ class ProfileTab extends StatelessWidget {
           Text(user.email, style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
-            user.role.label,
+            'Customer',
             style: const TextStyle(
               color: DigititanColors.primary,
               fontWeight: FontWeight.w600,
@@ -72,33 +74,42 @@ class ProfileTab extends StatelessWidget {
               runSpacing: 6,
               children: [
                 if (approvedReseller)
-                  Chip(
-                    avatar: const Icon(Icons.storefront_outlined, size: 18),
-                    label: const Text('Approved reseller'),
+                  const Chip(
+                    avatar: Icon(Icons.storefront_outlined, size: 18),
+                    label: Text('Approved reseller'),
                   ),
                 if (approvedAmbassador)
-                  Chip(
-                    avatar: const Icon(Icons.verified_outlined, size: 18),
-                    label: const Text('Approved ambassador'),
+                  const Chip(
+                    avatar: Icon(Icons.verified_outlined, size: 18),
+                    label: Text('Approved ambassador'),
                   ),
               ],
             ),
           ],
-          if (approvedReseller &&
-              user.role == UserRole.customer &&
-              onSessionUserChanged != null) ...[
+          if (onSwitchHat != null && approvedReseller) ...[
             const SizedBox(height: 14),
             FilledButton.icon(
               onPressed: () {
-                onSessionUserChanged!(
-                  ApprovedRoleSwitch.asRole(user, UserRole.reseller),
-                );
+                onSwitchHat!(AppHat.reseller);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Switched to Reseller view')),
+                  const SnackBar(content: Text('Switched to Reseller dashboard')),
                 );
               },
               icon: const Icon(Icons.swap_horiz),
-              label: const Text('Switch to Reseller view'),
+              label: const Text('Switch to Reseller dashboard'),
+            ),
+          ],
+          if (onSwitchHat != null && approvedAmbassador) ...[
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              onPressed: () {
+                onSwitchHat!(AppHat.ambassador);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Switched to Ambassador view')),
+                );
+              },
+              icon: const Icon(Icons.campaign_outlined),
+              label: const Text('Switch to Ambassador view'),
             ),
           ],
           const SizedBox(height: 22),
@@ -137,42 +148,50 @@ class ProfileTab extends StatelessWidget {
             },
             child: const Text('Verify a reseller'),
           ),
-          if (user.role == UserRole.customer) ...[
-            if (!approvedReseller && !pendingReseller) ...[
-              const SizedBox(height: 10),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => BecomeResellerScreen(
-                        container: container,
-                        user: user,
-                      ),
+          if (!approvedReseller && !pendingReseller) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BecomeResellerScreen(
+                      container: container,
+                      user: user,
                     ),
-                  );
-                },
-                child: const Text('Become a Reseller'),
+                  ),
+                );
+              },
+              child: const Text('Become a Reseller'),
+            ),
+          ],
+          if (pendingReseller) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: DigititanColors.softBlue,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: DigititanColors.muted),
               ),
-            ],
-            if (pendingReseller) ...[
-              const SizedBox(height: 10),
-              const QuietPendingNotice(
-                message: 'Reseller application under review — waiting for Ops Admin.',
+              child: Text(
+                'Reseller application under review — waiting for Ops Admin.',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-            ],
-            if (!approvedAmbassador) ...[
-              const SizedBox(height: 10),
-              OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AmbassadorApplyScreen(),
-                    ),
-                  );
-                },
-                child: const Text('Become an Ambassador'),
-              ),
-            ],
+            ),
+          ],
+          if (!approvedAmbassador) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AmbassadorApplyScreen(user: user),
+                  ),
+                );
+              },
+              child: const Text('Become an Ambassador'),
+            ),
           ],
           const SizedBox(height: 10),
           OutlinedButton(
@@ -190,11 +209,11 @@ class ProfileTab extends StatelessWidget {
             onPressed: onLogout,
             child: const Text('Logout'),
           ),
-          if (onSessionUserChanged != null) ...[
+          if (onDemoUserSwitched != null) ...[
             const SizedBox(height: 20),
             DemoRoleSwitcher(
               container: container,
-              onSwitched: onSessionUserChanged!,
+              onSwitched: onDemoUserSwitched!,
             ),
           ],
           const SizedBox(height: 20),
@@ -223,26 +242,6 @@ class ProfileTab extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class QuietPendingNotice extends StatelessWidget {
-  final String message;
-
-  const QuietPendingNotice({super.key, required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: DigititanColors.softBlue,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: DigititanColors.muted),
-      ),
-      child: Text(message, style: Theme.of(context).textTheme.bodySmall),
     );
   }
 }

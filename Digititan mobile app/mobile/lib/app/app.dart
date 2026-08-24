@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../domain/entities/user.dart';
+import '../domain/enums/user_role.dart';
+import '../infrastructure/dummy/demo_hub.dart';
 import '../presentation/auth/login_screen.dart';
 import '../presentation/shell/role_router.dart';
 import '../shared/theme/digititan_theme.dart';
@@ -18,6 +20,20 @@ class DigititanApp extends StatefulWidget {
 
 class _DigititanAppState extends State<DigititanApp> {
   User? _user;
+  AppHat _hat = AppHat.customer;
+
+  AppHat _defaultHatFor(User user) {
+    if (user.role == UserRole.reseller) return AppHat.reseller;
+    if (user.role == UserRole.ambassador) return AppHat.ambassador;
+    return AppHat.customer;
+  }
+
+  void _setSession(User user, {AppHat? hat}) {
+    setState(() {
+      _user = user;
+      _hat = hat ?? _defaultHatFor(user);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +44,32 @@ class _DigititanAppState extends State<DigititanApp> {
       home: _user == null
           ? LoginScreen(
               container: widget.container,
-              onLoggedIn: (user) => setState(() => _user = user),
+              onLoggedIn: (user) => _setSession(user),
             )
           : RoleRouter(
               container: widget.container,
               user: _user!,
+              activeHat: _hat,
               onLogout: () async {
                 await widget.container.authRepository.signOut();
-                setState(() => _user = null);
+                setState(() {
+                  _user = null;
+                  _hat = AppHat.customer;
+                });
               },
-              onDemoUserSwitched: (user) => setState(() => _user = user),
+              onSwitchHat: (hat) {
+                final email = _user!.email;
+                if (hat == AppHat.reseller &&
+                    !DemoHub.instance.isApprovedReseller(email)) {
+                  return;
+                }
+                if (hat == AppHat.ambassador &&
+                    !DemoHub.instance.isApprovedAmbassador(email)) {
+                  return;
+                }
+                setState(() => _hat = hat);
+              },
+              onDemoUserSwitched: (user) => _setSession(user),
             ),
     );
   }

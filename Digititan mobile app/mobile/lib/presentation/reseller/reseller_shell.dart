@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/enums/user_role.dart';
+import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
-import '../../shared/utils/approved_role_switch.dart';
 import '../../shared/widgets/demo_banner.dart';
-import '../../domain/enums/user_role.dart';
 import '../customer/widgets/demo_role_switcher.dart';
 import 'reseller_qr_card.dart';
 
@@ -17,6 +17,7 @@ class ResellerShell extends StatefulWidget {
   final User user;
   final VoidCallback onLogout;
   final ValueChanged<User>? onDemoUserSwitched;
+  final ValueChanged<AppHat>? onSwitchHat;
 
   const ResellerShell({
     super.key,
@@ -24,6 +25,7 @@ class ResellerShell extends StatefulWidget {
     required this.user,
     required this.onLogout,
     this.onDemoUserSwitched,
+    this.onSwitchHat,
   });
 
   @override
@@ -287,14 +289,12 @@ class _ResellerShellState extends State<ResellerShell> {
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
-            if (widget.onDemoUserSwitched != null) ...[
+            if (widget.onSwitchHat != null) ...[
               TextButton(
                 onPressed: () {
-                  widget.onDemoUserSwitched!(
-                    ApprovedRoleSwitch.asRole(widget.user, UserRole.customer),
-                  );
+                  widget.onSwitchHat!(AppHat.customer);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Switched to Customer view')),
+                    const SnackBar(content: Text('Switched to Customer app')),
                   );
                 },
                 child: const Text(
@@ -302,6 +302,21 @@ class _ResellerShellState extends State<ResellerShell> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
+              if (DemoHub.instance.isApprovedAmbassador(widget.user.email))
+                TextButton(
+                  onPressed: () {
+                    widget.onSwitchHat!(AppHat.ambassador);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Switched to Ambassador view')),
+                    );
+                  },
+                  child: const Text(
+                    'Ambassador',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+            ],
+            if (widget.onDemoUserSwitched != null)
               IconButton(
                 tooltip: 'Demo role switch (decks)',
                 icon: const Icon(Icons.swap_horiz),
@@ -321,7 +336,6 @@ class _ResellerShellState extends State<ResellerShell> {
                   );
                 },
               ),
-            ],
             TextButton(
               onPressed: widget.onLogout,
               child: const Text('Logout', style: TextStyle(color: Colors.white)),

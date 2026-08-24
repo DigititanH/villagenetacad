@@ -3,6 +3,8 @@
 enum UserRole {
   customer,
   reseller,
+  /// Programme promoter (not a seller). Hat switched from Profile after Ops approval.
+  ambassador,
   /// Day-to-day ops: products, orders, reseller approve, leads — no Super Admin needed.
   opsAdmin,
   /// Oversight: everything Ops can do + withdrawals, org approvals, activity log.
@@ -19,6 +21,8 @@ extension UserRoleX on UserRole {
         return 'Customer';
       case UserRole.reseller:
         return 'Reseller';
+      case UserRole.ambassador:
+        return 'Ambassador';
       case UserRole.opsAdmin:
         return 'Ops Admin';
       case UserRole.superAdmin:
@@ -26,3 +30,24 @@ extension UserRoleX on UserRole {
     }
   }
 }
+
+/// Which “hat” the signed-in person is wearing right now (same account).
+enum AppHat {
+  customer,
+  reseller,
+  ambassador,
+}
+
+extension AppHatX on AppHat {
+  String get label {
+    switch (this) {
+      case AppHat.customer:
+        return 'Customer';
+      case AppHat.reseller:
+        return 'Reseller';
+      case AppHat.ambassador:
+        return 'Ambassador';
+    }
+  }
+}
+

@@ -11,6 +11,7 @@ Base: Phase 2 story branch.
 | Become a Reseller | Profile (customer) |
 | Become an Ambassador | Profile (customer) |
 | Demo role switch (decks) | Profile expansion; Ops/Reseller swap icon |
+| Profile hat switch (approved) | Switch to Reseller dashboard / Ambassador view after Ops approval |
 | Home equal pillars | Bottom nav keeps Training / Academies / Store equal (Home layout unchanged) |
 
 ## Laptop install
