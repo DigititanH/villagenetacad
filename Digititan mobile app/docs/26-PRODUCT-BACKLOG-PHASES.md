@@ -111,6 +111,9 @@ Do **not** build two gateways.
 
 **Done when:** a stakeholder can’t tell the app and site are two different brands.
 
+### Phase 3 delivery note
+Implemented on branch `cursor/phase3-one-product-09ad`: Village NetAcad shop URL, Profile Become Reseller/Ambassador, deck demo role-switch, equal Home pillars. Full burnt-orange website theme polish can continue if leadership wants a tighter visual match.
+
 ---
 
 ## Phase 4 — Shared accounts (real ecosystem)

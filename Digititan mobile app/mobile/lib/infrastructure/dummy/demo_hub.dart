@@ -309,6 +309,24 @@ class DemoHub {
   bool isLoginLocked(String email) =>
       deactivatedEmails.contains(email.trim().toLowerCase());
 
+  bool isApprovedReseller(String email) {
+    final p = resellerProfiles[email.trim().toLowerCase()];
+    return p != null && p.isApproved;
+  }
+
+  bool isApprovedAmbassador(String email) {
+    final key = email.trim().toLowerCase();
+    return ambassadorApplications.any((a) => a.email == key && a.isApproved);
+  }
+
+  AmbassadorApplication? approvedAmbassador(String email) {
+    final key = email.trim().toLowerCase();
+    for (final a in ambassadorApplications) {
+      if (a.email == key && a.isApproved) return a;
+    }
+    return null;
+  }
+
   void lockLogin(String email) {
     deactivatedEmails.add(email.trim().toLowerCase());
   }

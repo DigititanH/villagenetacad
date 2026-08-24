@@ -11,6 +11,7 @@ import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 import '../../shared/widgets/product_price_text.dart';
+import '../customer/widgets/demo_role_switcher.dart';
 import 'ambassador_detail_screen.dart';
 import 'reseller_detail_screen.dart';
 
@@ -19,12 +20,14 @@ class AdminShell extends StatefulWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
+  final ValueChanged<User>? onDemoUserSwitched;
 
   const AdminShell({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
+    this.onDemoUserSwitched,
   });
 
   @override
@@ -203,6 +206,20 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Future<void> _openResellerProfile(ResellerProfile profile) async {
+    // Pending applications must go through the approve/issue-code flow.
+    if (profile.isPending) {
+      PendingResellerApplication? pending;
+      for (final p in _pending) {
+        if (p.email.toLowerCase() == profile.email.toLowerCase()) {
+          pending = p;
+          break;
+        }
+      }
+      if (pending != null) {
+        await _openPendingReseller(pending);
+        return;
+      }
+    }
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => ResellerProfileDetailScreen(
@@ -363,6 +380,26 @@ class _AdminShellState extends State<AdminShell> {
         appBar: AppBar(
           title: Text(widget.user.role.label),
           actions: [
+            if (widget.onDemoUserSwitched != null)
+              IconButton(
+                tooltip: 'Demo role switch (decks)',
+                icon: const Icon(Icons.swap_horiz),
+                onPressed: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    builder: (ctx) => Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                      child: DemoRoleSwitcher(
+                        container: widget.container,
+                        onSwitched: (User u) {
+                          Navigator.pop(ctx);
+                          widget.onDemoUserSwitched!(u);
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
             TextButton(
               onPressed: widget.onLogout,
               child: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -522,8 +559,11 @@ class _AdminShellState extends State<AdminShell> {
           ..._pending.map((p) {
             return ListTile(
               title: Text(p.name),
-              subtitle: const Text('Under review'),
-              trailing: const Icon(Icons.chevron_right),
+              subtitle: Text(p.email),
+              trailing: FilledButton(
+                onPressed: () => _approveReseller(p),
+                child: const Text('Approve'),
+              ),
               onTap: () => _openPendingReseller(p),
             );
           }),
@@ -578,8 +618,18 @@ class _AdminShellState extends State<AdminShell> {
           ...pending.map((a) {
             return ListTile(
               title: Text(a.name),
-              subtitle: const Text('Under review'),
-              trailing: const Icon(Icons.chevron_right),
+              subtitle: Text(a.email),
+              trailing: FilledButton(
+                onPressed: () async {
+                  await widget.container.adminRepository.approveAmbassador(a.id);
+                  await _load();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${a.name} approved')),
+                  );
+                },
+                child: const Text('Approve'),
+              ),
               onTap: () => _openAmbassador(a),
             );
           }),

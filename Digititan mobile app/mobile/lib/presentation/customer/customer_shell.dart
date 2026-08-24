@@ -2,23 +2,28 @@ import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/enums/user_role.dart';
 import 'tabs/academies_tab.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/profile_tab.dart';
 import 'tabs/store_tab.dart';
 import 'tabs/training_tab.dart';
 
-/// Customer shell = bottom navigation for the 3 pillars + home/profile.
+/// Customer shell = bottom nav: Home + equal Training / Academies / Store + Profile.
 class CustomerShell extends StatefulWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
+  final ValueChanged<User>? onDemoUserSwitched;
+  final ValueChanged<AppHat>? onSwitchHat;
 
   const CustomerShell({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
+    this.onDemoUserSwitched,
+    this.onSwitchHat,
   });
 
   @override
@@ -47,6 +52,8 @@ class _CustomerShellState extends State<CustomerShell> {
         container: widget.container,
         user: widget.user,
         onLogout: widget.onLogout,
+        onDemoUserSwitched: widget.onDemoUserSwitched,
+        onSwitchHat: widget.onSwitchHat,
       ),
     ];
 

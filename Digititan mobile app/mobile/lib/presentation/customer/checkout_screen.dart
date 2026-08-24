@@ -127,8 +127,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Payment (Phase 2):\n'
-              '• Same gateway story as Digititan Store: ${AppConfig.paymentGatewayName}\n'
+              'Payment (Phase 3):\n'
+              '• Same gateway story as Village NetAcad shop: ${AppConfig.paymentGatewayName}\n'
               '• Confirm with OTP ${AppConfig.paymentOtpDemo} (email or SMS)\n'
               '• Commission attributed to the referral code automatically\n'
               '• Never pay cash to individuals or ambassadors',

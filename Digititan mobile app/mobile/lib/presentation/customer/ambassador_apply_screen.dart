@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/user.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
 
 class AmbassadorApplyScreen extends StatefulWidget {
-  const AmbassadorApplyScreen({super.key});
+  final User? user;
+
+  const AmbassadorApplyScreen({super.key, this.user});
 
   @override
   State<AmbassadorApplyScreen> createState() => _AmbassadorApplyScreenState();
 }
 
 class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
-  final _name = TextEditingController();
-  final _email = TextEditingController();
+  late final TextEditingController _name;
+  late final TextEditingController _email;
   final _phone = TextEditingController();
   final _motivation = TextEditingController();
   bool _loading = false;
   bool _submitted = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _name = TextEditingController(text: widget.user?.name ?? '');
+    _email = TextEditingController(text: widget.user?.email ?? '');
+  }
 
   @override
   void dispose() {
@@ -39,20 +49,19 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
       _error = null;
     });
 
+    final email = _email.text.trim().toLowerCase();
     DemoHub.instance.ambassadorApplications.insert(
       0,
       AmbassadorApplication(
         id: 'amb-${DateTime.now().millisecondsSinceEpoch}',
         name: _name.text.trim(),
-        email: _email.text.trim().toLowerCase(),
+        email: email,
         phone: _phone.text.trim(),
         motivation: _motivation.text.trim(),
         createdAt: DateTime.now(),
       ),
     );
-    DemoHub.instance.log(
-      'Ambassador application: ${_email.text.trim().toLowerCase()}',
-    );
+    DemoHub.instance.log('Ambassador application: $email');
 
     if (!mounted) return;
     setState(() {
@@ -63,17 +72,20 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lockedEmail = widget.user != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Become an ambassador')),
+      appBar: AppBar(title: const Text('Become an Ambassador')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: DigititanColors.danger.withOpacity(0.08),
+              color: DigititanColors.danger.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: DigititanColors.danger.withOpacity(0.4)),
+              border: Border.all(
+                color: DigititanColors.danger.withValues(alpha: 0.4),
+              ),
             ),
             child: const Text(
               'Never pay cash to individuals or ambassadors. '
@@ -93,15 +105,17 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
             const Text(
               'Ops Admin must approve ambassador applications. '
               'Until then you are not an official Village NetAcad ambassador. '
-              'Buyers should never pay cash to anyone claiming to be an ambassador.',
+              'After approval, switch to Ambassador view from Profile.',
             ),
           ] else ...[
             TextField(
               controller: _name,
+              readOnly: lockedEmail,
               decoration: const InputDecoration(labelText: 'Full name'),
             ),
             TextField(
               controller: _email,
+              readOnly: lockedEmail,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
             ),
@@ -112,7 +126,9 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
             ),
             TextField(
               controller: _motivation,
-              decoration: const InputDecoration(labelText: 'Why do you want to be an ambassador?'),
+              decoration: const InputDecoration(
+                labelText: 'Why do you want to be an ambassador?',
+              ),
               maxLines: 4,
             ),
             if (_error != null) ...[

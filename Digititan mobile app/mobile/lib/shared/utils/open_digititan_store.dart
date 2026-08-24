@@ -3,15 +3,15 @@ import 'package:flutter/services.dart';
 
 import '../config/app_config.dart';
 
-/// Opens Digititan Store in the system browser.
+/// Opens the Village NetAcad shop in the system browser.
 ///
 /// Uses a MethodChannel into our own MainActivity (Kotlin on the same drive
 /// as the project). Avoids pub.dev url_launcher, which breaks builds when
 /// the app is on S: and Pub Cache is on C:.
 const _browserChannel = MethodChannel('za.co.digititan.digititan_mobile/browser');
 
-Future<bool> openDigititanStoreUrl() async {
-  final url = AppConfig.digititanStoreUrl;
+Future<bool> openVillageNetAcadShopUrl() async {
+  final url = AppConfig.villageNetAcadShopUrl;
   try {
     final ok = await _browserChannel.invokeMethod<bool>('openUrl', {'url': url});
     return ok == true;
@@ -22,15 +22,18 @@ Future<bool> openDigititanStoreUrl() async {
   }
 }
 
+/// Backward-compatible alias.
+Future<bool> openDigititanStoreUrl() => openVillageNetAcadShopUrl();
+
 /// Tap Store CTA: open browser; if that fails, show dialog with clickable link.
-Future<void> openDigititanStore(BuildContext context) async {
-  final url = AppConfig.digititanStoreUrl;
-  final opened = await openDigititanStoreUrl();
+Future<void> openVillageNetAcadShop(BuildContext context) async {
+  final url = AppConfig.villageNetAcadShopUrl;
+  final opened = await openVillageNetAcadShopUrl();
   if (!context.mounted) return;
 
   if (opened) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening Digititan Store website...')),
+      const SnackBar(content: Text('Opening Village NetAcad shop...')),
     );
     return;
   }
@@ -41,14 +44,14 @@ Future<void> openDigititanStore(BuildContext context) async {
   await showDialog<void>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Digititan Store website'),
+      title: const Text('Village NetAcad shop'),
       content: const Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tap the link to open the store:'),
+          Text('Tap the link to open the shop:'),
           SizedBox(height: 12),
-          DigititanStoreLink(),
+          VillageNetAcadShopLink(),
           SizedBox(height: 12),
           Text(
             'Link also copied to clipboard if the browser does not open.',
@@ -66,16 +69,20 @@ Future<void> openDigititanStore(BuildContext context) async {
   );
 }
 
-/// Blue underlined store URL - tap opens the browser.
-class DigititanStoreLink extends StatelessWidget {
-  const DigititanStoreLink({super.key});
+/// Backward-compatible alias.
+Future<void> openDigititanStore(BuildContext context) =>
+    openVillageNetAcadShop(context);
+
+/// Underlined shop URL — tap opens the browser.
+class VillageNetAcadShopLink extends StatelessWidget {
+  const VillageNetAcadShopLink({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final url = AppConfig.digititanStoreUrl;
+    final url = AppConfig.villageNetAcadShopUrl;
     return InkWell(
       onTap: () async {
-        final ok = await openDigititanStoreUrl();
+        final ok = await openVillageNetAcadShopUrl();
         if (!ok) {
           await Clipboard.setData(ClipboardData(text: url));
           if (context.mounted) {
@@ -96,4 +103,12 @@ class DigititanStoreLink extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Backward-compatible alias widget.
+class DigititanStoreLink extends StatelessWidget {
+  const DigititanStoreLink({super.key});
+
+  @override
+  Widget build(BuildContext context) => const VillageNetAcadShopLink();
 }
