@@ -49,7 +49,7 @@ class _CustomerShellState extends State<CustomerShell> {
         container: widget.container,
         user: widget.user,
         onLogout: widget.onLogout,
-        onDemoUserSwitched: widget.onDemoUserSwitched,
+        onSessionUserChanged: widget.onDemoUserSwitched,
       ),
     ];
 

@@ -6,7 +6,9 @@ import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
+import '../../shared/utils/approved_role_switch.dart';
 import '../../shared/widgets/demo_banner.dart';
+import '../../domain/enums/user_role.dart';
 import '../customer/widgets/demo_role_switcher.dart';
 import 'reseller_qr_card.dart';
 
@@ -285,7 +287,21 @@ class _ResellerShellState extends State<ResellerShell> {
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
-            if (widget.onDemoUserSwitched != null)
+            if (widget.onDemoUserSwitched != null) ...[
+              TextButton(
+                onPressed: () {
+                  widget.onDemoUserSwitched!(
+                    ApprovedRoleSwitch.asRole(widget.user, UserRole.customer),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Switched to Customer view')),
+                  );
+                },
+                child: const Text(
+                  'Customer',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
               IconButton(
                 tooltip: 'Demo role switch (decks)',
                 icon: const Icon(Icons.swap_horiz),
@@ -305,6 +321,7 @@ class _ResellerShellState extends State<ResellerShell> {
                   );
                 },
               ),
+            ],
             TextButton(
               onPressed: widget.onLogout,
               child: const Text('Logout', style: TextStyle(color: Colors.white)),
