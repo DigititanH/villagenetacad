@@ -1,15 +1,18 @@
 /// App-level constants (no secrets here).
 class AppConfig {
-  /// Official Digititan Store website (same catalogue / PayFast merchant).
-  static const digititanStoreUrl = 'https://www.shop.digititan.co.za/';
+  /// Village NetAcad shop (Phase 3 — not shop.digititan.co.za).
+  static const villageNetAcadShopUrl = 'https://villagenetacad.co.za/shop';
 
-  /// Same gateway as Digititan Store / website (Phase 2 story; live in Phase 7).
+  /// @Deprecated Prefer [villageNetAcadShopUrl]. Kept so older call sites compile.
+  static const digititanStoreUrl = villageNetAcadShopUrl;
+
+  /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
   static const paymentGatewayName = 'PayFast';
 
   /// Prototype notice shown in Store tab.
   static const storeModeMessage =
-      'Browse sample products here. Checkout uses the same PayFast gateway '
-      'story as the Digititan Store (full live pay in later phases).';
+      'Browse sample products here. Full shop is the Village NetAcad website '
+      '(same PayFast gateway story — live pay in later phases).';
 
   static const emailOtpDemo = '123456';
   static const smsOtpDemo = '123456';
@@ -26,13 +29,13 @@ class AppConfig {
       'Keep your proof of purchase. International delivery may take 1–2 months.';
 
   static const purchaseTermsShort =
-      'By buying you accept Digititan / Village NetAcad purchase terms: '
+      'By buying you accept Village NetAcad purchase terms: '
       'international orders may take 1–2 months; returns within '
       '$returnWindowDays days of delivery if unused; warranty via Pinnacle '
       'where applicable. Never pay cash to individuals or ambassadors.';
 
   static const demoModeLine =
-      'Presentation demo · Phase 2 story · sample data';
+      'Presentation demo · Phase 3 · one Village NetAcad product · sample data';
 
   /// Deep-link / QR payload for reseller legitimacy check.
   static String resellerVerifyPayload(String code) =>

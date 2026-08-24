@@ -7,18 +7,21 @@ import '../../domain/entities/user.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
+import '../customer/widgets/demo_role_switcher.dart';
 import 'reseller_qr_card.dart';
 
 class ResellerShell extends StatefulWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
+  final ValueChanged<User>? onDemoUserSwitched;
 
   const ResellerShell({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
+    this.onDemoUserSwitched,
   });
 
   @override
@@ -282,6 +285,26 @@ class _ResellerShellState extends State<ResellerShell> {
               onPressed: _load,
               icon: const Icon(Icons.refresh),
             ),
+            if (widget.onDemoUserSwitched != null)
+              IconButton(
+                tooltip: 'Demo role switch (decks)',
+                icon: const Icon(Icons.swap_horiz),
+                onPressed: () {
+                  showModalBottomSheet<void>(
+                    context: context,
+                    builder: (ctx) => Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                      child: DemoRoleSwitcher(
+                        container: widget.container,
+                        onSwitched: (User u) {
+                          Navigator.pop(ctx);
+                          widget.onDemoUserSwitched!(u);
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
             TextButton(
               onPressed: widget.onLogout,
               child: const Text('Logout', style: TextStyle(color: Colors.white)),

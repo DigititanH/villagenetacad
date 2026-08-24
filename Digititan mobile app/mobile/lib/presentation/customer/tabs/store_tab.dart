@@ -11,9 +11,9 @@ import '../../../shared/widgets/demo_banner.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 
-/// Leadership decision:
+/// Leadership decision (Phase 3):
 /// - Show sample products in-app
-/// - Full shopping happens on Digititan Store website
+/// - Full shopping happens on the Village NetAcad shop website
 class StoreTab extends StatefulWidget {
   final AppContainer container;
   final User user;
@@ -70,12 +70,12 @@ class _StoreTabState extends State<StoreTab> {
                     QuietNotice(message: AppConfig.storeModeMessage),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
-                      onPressed: () => openDigititanStore(context),
+                      onPressed: () => openVillageNetAcadShop(context),
                       icon: const Icon(Icons.open_in_browser),
-                      label: const Text('Open Digititan Store'),
+                      label: const Text('Open Village NetAcad shop'),
                     ),
                     const SizedBox(height: 4),
-                    const DigititanStoreLink(),
+                    const VillageNetAcadShopLink(),
                     const SizedBox(height: 8),
                     const SectionHeader(title: 'Sample catalogue'),
                     ..._products.map(_productTile),

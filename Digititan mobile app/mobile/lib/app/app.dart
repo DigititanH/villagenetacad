@@ -6,7 +6,7 @@ import '../presentation/shell/role_router.dart';
 import '../shared/theme/digititan_theme.dart';
 import 'injection.dart';
 
-/// App shell with Digititan brand theme.
+/// App shell with Village NetAcad brand theme.
 class DigititanApp extends StatefulWidget {
   final AppContainer container;
 
@@ -22,7 +22,7 @@ class _DigititanAppState extends State<DigititanApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Digititan',
+      title: 'Village NetAcad',
       debugShowCheckedModeBanner: false,
       theme: DigititanTheme.light(),
       home: _user == null
@@ -37,6 +37,7 @@ class _DigititanAppState extends State<DigititanApp> {
                 await widget.container.authRepository.signOut();
                 setState(() => _user = null);
               },
+              onDemoUserSwitched: (user) => setState(() => _user = user),
             ),
     );
   }

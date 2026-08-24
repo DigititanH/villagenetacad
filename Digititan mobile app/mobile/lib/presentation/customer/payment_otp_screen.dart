@@ -91,7 +91,7 @@ class _PaymentOtpScreenState extends State<PaymentOtpScreen> {
             Text('Confirm payment for ${widget.user.email}'),
             const SizedBox(height: 8),
             Text(
-              '${AppConfig.paymentGatewayName} gateway — same as Digititan Store.',
+              '${AppConfig.paymentGatewayName} gateway — same as Village NetAcad shop.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: DigititanColors.primary,
                     fontWeight: FontWeight.w600,

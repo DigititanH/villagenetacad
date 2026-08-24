@@ -10,8 +10,8 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 
 ## Store
 - App shows sample products
-- Website: `https://www.shop.digititan.co.za/`
-- **Wave 2D:** in-app checkout via **same PayFast gateway** as Digititan Store
+- Website shop: `https://villagenetacad.co.za/shop` (Phase 3 — not shop.digititan.co.za)
+- Same PayFast gateway story as the website; live in-app pay later (Phase 7)
 
 ## Desktop
 - Downloadable Windows/Mac app required (Flutter desktop later)

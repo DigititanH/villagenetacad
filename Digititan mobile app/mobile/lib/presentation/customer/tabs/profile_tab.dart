@@ -6,21 +6,25 @@ import '../../../domain/enums/user_role.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/theme/digititan_theme.dart';
 import '../ambassador_apply_screen.dart';
+import '../become_reseller_screen.dart';
 import '../legal_hub_screen.dart';
 import '../my_orders_screen.dart';
 import '../notifications_screen.dart';
 import '../verify_reseller_screen.dart';
+import '../widgets/demo_role_switcher.dart';
 
 class ProfileTab extends StatelessWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
+  final ValueChanged<User>? onDemoUserSwitched;
 
   const ProfileTab({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
+    this.onDemoUserSwitched,
   });
 
   @override
@@ -90,17 +94,33 @@ class ProfileTab extends StatelessWidget {
             },
             child: const Text('Verify a reseller'),
           ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const AmbassadorApplyScreen(),
-                ),
-              );
-            },
-            child: const Text('Become an ambassador'),
-          ),
+          if (user.role == UserRole.customer) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BecomeResellerScreen(
+                      container: container,
+                      user: user,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Become a Reseller'),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const AmbassadorApplyScreen(),
+                  ),
+                );
+              },
+              child: const Text('Become an Ambassador'),
+            ),
+          ],
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: () {
@@ -117,26 +137,31 @@ class ProfileTab extends StatelessWidget {
             onPressed: onLogout,
             child: const Text('Logout'),
           ),
+          if (onDemoUserSwitched != null) ...[
+            const SizedBox(height: 20),
+            DemoRoleSwitcher(
+              container: container,
+              onSwitched: onDemoUserSwitched!,
+            ),
+          ],
           const SizedBox(height: 20),
           Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               tilePadding: EdgeInsets.zero,
               title: Text(
-                'Demo reference',
+                'Demo tips',
                 style: Theme.of(context).textTheme.titleSmall,
               ),
+              childrenPadding: const EdgeInsets.only(bottom: 8),
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Email/SMS OTP: ${AppConfig.emailOtpDemo}\n'
-                    'Payment OTP: ${AppConfig.paymentOtpDemo}\n'
-                    'Password: demo123\n'
-                    'Delivered demo order: ORD-DEMO-DELIVERED\n'
                     'Verify reseller: VNA-B-LERATO\n'
-                    'Min withdraw: R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}\n'
-                    'Gateway: ${AppConfig.paymentGatewayName}',
+                    'Shop: ${AppConfig.villageNetAcadShopUrl}\n'
+                    'Email/SMS OTP: ${AppConfig.emailOtpDemo}\n'
+                    'Payment OTP: ${AppConfig.paymentOtpDemo}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

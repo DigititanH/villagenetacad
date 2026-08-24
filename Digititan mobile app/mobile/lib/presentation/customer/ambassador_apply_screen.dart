@@ -64,7 +64,7 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Become an ambassador')),
+      appBar: AppBar(title: const Text('Become an Ambassador')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -100,12 +100,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       message: AppConfig.storeModeMessage,
                     ),
                     const SizedBox(height: 10),
-                    const DigititanStoreLink(),
+                    const VillageNetAcadShopLink(),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
-                      onPressed: () => openDigititanStore(context),
+                      onPressed: () => openVillageNetAcadShop(context),
                       icon: const Icon(Icons.open_in_browser),
-                      label: const Text('Open Digititan Store'),
+                      label: const Text('Open Village NetAcad shop'),
                     ),
                     const SizedBox(height: 10),
                     OutlinedButton(

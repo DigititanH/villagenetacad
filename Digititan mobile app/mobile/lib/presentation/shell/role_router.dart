@@ -11,12 +11,14 @@ class RoleRouter extends StatelessWidget {
   final AppContainer container;
   final User user;
   final VoidCallback onLogout;
+  final ValueChanged<User>? onDemoUserSwitched;
 
   const RoleRouter({
     super.key,
     required this.container,
     required this.user,
     required this.onLogout,
+    this.onDemoUserSwitched,
   });
 
   @override
@@ -27,12 +29,14 @@ class RoleRouter extends StatelessWidget {
           container: container,
           user: user,
           onLogout: onLogout,
+          onDemoUserSwitched: onDemoUserSwitched,
         );
       case UserRole.reseller:
         return ResellerShell(
           container: container,
           user: user,
           onLogout: onLogout,
+          onDemoUserSwitched: onDemoUserSwitched,
         );
       case UserRole.opsAdmin:
       case UserRole.superAdmin:
@@ -40,6 +44,7 @@ class RoleRouter extends StatelessWidget {
           container: container,
           user: user,
           onLogout: onLogout,
+          onDemoUserSwitched: onDemoUserSwitched,
         );
     }
   }
