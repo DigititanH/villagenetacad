@@ -99,49 +99,34 @@ class _ResellerShellState extends State<ResellerShell> {
     }
 
     final available = _profile?.balance ?? 0;
+    final minZar = AppConfig.minWithdrawalZar;
     final controller = TextEditingController(
-      text: available > 0 ? available.toStringAsFixed(0) : '0',
+      text: available >= minZar ? available.toStringAsFixed(0) : '',
     );
+
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Withdraw (month-end)'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Money due to you: R${available.toStringAsFixed(2)}\n'
-              'Minimum withdrawal: R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}\n'
-              'Enter how much you want to withdraw today.',
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Amount (ZAR)',
-                helperText:
-                    'Min R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Request withdrawal'),
-          ),
-        ],
+      builder: (ctx) => _MinWithdrawDialog(
+        controller: controller,
+        available: available,
+        minZar: minZar,
       ),
     );
     if (ok != true) return;
     try {
-      final amount = double.parse(controller.text);
+      final amount = double.parse(controller.text.trim());
+      if (amount < minZar) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: DigititanColors.danger,
+            content: Text(
+              'Minimum withdrawal is R${minZar.toStringAsFixed(0)}. Request blocked.',
+            ),
+          ),
+        );
+        return;
+      }
       await widget.container.resellerRepository.requestWithdrawal(
         email: widget.user.email,
         amount: amount,
@@ -156,7 +141,10 @@ class _ResellerShellState extends State<ResellerShell> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          backgroundColor: DigititanColors.danger,
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     }
   }
@@ -592,6 +580,129 @@ class _ResellerShellState extends State<ResellerShell> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Blocks Request withdrawal until amount >= min (R100).
+class _MinWithdrawDialog extends StatefulWidget {
+  final TextEditingController controller;
+  final double available;
+  final double minZar;
+
+  const _MinWithdrawDialog({
+    required this.controller,
+    required this.available,
+    required this.minZar,
+  });
+
+  @override
+  State<_MinWithdrawDialog> createState() => _MinWithdrawDialogState();
+}
+
+class _MinWithdrawDialogState extends State<_MinWithdrawDialog> {
+  String? _error;
+  bool _canSubmit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _validate(widget.controller.text);
+  }
+
+  void _validate(String raw) {
+    final text = raw.trim();
+    final amount = double.tryParse(text);
+    setState(() {
+      if (text.isEmpty || amount == null) {
+        _error =
+            'Enter an amount of at least R${widget.minZar.toStringAsFixed(0)}.';
+        _canSubmit = false;
+      } else if (amount < widget.minZar) {
+        _error =
+            'Minimum withdrawal is R${widget.minZar.toStringAsFixed(0)}. '
+            'You entered R${amount.toStringAsFixed(0)} — request is blocked.';
+        _canSubmit = false;
+      } else if (amount > widget.available) {
+        _error =
+            'Not enough balance. You only have R${widget.available.toStringAsFixed(2)}.';
+        _canSubmit = false;
+      } else {
+        _error = null;
+        _canSubmit = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Withdraw (month-end)'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Money due to you: R${widget.available.toStringAsFixed(2)}\n'
+            'Minimum withdrawal: R${widget.minZar.toStringAsFixed(0)}',
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: widget.controller,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: 'Amount (ZAR)',
+              errorText: _error,
+              errorMaxLines: 3,
+              helperText: _canSubmit
+                  ? 'Ready to request'
+                  : 'Request withdrawal stays disabled under R${widget.minZar.toStringAsFixed(0)}',
+              helperMaxLines: 2,
+            ),
+            onChanged: _validate,
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: DigititanColors.danger.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: DigititanColors.danger, width: 1.5),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.error_outline, color: DigititanColors.danger),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        color: DigititanColors.danger,
+                        fontWeight: FontWeight.w800,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _canSubmit ? () => Navigator.pop(context, true) : null,
+          child: const Text('Request withdrawal'),
+        ),
+      ],
     );
   }
 }
