@@ -4,6 +4,14 @@ import '../../app/injection.dart';
 import '../../domain/entities/academy.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/result/result.dart';
+import '../../shared/theme/digititan_theme.dart';
+
+const _genderOptions = [
+  'Female',
+  'Male',
+  'Non-binary',
+  'Prefer not to say',
+];
 
 class AcademyRegisterScreen extends StatefulWidget {
   final AppContainer container;
@@ -26,6 +34,7 @@ class _AcademyRegisterScreenState extends State<AcademyRegisterScreen> {
   late final TextEditingController _email;
   final _phone = TextEditingController();
   final _notes = TextEditingController();
+  String? _gender;
   bool _loading = false;
   String? _error;
 
@@ -36,7 +45,21 @@ class _AcademyRegisterScreenState extends State<AcademyRegisterScreen> {
     _email = TextEditingController(text: widget.user.email);
   }
 
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
+    if (_gender == null || _gender!.isEmpty) {
+      setState(() => _error = 'Please select your gender');
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -47,6 +70,7 @@ class _AcademyRegisterScreenState extends State<AcademyRegisterScreen> {
       email: _email.text,
       phone: _phone.text,
       notes: _notes.text,
+      gender: _gender!,
     );
     setState(() => _loading = false);
 
@@ -92,6 +116,15 @@ class _AcademyRegisterScreenState extends State<AcademyRegisterScreen> {
               decoration: const InputDecoration(labelText: 'Phone'),
               keyboardType: TextInputType.phone,
             ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _gender,
+              decoration: const InputDecoration(labelText: 'Gender *'),
+              items: _genderOptions
+                  .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                  .toList(),
+              onChanged: (v) => setState(() => _gender = v),
+            ),
             TextField(
               controller: _notes,
               decoration: const InputDecoration(labelText: 'Notes / programme interest'),
@@ -99,12 +132,12 @@ class _AcademyRegisterScreenState extends State<AcademyRegisterScreen> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _submit,
-              child: Text(_loading ? 'Submitting...' : 'Submit application'),
+              child: Text(_loading ? 'Submitting…' : 'Submit application'),
             ),
           ],
         ),

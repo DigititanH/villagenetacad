@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
+import '../../shared/theme/digititan_theme.dart';
+import '../auth/otp_channel_picker.dart';
 import 'order_detail_screen.dart';
 
 class PaymentOtpScreen extends StatefulWidget {
@@ -22,9 +25,26 @@ class PaymentOtpScreen extends StatefulWidget {
 }
 
 class _PaymentOtpScreenState extends State<PaymentOtpScreen> {
-  final _otp = TextEditingController(text: '654321');
+  OtpChannel _channel = OtpChannel.email;
+  late final TextEditingController _otp;
   bool _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _otp = TextEditingController(text: AppConfig.paymentOtpDemo);
+  }
+
+  @override
+  void dispose() {
+    _otp.dispose();
+    super.dispose();
+  }
+
+  void _onChannelChanged(OtpChannel channel) {
+    setState(() => _channel = channel);
+  }
 
   Future<void> _confirm() async {
     setState(() {
@@ -69,20 +89,38 @@ class _PaymentOtpScreenState extends State<PaymentOtpScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text('Confirm payment for ${widget.user.email}'),
-            const Text('Prototype OTP printed in flutter console: 654321'),
+            const SizedBox(height: 8),
+            Text(
+              '${AppConfig.paymentGatewayName} gateway — same as Digititan Store.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: DigititanColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            OtpChannelPicker(
+              selected: _channel,
+              onChanged: _onChannelChanged,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Payment OTP demo: ${AppConfig.paymentOtpDemo}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _otp,
-              decoration: const InputDecoration(labelText: 'OTP'),
+              decoration: const InputDecoration(labelText: 'Payment OTP'),
               keyboardType: TextInputType.number,
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _confirm,
-              child: Text(_loading ? 'Confirming...' : 'Confirm payment'),
+              child: Text(_loading ? 'Confirming…' : 'Confirm payment'),
             ),
           ],
         ),

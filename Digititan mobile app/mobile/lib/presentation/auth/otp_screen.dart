@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
-import '../../domain/entities/user.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
+import '../../shared/theme/digititan_theme.dart';
+import 'otp_channel_picker.dart';
 
 class OtpScreen extends StatefulWidget {
   final AppContainer container;
@@ -19,9 +21,31 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final _otp = TextEditingController(text: '123456');
+  OtpChannel _channel = OtpChannel.email;
+  late final TextEditingController _otp;
   bool _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _otp = TextEditingController(text: AppConfig.emailOtpDemo);
+  }
+
+  @override
+  void dispose() {
+    _otp.dispose();
+    super.dispose();
+  }
+
+  void _onChannelChanged(OtpChannel channel) {
+    setState(() {
+      _channel = channel;
+      _otp.text = channel == OtpChannel.email
+          ? AppConfig.emailOtpDemo
+          : AppConfig.smsOtpDemo;
+    });
+  }
 
   Future<void> _verify() async {
     setState(() {
@@ -44,15 +68,22 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final channelLabel = _channel == OtpChannel.email ? 'email' : 'SMS';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify email OTP')),
+      appBar: AppBar(title: const Text('Verify OTP')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('We sent an OTP to ${widget.email}'),
-            const Text('Prototype: check flutter console. Code is 123456'),
+            Text('We sent an OTP to ${widget.email} via $channelLabel.'),
+            const SizedBox(height: 16),
+            OtpChannelPicker(
+              selected: _channel,
+              onChanged: _onChannelChanged,
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _otp,
               decoration: const InputDecoration(labelText: 'OTP'),
@@ -60,12 +91,12 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _verify,
-              child: Text(_loading ? 'Verifying...' : 'Verify & continue'),
+              child: Text(_loading ? 'Verifying…' : 'Verify & continue'),
             ),
           ],
         ),

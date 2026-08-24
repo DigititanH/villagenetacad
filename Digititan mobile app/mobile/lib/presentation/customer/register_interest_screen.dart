@@ -4,6 +4,14 @@ import '../../app/injection.dart';
 import '../../domain/entities/training_offer.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/result/result.dart';
+import '../../shared/theme/digititan_theme.dart';
+
+const _genderOptions = [
+  'Female',
+  'Male',
+  'Non-binary',
+  'Prefer not to say',
+];
 
 class RegisterInterestScreen extends StatefulWidget {
   final AppContainer container;
@@ -25,6 +33,7 @@ class _RegisterInterestScreenState extends State<RegisterInterestScreen> {
   late final TextEditingController _name;
   late final TextEditingController _email;
   final _phone = TextEditingController();
+  String? _gender;
   bool _loading = false;
   String? _error;
 
@@ -35,7 +44,20 @@ class _RegisterInterestScreenState extends State<RegisterInterestScreen> {
     _email = TextEditingController(text: widget.user.email);
   }
 
+  @override
+  void dispose() {
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
+    if (_gender == null || _gender!.isEmpty) {
+      setState(() => _error = 'Please select your gender');
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -45,6 +67,7 @@ class _RegisterInterestScreenState extends State<RegisterInterestScreen> {
       fullName: _name.text,
       email: _email.text,
       phone: _phone.text,
+      gender: _gender!,
     );
     setState(() => _loading = false);
 
@@ -97,14 +120,23 @@ class _RegisterInterestScreenState extends State<RegisterInterestScreen> {
               decoration: const InputDecoration(labelText: 'Phone (optional)'),
               keyboardType: TextInputType.phone,
             ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _gender,
+              decoration: const InputDecoration(labelText: 'Gender *'),
+              items: _genderOptions
+                  .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                  .toList(),
+              onChanged: (v) => setState(() => _gender = v),
+            ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loading ? null : _submit,
-              child: Text(_loading ? 'Submitting...' : 'Submit'),
+              child: Text(_loading ? 'Submitting…' : 'Submit'),
             ),
           ],
         ),
