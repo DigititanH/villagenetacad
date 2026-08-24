@@ -1,63 +1,61 @@
 # Locked product decisions (from leadership feedback)
 
-Updated: Wave 1 meeting feedback — 24 Aug 2026
+Updated: Phases Wave 1–3 — 24 Aug 2026  
+Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 
 ## V1 users
 - Beneficiaries
 - Academies
-- Shoppers (shopping happens on website)
+- Shoppers
 
 ## Store
-- App shows **sample products only**
-- Full shopping opens **Digititan Store website**
-- Confirmed URL: `https://www.shop.digititan.co.za/` (wired in `app_config.dart`)
-- *(Wave 2 will flip: in-app PayFast checkout)*
+- App shows sample products
+- Website: `https://www.shop.digititan.co.za/`
+- **Wave 2D:** in-app checkout via **same PayFast gateway** as Digititan Store
 
 ## Desktop
 - Downloadable Windows/Mac app required (Flutter desktop later)
 
-## Training
-- Information + registration only
-- Learning happens in separate LMS
+## Training / LMS
+- Information + registration in-app
+- Learning in separate LMS
+- **Wave 2C:** store learner full name, gender, email for LMS alignment
 
 ## Academies (Wave 1)
-- New academies / orgs **register with Digititan first** (in-app form)
-- Cisco NetAcad onboarding may follow later — do **not** Cisco-only redirect
+- New academies / orgs **register with Digititan first**
+- Cisco NetAcad may follow — do **not** Cisco-only redirect
 
 ## Reseller model
-- Different codes for centres and beneficiaries
-- Independent seller contributions → general programme support account
-- Month-end: **Digititan pays all resellers**
-- **Withdrawals: last calendar day of the month only**
-- **Minimum withdrawal: R100** (Wave 1)
-- Reseller app shows **only money due to them** (their 53% or Centre 26%)
-- Bank auto-debit: later (not V1)
-- Withdrawals still need Super Admin approval after request
-- **Locked split of each attributed sale:**
-  - Reseller / Beneficiary **53%**
-  - Centre **26%**
-  - Digititan / Village NetAcad **21%**
+- Codes: Beneficiary (VNA-B) / Centre (VNA-C)
+- Month-end withdrawals only
+- **Minimum withdrawal: R100** (Wave 1 — button blocked under R100)
+- Split: **53%** / **26%** / **21%**
+- **Wave 2A:** buyer verifies reseller via QR / code (DB + PHP API)
+
+## OTP
+- **Wave 2B:** Email **and** SMS channel choice
 
 ## Returns
 - 7 days after delivery
 
-## Legal (Wave 1)
-- In-app draft: Terms, Privacy, Security, Returns
-- **POPI Act full copy: later** (lawyer review)
+## Legal
+- Wave 1: draft T&Cs, privacy, security, returns in-app
+- **Wave 3B:** POPI Act full copy (lawyer) — later stage
 
 ## Branding (Wave 1)
-- Login: larger Village NetAcad logo
-- App icon: Village NetAcad programme mark
+- Larger login Village NetAcad logo
+- App icon = Village NetAcad programme mark
 
-## Academy performance
-- Categories: Registrations, Sales, Completions
+## Security & launch
+- **Wave 3A:** encryption, stronger auth, hardening
+- **Wave 3C:** everything up — launch checklist in `25-PHASES-WAVE2-WAVE3.md`
 
 ## Ambassador
 - Website only (not mobile V1)
 
-## Still waiting (Wave 2+)
-- OTP channel (SMS/email)
-- Reseller QR verify (buyer trust)
-- LMS learner gender fields
-- In-app PayFast payment
-- Full security hardening + launch checklist
+## Remaining phases (summary)
+1. **Wave 2A** QR / verify reseller  
+2. **Wave 2B** SMS + email OTP  
+3. **Wave 2C** LMS learner fields  
+4. **Wave 2D** In-app PayFast  
+5. **Wave 3A–C** Security → POPI → launch checklist  
