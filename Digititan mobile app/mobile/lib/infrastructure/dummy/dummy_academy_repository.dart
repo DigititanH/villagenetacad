@@ -202,6 +202,7 @@ class DummyAcademyRepository implements AcademyRepository {
     required String fullName,
     required String email,
     required String phone,
+    required String gender,
     required String notes,
   }) async {
     final academy = await getById(academyId);
@@ -214,11 +215,14 @@ class DummyAcademyRepository implements AcademyRepository {
         fullName: fullName,
         email: email,
         phone: phone,
+        gender: gender,
         notes: notes,
         createdAt: DateTime.now(),
       ),
     );
-    DemoHub.instance.log('Academy interest: ${academy?.name ?? academyId} by $fullName');
+    DemoHub.instance.log(
+      'Academy interest (LMS): ${academy?.name ?? academyId} by $fullName ($gender)',
+    );
   }
 
   @override

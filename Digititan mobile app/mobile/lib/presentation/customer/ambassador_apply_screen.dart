@@ -2,29 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
-import '../../shared/widgets/demo_banner.dart';
-import 'verify_reseller_screen.dart';
-
-/// Local record until DemoHub.ambassadorApplications is wired by parent infra.
-class _AmbassadorApplication {
-  final String id;
-  final String name;
-  final String email;
-  final String phone;
-  final String motivation;
-  final DateTime createdAt;
-
-  const _AmbassadorApplication({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.motivation,
-    required this.createdAt,
-  });
-}
-
-final List<_AmbassadorApplication> _fallbackApplications = [];
+import 'verify_ambassador_screen.dart';
 
 class AmbassadorApplyScreen extends StatefulWidget {
   const AmbassadorApplyScreen({super.key});
@@ -62,22 +40,20 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
       _error = null;
     });
 
-    final application = _AmbassadorApplication(
-      id: 'amb-${DateTime.now().millisecondsSinceEpoch}',
-      name: _name.text.trim(),
-      email: _email.text.trim().toLowerCase(),
-      phone: _phone.text.trim(),
-      motivation: _motivation.text.trim(),
-      createdAt: DateTime.now(),
+    DemoHub.instance.ambassadorApplications.insert(
+      0,
+      AmbassadorApplication(
+        id: 'amb-${DateTime.now().millisecondsSinceEpoch}',
+        name: _name.text.trim(),
+        email: _email.text.trim().toLowerCase(),
+        phone: _phone.text.trim(),
+        motivation: _motivation.text.trim(),
+        createdAt: DateTime.now(),
+      ),
     );
-
-    try {
-      (DemoHub.instance as dynamic).ambassadorApplications.insert(0, application);
-    } catch (_) {
-      _fallbackApplications.insert(0, application);
-    }
-
-    DemoHub.instance.log('Ambassador application: ${application.email}');
+    DemoHub.instance.log(
+      'Ambassador application: ${_email.text.trim().toLowerCase()}',
+    );
 
     if (!mounted) return;
     setState(() {
@@ -89,88 +65,77 @@ class _AmbassadorApplyScreenState extends State<AmbassadorApplyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Apply as ambassador')),
-      body: Column(
+      appBar: AppBar(title: const Text('Become an ambassador')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          const DemoBanner(message: 'Never pay cash to individuals or ambassadors'),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (_submitted) ...[
-                  const Icon(Icons.hourglass_top, color: DigititanColors.primary, size: 48),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Application under review',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Thank you. Digititan Ops will review your ambassador application. '
-                    'Never pay cash to individuals — only use official Digititan channels.',
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const VerifyResellerScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text('Public verify — check reseller codes'),
-                  ),
-                ] else ...[
-                  TextField(
-                    controller: _name,
-                    decoration: const InputDecoration(labelText: 'Full name'),
-                  ),
-                  TextField(
-                    controller: _email,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  TextField(
-                    controller: _phone,
-                    decoration: const InputDecoration(labelText: 'Phone'),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  TextField(
-                    controller: _motivation,
-                    decoration: const InputDecoration(
-                      labelText: 'Why do you want to be an ambassador?',
-                    ),
-                    maxLines: 4,
-                  ),
-                  const SizedBox(height: 12),
-                  QuietNotice(
-                    message:
-                        'Ambassador roles are reviewed by Digititan. '
-                        'Use public verify to confirm legitimate reseller codes before paying.',
-                    trailing: TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const VerifyResellerScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('Verify'),
-                    ),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 8),
-                    Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
-                  ],
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loading ? null : _submit,
-                    child: Text(_loading ? 'Submitting…' : 'Submit application'),
-                  ),
-                ],
-              ],
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: DigititanColors.danger.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: DigititanColors.danger.withOpacity(0.4)),
+            ),
+            child: const Text(
+              'Never pay cash to individuals or ambassadors. '
+              'All payments go through Digititan / Village NetAcad checkout only.',
+              style: TextStyle(fontWeight: FontWeight.w700, height: 1.35),
             ),
           ),
+          const SizedBox(height: 16),
+          if (_submitted) ...[
+            const Icon(Icons.hourglass_top, size: 40, color: DigititanColors.primary),
+            const SizedBox(height: 12),
+            Text(
+              'Application under review',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Ops Admin will review your ambassador application. '
+              'Buyers can verify approved ambassadors in the app.',
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const VerifyAmbassadorScreen(),
+                  ),
+                );
+              },
+              child: const Text('Open public ambassador verify'),
+            ),
+          ] else ...[
+            TextField(
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'Full name'),
+            ),
+            TextField(
+              controller: _email,
+              decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            TextField(
+              controller: _phone,
+              decoration: const InputDecoration(labelText: 'Phone'),
+              keyboardType: TextInputType.phone,
+            ),
+            TextField(
+              controller: _motivation,
+              decoration: const InputDecoration(labelText: 'Why do you want to be an ambassador?'),
+              maxLines: 4,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
+            ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loading ? null : _submit,
+              child: Text(_loading ? 'Submitting...' : 'Submit application'),
+            ),
+          ],
         ],
       ),
     );

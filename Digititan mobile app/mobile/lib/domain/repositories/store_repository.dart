@@ -32,6 +32,19 @@ abstract class StoreRepository {
 
   Future<void> updateProductPrice(String productId, double price);
 
+  /// Phase 2: return within 7 days of delivery.
+  Future<ShopOrder> requestReturn({
+    required String orderId,
+    required String reason,
+  });
+
+  /// Phase 2: review after delivered.
+  Future<ShopOrder> submitReview({
+    required String orderId,
+    required int stars,
+    required String text,
+  });
+
   /// Payment OTP prototype helpers
   String startPaymentOtp(String email);
   bool verifyPaymentOtp(String email, String otp);

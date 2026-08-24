@@ -9,6 +9,7 @@ abstract class AcademyRepository {
     required String fullName,
     required String email,
     required String phone,
+    required String gender,
     required String notes,
   });
   Future<void> registerOrganisation({

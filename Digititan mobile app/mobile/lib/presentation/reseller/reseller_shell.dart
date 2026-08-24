@@ -7,6 +7,7 @@ import '../../domain/entities/user.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
+import 'reseller_qr_card.dart';
 
 class ResellerShell extends StatefulWidget {
   final AppContainer container;
@@ -436,6 +437,14 @@ class _ResellerShellState extends State<ResellerShell> {
               ),
             ],
           ),
+        ),
+        const SizedBox(height: 12),
+        ResellerQrCard(
+          code: p.code,
+          resellerName: p.name,
+          codeType: p.codeType,
+          status: p.status,
+          academyName: p.academyName,
         ),
         const SizedBox(height: 12),
         Container(

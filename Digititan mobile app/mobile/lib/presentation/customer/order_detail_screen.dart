@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../app/injection.dart';
 import '../../domain/entities/shop_order.dart';
+import '../../shared/config/app_config.dart';
+import '../../shared/theme/digititan_theme.dart';
+import 'return_request_screen.dart';
+import 'review_order_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final AppContainer container;
@@ -53,7 +57,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   children: [
                     if (widget.justPlaced) ...[
                       const Text(
-                        'Sale confirmed (prototype payment + OTP).',
+                        'Sale confirmed (PayFast story + OTP).',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       if (_order!.referralCode != null)
@@ -68,6 +72,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     Text(_order!.id, style: Theme.of(context).textTheme.titleLarge),
                     Text('Status: ${_order!.status.name}'),
                     Text('Total: R${_order!.total.toStringAsFixed(0)}'),
+                    if (_order!.deliveredAt != null)
+                      Text(
+                        'Delivered: ${_order!.deliveredAt!.toIso8601String().substring(0, 10)}',
+                      ),
                     const SizedBox(height: 16),
                     Text('Items', style: Theme.of(context).textTheme.titleMedium),
                     ..._order!.items.map(
@@ -89,11 +97,65 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Returns / reviews come in a later polish pass.\n'
-                      'Warranty note: follow Pinnacle policy (from meeting).',
-                      style: TextStyle(fontSize: 12),
+                    Text(
+                      AppConfig.pinnacleWarrantyNote,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
+                    const SizedBox(height: 16),
+                    if (_order!.canRequestReturn)
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ReturnRequestScreen(
+                                container: widget.container,
+                                order: _order!,
+                              ),
+                            ),
+                          );
+                          await _load();
+                        },
+                        icon: const Icon(Icons.assignment_return),
+                        label: Text(
+                          'Request return (${_order!.returnDaysLeft} days left)',
+                        ),
+                      )
+                    else if (_order!.returnRequested)
+                      const Text(
+                        'Return already requested for this order.',
+                        style: TextStyle(
+                          color: DigititanColors.accent,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    else if (_order!.status == OrderStatus.delivered)
+                      Text(
+                        'Return window closed (${AppConfig.returnWindowDays} days after delivery).',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    const SizedBox(height: 8),
+                    if (_order!.canReview)
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ReviewOrderScreen(
+                                container: widget.container,
+                                order: _order!,
+                              ),
+                            ),
+                          );
+                          await _load();
+                        },
+                        icon: const Icon(Icons.star_outline),
+                        label: const Text('Leave a review'),
+                      )
+                    else if (_order!.reviewed)
+                      Text(
+                        'You reviewed this order'
+                        '${_order!.reviewStars == null ? '' : ' (${_order!.reviewStars}★)'}.',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                   ],
                 ),
     );

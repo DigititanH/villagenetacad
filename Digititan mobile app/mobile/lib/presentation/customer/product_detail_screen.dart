@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/user.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/utils/open_digititan_store.dart';
 import '../../shared/widgets/demo_banner.dart';
@@ -80,9 +81,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     const SizedBox(height: 16),
                     Text(p.summary, style: const TextStyle(height: 1.4)),
                     const SizedBox(height: 18),
+                    Text(
+                      'Purchase terms',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      AppConfig.purchaseTermsShort,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      AppConfig.pinnacleWarrantyNote,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 18),
                     QuietNotice(
-                      message:
-                          'Full purchase happens on the Digititan Store website.',
+                      message: AppConfig.storeModeMessage,
                     ),
                     const SizedBox(height: 10),
                     const DigititanStoreLink(),

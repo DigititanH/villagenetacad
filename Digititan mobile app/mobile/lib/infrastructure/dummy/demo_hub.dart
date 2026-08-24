@@ -23,6 +23,9 @@ class DemoHub {
   final List<InterestLead> academyInterests = [];
   final List<OrgApplication> orgApplications = [];
   final List<String> activityLog = [];
+  final List<DemoNotification> notifications = [];
+  final List<AmbassadorApplication> ambassadorApplications = [];
+  final List<AcademyPerformanceStat> academyStats = [];
 
   /// Customer email -> last used / saved referral code
   final Map<String, String> customerReferralCodes = {};
@@ -177,9 +180,110 @@ class DemoHub {
         ],
         referralCode: null,
       ),
+      // Phase 2 demo: delivered order for customer@demo.com (returns + review)
+      ShopOrder(
+        id: 'ORD-DEMO-DELIVERED',
+        buyerEmail: 'customer@demo.com',
+        items: const [
+          OrderItem(
+            productId: 'p-hoodie',
+            productName: 'Village NetAcad Hoodie',
+            quantity: 1,
+            unitPrice: 349,
+          ),
+        ],
+        status: OrderStatus.delivered,
+        createdAt: DateTime.now().subtract(const Duration(days: 10)),
+        deliveredAt: DateTime.now().subtract(const Duration(days: 3)),
+        trackingTimeline: const [
+          'Order placed',
+          'Payment confirmed (PayFast)',
+          'Shipped',
+          'Delivered',
+          'Please leave a review',
+        ],
+        referralCode: 'VNA-B-LERATO',
+      ),
     ]);
 
-    log('Demo hub ready (reseller code VNA-B-LERATO seeded)');
+    notifications.addAll([
+      DemoNotification(
+        id: 'n-1',
+        title: 'Order delivered',
+        body:
+            'ORD-DEMO-DELIVERED was delivered. You have 7 days to request a return. Please leave a review.',
+        recipientEmail: 'customer@demo.com',
+        createdAt: DateTime.now().subtract(const Duration(days: 3)),
+      ),
+      DemoNotification(
+        id: 'n-2',
+        title: 'Reseller sale confirmed',
+        body: 'A customer bought with VNA-B-LERATO — earnings updated.',
+        recipientEmail: 'reseller@demo.com',
+        createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+      ),
+      DemoNotification(
+        id: 'n-3',
+        title: 'Order processing',
+        body: 'ORD-DEMO-1001 is being processed at Digititan Store.',
+        recipientEmail: 'aisha@example.com',
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+    ]);
+
+    ambassadorApplications.addAll([
+      AmbassadorApplication(
+        id: 'amb-1',
+        name: 'Sipho Mokoena',
+        email: 'sipho.ambassador@example.com',
+        phone: '0820001111',
+        motivation: 'I want to grow Village NetAcad in my community.',
+        createdAt: DateTime.now().subtract(const Duration(days: 4)),
+        status: 'under_review',
+      ),
+      AmbassadorApplication(
+        id: 'amb-2',
+        name: 'Lerato Dube',
+        email: 'lerato.ambassador@example.com',
+        phone: '0830002222',
+        motivation: 'Already mentoring youth in networking basics.',
+        createdAt: DateTime.now().subtract(const Duration(days: 20)),
+        status: 'approved',
+      ),
+    ]);
+
+    academyStats.addAll([
+      const AcademyPerformanceStat(
+        academyId: 'a-lesedi',
+        academyName: 'Lesedi Labatu Academy',
+        registrations: 42,
+        sales: 18,
+        completions: 27,
+      ),
+      const AcademyPerformanceStat(
+        academyId: 'a-cape',
+        academyName: 'Cape Flats NetAcad Centre',
+        registrations: 35,
+        sales: 22,
+        completions: 19,
+      ),
+      const AcademyPerformanceStat(
+        academyId: 'a-tshwane',
+        academyName: 'Tshwane Tech Hub',
+        registrations: 28,
+        sales: 11,
+        completions: 15,
+      ),
+      const AcademyPerformanceStat(
+        academyId: 'a-durban',
+        academyName: 'eThekwini NetAcad',
+        registrations: 21,
+        sales: 9,
+        completions: 12,
+      ),
+    ]);
+
+    log('Demo hub ready (Phase 2: returns, reviews, QR, ambassadors)');
   }
 
   void log(String message) {
@@ -417,6 +521,8 @@ class InterestLead {
   final String fullName;
   final String email;
   final String phone;
+  /// Phase 2 / LMS alignment.
+  final String gender;
   final String notes;
   final DateTime createdAt;
   String status;
@@ -428,9 +534,64 @@ class InterestLead {
     required this.fullName,
     required this.email,
     required this.phone,
+    this.gender = '',
     required this.notes,
     required this.createdAt,
     this.status = 'new',
+  });
+}
+
+class DemoNotification {
+  final String id;
+  final String title;
+  final String body;
+  final String? recipientEmail;
+  final DateTime createdAt;
+  bool read;
+
+  DemoNotification({
+    required this.id,
+    required this.title,
+    required this.body,
+    this.recipientEmail,
+    required this.createdAt,
+    this.read = false,
+  });
+}
+
+class AmbassadorApplication {
+  final String id;
+  final String name;
+  final String email;
+  final String phone;
+  final String motivation;
+  final DateTime createdAt;
+  String status; // under_review | approved | rejected
+
+  AmbassadorApplication({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.motivation,
+    required this.createdAt,
+    this.status = 'under_review',
+  });
+}
+
+class AcademyPerformanceStat {
+  final String academyId;
+  final String academyName;
+  final int registrations;
+  final int sales;
+  final int completions;
+
+  const AcademyPerformanceStat({
+    required this.academyId,
+    required this.academyName,
+    required this.registrations,
+    required this.sales,
+    required this.completions,
   });
 }
 

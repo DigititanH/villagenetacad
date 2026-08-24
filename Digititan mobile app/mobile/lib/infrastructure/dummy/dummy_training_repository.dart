@@ -90,11 +90,13 @@ class DummyTrainingRepository implements TrainingRepository {
     required String fullName,
     required String email,
     required String phone,
+    required String gender,
   }) async {
     interests.add({
       'trainingId': trainingId,
       'fullName': fullName,
       'email': email,
+      'gender': gender,
       'phone': phone,
       'at': DateTime.now().toIso8601String(),
     });
@@ -108,10 +110,13 @@ class DummyTrainingRepository implements TrainingRepository {
         fullName: fullName,
         email: email,
         phone: phone,
+        gender: gender,
         notes: '',
         createdAt: DateTime.now(),
       ),
     );
-    DemoHub.instance.log('Training interest: ${offer?.title ?? trainingId} by $fullName');
+    DemoHub.instance.log(
+      'Training interest (LMS): ${offer?.title ?? trainingId} by $fullName ($gender)',
+    );
   }
 }

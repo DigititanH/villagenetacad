@@ -7,17 +7,28 @@ import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 
 class VerifyResellerScreen extends StatefulWidget {
-  const VerifyResellerScreen({super.key});
+  final String? initialCode;
+
+  const VerifyResellerScreen({super.key, this.initialCode});
 
   @override
   State<VerifyResellerScreen> createState() => _VerifyResellerScreenState();
 }
 
 class _VerifyResellerScreenState extends State<VerifyResellerScreen> {
-  final _input = TextEditingController();
+  late final TextEditingController _input;
   IssuedResellerCode? _issued;
   ResellerProfile? _profile;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _input = TextEditingController(text: widget.initialCode ?? '');
+    if (widget.initialCode != null && widget.initialCode!.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _lookup());
+    }
+  }
 
   @override
   void dispose() {

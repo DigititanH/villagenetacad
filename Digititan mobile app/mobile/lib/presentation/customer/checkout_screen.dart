@@ -5,7 +5,9 @@ import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../infrastructure/dummy/dummy_store_repository.dart';
+import '../../shared/config/app_config.dart';
 import 'payment_otp_screen.dart';
+import 'verify_reseller_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final AppContainer container;
@@ -109,14 +111,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const SizedBox(height: 8),
               Text(_codeHint!, style: const TextStyle(fontSize: 12)),
             ],
-            const SizedBox(height: 16),
-            const Text(
-              'Payment note (prototype):\n'
-              '1) Apply reseller code (optional)\n'
-              '2) Simulate payment gateway\n'
-              '3) Confirm with OTP 654321\n'
-              '4) Commission attributed to that code automatically',
-              style: TextStyle(fontSize: 12),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => VerifyResellerScreen(
+                      initialCode: _code.text.trim().isEmpty
+                          ? null
+                          : _code.text.trim(),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Verify this reseller is legit'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Payment (Phase 2):\n'
+              '• Same gateway story as Digititan Store: ${AppConfig.paymentGatewayName}\n'
+              '• Confirm with OTP ${AppConfig.paymentOtpDemo} (email or SMS)\n'
+              '• Commission attributed to the referral code automatically\n'
+              '• Never pay cash to individuals or ambassadors',
+              style: const TextStyle(fontSize: 12, height: 1.4),
             ),
             const Spacer(),
             ElevatedButton(
@@ -137,7 +153,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 );
               },
-              child: const Text('Pay (simulated gateway)'),
+              child: Text('Pay with ${AppConfig.paymentGatewayName}'),
             ),
           ],
         ),

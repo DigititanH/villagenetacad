@@ -2,55 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/theme/digititan_theme.dart';
-import '../../shared/widgets/demo_banner.dart';
-
-class _DemoAmbassador {
-  final String id;
-  final String name;
-  final String email;
-  final String status;
-
-  const _DemoAmbassador({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.status,
-  });
-}
-
-const _fallbackAmbassadors = [
-  _DemoAmbassador(
-    id: 'amb-1',
-    name: 'Lerato Mokoena',
-    email: 'lerato@example.com',
-    status: 'approved',
-  ),
-  _DemoAmbassador(
-    id: 'amb-2',
-    name: 'Sipho Ndlovu',
-    email: 'sipho@example.com',
-    status: 'under_review',
-  ),
-];
-
-List<_DemoAmbassador> _loadAmbassadors() {
-  try {
-    final raw = (DemoHub.instance as dynamic).ambassadors as List<dynamic>?;
-    if (raw == null || raw.isEmpty) return _fallbackAmbassadors;
-    return raw
-        .map(
-          (a) => _DemoAmbassador(
-            id: '${a.id}',
-            name: '${a.name}',
-            email: '${a.email}'.toLowerCase(),
-            status: '${a.status}',
-          ),
-        )
-        .toList();
-  } catch (_) {
-    return _fallbackAmbassadors;
-  }
-}
 
 class VerifyAmbassadorScreen extends StatefulWidget {
   const VerifyAmbassadorScreen({super.key});
@@ -61,7 +12,7 @@ class VerifyAmbassadorScreen extends StatefulWidget {
 
 class _VerifyAmbassadorScreenState extends State<VerifyAmbassadorScreen> {
   final _input = TextEditingController();
-  _DemoAmbassador? _match;
+  AmbassadorApplication? _hit;
   String? _error;
 
   @override
@@ -71,112 +22,95 @@ class _VerifyAmbassadorScreenState extends State<VerifyAmbassadorScreen> {
   }
 
   void _lookup() {
-    final query = _input.text.trim().toLowerCase();
-    if (query.isEmpty) {
+    final q = _input.text.trim().toLowerCase();
+    if (q.isEmpty) {
       setState(() {
-        _match = null;
-        _error = 'Enter an ambassador email or ID';
+        _error = 'Enter ambassador email or id';
+        _hit = null;
       });
       return;
     }
-
-    final ambassadors = _loadAmbassadors();
-    _DemoAmbassador? hit;
-    for (final a in ambassadors) {
-      if (a.email == query ||
-          a.id.toLowerCase() == query ||
-          a.name.toLowerCase().contains(query)) {
-        hit = a;
+    AmbassadorApplication? found;
+    for (final a in DemoHub.instance.ambassadorApplications) {
+      if (a.email.toLowerCase() == q || a.id.toLowerCase() == q) {
+        found = a;
         break;
       }
     }
-
     setState(() {
-      _match = hit;
-      _error = hit == null ? 'No ambassador found for "$query"' : null;
+      _hit = found;
+      _error = found == null ? 'No ambassador found for "$q"' : null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final approved = _match?.status == 'approved';
-
     return Scaffold(
       appBar: AppBar(title: const Text('Verify ambassador')),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          const DemoBanner(message: 'Never pay cash to individuals or ambassadors'),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Text(
-                  'Confirm that someone claiming to be a Digititan ambassador '
-                  'is registered before you engage or pay.',
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _input,
-                  decoration: const InputDecoration(
-                    labelText: 'Ambassador email or ID',
-                    hintText: 'lerato@example.com',
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  onSubmitted: (_) => _lookup(),
-                ),
-                if (_error != null) ...[
-                  const SizedBox(height: 8),
-                  Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
-                ],
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _lookup,
-                  child: const Text('Look up'),
-                ),
-                if (_match != null) ...[
-                  const SizedBox(height: 20),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                approved ? Icons.verified : Icons.hourglass_top,
-                                color: approved
-                                    ? DigititanColors.teal
-                                    : DigititanColors.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                approved ? 'Approved ambassador' : 'Under review',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      color: approved
-                                          ? DigititanColors.teal
-                                          : DigititanColors.primary,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(_match!.name),
-                          Text(_match!.email),
-                          Text('ID: ${_match!.id}'),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Digititan never asks for cash payments to individuals. '
-                            'Use official store and verify links only.',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: DigititanColors.danger.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: DigititanColors.danger.withOpacity(0.4)),
+            ),
+            child: const Text(
+              'Never pay cash to individuals or ambassadors.',
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _input,
+            decoration: const InputDecoration(
+              labelText: 'Email or ambassador id',
+              hintText: 'lerato.ambassador@example.com',
+            ),
+            onSubmitted: (_) => _lookup(),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(onPressed: _lookup, child: const Text('Check')),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Text(_error!, style: const TextStyle(color: DigititanColors.danger)),
+          ],
+          if (_hit != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _hit!.status == 'approved'
+                      ? DigititanColors.teal
+                      : DigititanColors.accent,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _hit!.status == 'approved'
+                        ? 'Approved ambassador'
+                        : 'Under review',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: _hit!.status == 'approved'
+                          ? DigititanColors.teal
+                          : DigititanColors.accent,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_hit!.name, style: Theme.of(context).textTheme.titleMedium),
+                  Text(_hit!.email),
+                  Text('Status: ${_hit!.status}'),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

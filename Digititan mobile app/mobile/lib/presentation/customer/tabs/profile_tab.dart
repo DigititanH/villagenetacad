@@ -5,8 +5,12 @@ import '../../../domain/entities/user.dart';
 import '../../../domain/enums/user_role.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/theme/digititan_theme.dart';
+import '../ambassador_apply_screen.dart';
 import '../legal_hub_screen.dart';
 import '../my_orders_screen.dart';
+import '../notifications_screen.dart';
+import '../verify_ambassador_screen.dart';
+import '../verify_reseller_screen.dart';
 
 class ProfileTab extends StatelessWidget {
   final AppContainer container;
@@ -70,6 +74,50 @@ class ProfileTab extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
+                  builder: (_) => NotificationsScreen(user: user),
+                ),
+              );
+            },
+            child: const Text('Notifications'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const VerifyResellerScreen(),
+                ),
+              );
+            },
+            child: const Text('Verify a reseller'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AmbassadorApplyScreen(),
+                ),
+              );
+            },
+            child: const Text('Become an ambassador'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const VerifyAmbassadorScreen(),
+                ),
+              );
+            },
+            child: const Text('Verify an ambassador'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
                   builder: (_) => const LegalHubScreen(),
                 ),
               );
@@ -94,11 +142,13 @@ class ProfileTab extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Email OTP: ${AppConfig.emailOtpDemo}\n'
+                    'Email/SMS OTP: ${AppConfig.emailOtpDemo}\n'
                     'Payment OTP: ${AppConfig.paymentOtpDemo}\n'
                     'Password: demo123\n'
+                    'Delivered demo order: ORD-DEMO-DELIVERED\n'
+                    'Verify reseller: VNA-B-LERATO\n'
                     'Min withdraw: R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}\n'
-                    'Store: ${AppConfig.digititanStoreUrl}',
+                    'Gateway: ${AppConfig.paymentGatewayName}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

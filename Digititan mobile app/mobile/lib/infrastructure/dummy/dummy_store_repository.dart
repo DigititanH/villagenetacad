@@ -2,6 +2,7 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../../shared/config/app_config.dart';
 import 'demo_hub.dart';
 
 class DummyStoreRepository implements StoreRepository {
@@ -160,6 +161,82 @@ class DummyStoreRepository implements StoreRepository {
     } else {
       _hub.products[index] = old.copyWith(price: price);
     }
+  }
+
+  @override
+  Future<ShopOrder> requestReturn({
+    required String orderId,
+    required String reason,
+  }) async {
+    final index = _hub.orders.indexWhere((o) => o.id == orderId);
+    if (index < 0) throw Exception('Order not found');
+    final order = _hub.orders[index];
+    if (!order.canRequestReturn) {
+      throw Exception(
+        'Return window closed or order not eligible '
+        '(${AppConfig.returnWindowDays} days after delivery).',
+      );
+    }
+    final updated = order.copyWith(
+      status: OrderStatus.returnRequested,
+      returnRequested: true,
+      trackingTimeline: [
+        ...order.trackingTimeline,
+        'Return requested: $reason',
+      ],
+    );
+    _hub.orders[index] = updated;
+    _hub.notifications.insert(
+      0,
+      DemoNotification(
+        id: 'n-ret-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Return requested',
+        body: 'We received your return for $orderId.',
+        recipientEmail: order.buyerEmail,
+        createdAt: DateTime.now(),
+      ),
+    );
+    _hub.log('Return requested $orderId: $reason');
+    return updated;
+  }
+
+  @override
+  Future<ShopOrder> submitReview({
+    required String orderId,
+    required int stars,
+    required String text,
+  }) async {
+    final index = _hub.orders.indexWhere((o) => o.id == orderId);
+    if (index < 0) throw Exception('Order not found');
+    final order = _hub.orders[index];
+    if (!order.canReview) {
+      throw Exception('This order cannot be reviewed yet');
+    }
+    if (stars < 1 || stars > 5) {
+      throw Exception('Choose 1 to 5 stars');
+    }
+    final updated = order.copyWith(
+      reviewed: true,
+      reviewStars: stars,
+      reviewText: text.trim(),
+      trackingTimeline: [
+        ...order.trackingTimeline,
+        'Review submitted ($stars★)',
+      ],
+    );
+    _hub.orders[index] = updated;
+    _hub.notifications.insert(
+      0,
+      DemoNotification(
+        id: 'n-rev-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Thanks for your review',
+        body: 'Your $stars★ review for $orderId was saved.',
+        recipientEmail: order.buyerEmail,
+        createdAt: DateTime.now(),
+      ),
+    );
+    _hub.log('Review $orderId: $stars★ $text');
+    return updated;
   }
 
   /// Validate + remember a referral code for this customer (prototype).

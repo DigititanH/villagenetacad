@@ -11,5 +11,6 @@ abstract class TrainingRepository {
     required String fullName,
     required String email,
     required String phone,
+    required String gender,
   });
 }

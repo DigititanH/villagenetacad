@@ -5,6 +5,7 @@ import '../../../domain/entities/academy.dart';
 import '../../../domain/entities/user.dart';
 import '../../../shared/result/result.dart';
 import '../academy_detail_screen.dart';
+import '../academy_performance_screen.dart';
 import '../organisation_register_screen.dart';
 import '../widgets/south_africa_academies_map.dart';
 
@@ -97,6 +98,17 @@ class _AcademiesTabState extends State<AcademiesTab> {
       appBar: AppBar(
         title: const Text('Academies'),
         actions: [
+          IconButton(
+            tooltip: 'Academy performance / rankings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const AcademyPerformanceScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.leaderboard_outlined),
+          ),
           if (_province != null)
             TextButton(
               onPressed: () {
