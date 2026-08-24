@@ -50,7 +50,7 @@ Write-Host ""
 Write-Host "SUCCESS - Phase 3 is on this machine." -ForegroundColor Green
 Write-Host "Demo walk:"
 Write-Host "  customer@demo.com / demo123"
-Write-Host "  Home -> Training / Academies / Store equal"
+Write-Host "  Home -> (same as before; Training/Academies/Store equal in bottom nav)"
 Write-Host "  Store -> Open Village NetAcad shop"
 Write-Host "  Profile -> Become a Reseller / Become an Ambassador"
 Write-Host "  Profile -> Demo role switch (decks)"

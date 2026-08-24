@@ -11,7 +11,7 @@ Base: Phase 2 story branch.
 | Become a Reseller | Profile (customer) |
 | Become an Ambassador | Profile (customer) |
 | Demo role switch (decks) | Profile expansion; Ops/Reseller swap icon |
-| Home equal pillars | Training · Academies · Store chips + equal sections |
+| Home equal pillars | Bottom nav keeps Training / Academies / Store equal (Home layout unchanged) |
 
 ## Laptop install
 

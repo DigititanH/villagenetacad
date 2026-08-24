@@ -8,7 +8,7 @@ import 'tabs/profile_tab.dart';
 import 'tabs/store_tab.dart';
 import 'tabs/training_tab.dart';
 
-/// Customer shell = bottom navigation for the 3 equal pillars + home/profile.
+/// Customer shell = bottom nav: Home + equal Training / Academies / Store + Profile.
 class CustomerShell extends StatefulWidget {
   final AppContainer container;
   final User user;
@@ -31,7 +31,6 @@ class _CustomerShellState extends State<CustomerShell> {
   int _index = 0;
 
   void _goTraining() => setState(() => _index = 1);
-  void _goAcademies() => setState(() => _index = 2);
   void _goStore() => setState(() => _index = 3);
 
   @override
@@ -41,7 +40,6 @@ class _CustomerShellState extends State<CustomerShell> {
         container: widget.container,
         user: widget.user,
         onOpenTraining: _goTraining,
-        onOpenAcademies: _goAcademies,
         onOpenStore: _goStore,
       ),
       TrainingTab(container: widget.container, user: widget.user),
