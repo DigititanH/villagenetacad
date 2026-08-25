@@ -61,7 +61,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _refreshWishlistFlag() async {
     final p = _product;
-    if (p == null || int.tryParse(p.id) == null) return;
+    if (p == null) return;
     try {
       final items = await widget.container.storeRepository.getWishlist();
       if (!mounted) return;
@@ -69,7 +69,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         _wishlisted = items.any((w) => w.productId == p.id);
       });
     } catch (_) {
-      // Wishlist may fail if not signed in / sample catalogue.
+      // Ignore — heart still shows; toggle will surface errors.
     }
   }
 
@@ -130,15 +130,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         store.usingSampleCatalogue &&
         p != null &&
         !store.canAddToLiveCart(p);
-    final canWish = p != null &&
-        (store is! HttpStoreRepository || store.canAddToLiveCart(p));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Product'),
         actions: [
-          if (canWish && !liveSample)
+          if (p != null)
             IconButton(
+              tooltip: _wishlisted ? 'Remove from wishlist' : 'Add to wishlist',
               onPressed: _wishBusy ? null : _toggleWish,
               icon: Icon(
                 _wishlisted ? Icons.favorite : Icons.favorite_border,

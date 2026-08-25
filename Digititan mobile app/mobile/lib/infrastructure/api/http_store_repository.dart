@@ -344,8 +344,33 @@ class HttpStoreRepository implements StoreRepository {
     return lines.fold<double>(0, (sum, l) => sum + l.lineTotal);
   }
 
+  final Set<String> _sampleWishlist = {};
+
   @override
   Future<List<WishlistItem>> getWishlist() async {
+    if (_sampleCatalogue) {
+      final items = <WishlistItem>[];
+      for (final id in _sampleWishlist) {
+        Product? p;
+        try {
+          p = DemoHub.instance.products.firstWhere((e) => e.id == id);
+        } catch (_) {
+          continue;
+        }
+        items.add(
+          WishlistItem(
+            id: id,
+            productId: p.id,
+            name: p.name,
+            price: p.price,
+            imageUrl: p.imageUrl,
+            slug: p.slug,
+          ),
+        );
+      }
+      return items;
+    }
+
     final rows = await _api.getList('/api/wishlist', auth: true);
     return rows.whereType<Map>().map((raw) {
       final m = Map<String, dynamic>.from(raw);
@@ -363,8 +388,13 @@ class HttpStoreRepository implements StoreRepository {
   @override
   Future<bool> toggleWishlist(String productId) async {
     final id = int.tryParse(productId);
-    if (id == null) {
-      throw Exception('Wishlist needs a live product id');
+    if (id == null || _sampleCatalogue) {
+      if (_sampleWishlist.contains(productId)) {
+        _sampleWishlist.remove(productId);
+        return false;
+      }
+      _sampleWishlist.add(productId);
+      return true;
     }
     final json = await _api.postJson(
       '/api/wishlist/toggle',
