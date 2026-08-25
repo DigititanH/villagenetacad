@@ -1,6 +1,7 @@
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
 import '../../shared/result/result.dart';
+import '../../shared/utils/friendly_api_error.dart';
 
 class GetMyOrders {
   final StoreRepository _repo;
@@ -10,7 +11,7 @@ class GetMyOrders {
     try {
       return Success(await _repo.getOrdersFor(email));
     } catch (e) {
-      return Failure(e.toString());
+      return Failure(friendlyApiError(e));
     }
   }
 }

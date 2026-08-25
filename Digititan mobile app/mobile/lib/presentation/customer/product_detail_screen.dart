@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/entities/user.dart';
+import '../../infrastructure/api/http_store_repository.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/utils/open_digititan_store.dart';
@@ -48,6 +49,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final p = _product;
+    final store = widget.container.storeRepository;
+    final liveSample = store is HttpStoreRepository &&
+        store.usingSampleCatalogue &&
+        p != null &&
+        !store.canAddToLiveCart(p);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Product')),
       body: _loading
@@ -97,7 +104,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 18),
                     QuietNotice(
-                      message: AppConfig.storeModeMessage,
+                      message: liveSample
+                          ? AppConfig.storeLiveEmptyCatalogueMessage
+                          : (AppConfig.useLiveApi
+                              ? AppConfig.storeLiveCartMessage
+                              : AppConfig.storeModeMessage),
                     ),
                     const SizedBox(height: 10),
                     const VillageNetAcadShopLink(),
@@ -105,33 +116,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ElevatedButton.icon(
                       onPressed: () => openVillageNetAcadShop(context),
                       icon: const Icon(Icons.open_in_browser),
-                      label: const Text('Open Village NetAcad shop'),
+                      label: Text(
+                        liveSample
+                            ? 'Buy on Village NetAcad shop'
+                            : 'Open Village NetAcad shop',
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    OutlinedButton(
-                      onPressed: !p.inStock
-                          ? null
-                          : () {
-                              widget.container.storeRepository.addToCart(p);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Added to demo cart')),
-                              );
-                            },
-                      child: const Text('Add to demo cart'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => CartScreen(
-                              container: widget.container,
-                              user: widget.user,
+                    if (!liveSample) ...[
+                      const SizedBox(height: 10),
+                      OutlinedButton(
+                        onPressed: !p.inStock
+                            ? null
+                            : () async {
+                                try {
+                                  await widget.container.storeRepository
+                                      .addToCart(p);
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppConfig.useLiveApi
+                                            ? 'Added to shared cart'
+                                            : 'Added to demo cart',
+                                      ),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('$e')),
+                                  );
+                                }
+                              },
+                        child: Text(
+                          AppConfig.useLiveApi
+                              ? 'Add to shared cart'
+                              : 'Add to demo cart',
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => CartScreen(
+                                container: widget.container,
+                                user: widget.user,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      child: const Text('View demo cart'),
-                    ),
+                          );
+                        },
+                        child: Text(
+                          AppConfig.useLiveApi
+                              ? 'View shared cart'
+                              : 'View demo cart',
+                        ),
+                      ),
+                    ],
                   ],
                 ),
     );

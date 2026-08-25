@@ -11,7 +11,10 @@ import '../config/app_config.dart';
 const _browserChannel = MethodChannel('za.co.digititan.digititan_mobile/browser');
 
 Future<bool> openVillageNetAcadShopUrl() async {
-  final url = AppConfig.villageNetAcadShopUrl;
+  return openUrlInSystemBrowser(AppConfig.villageNetAcadShopUrl);
+}
+
+Future<bool> openUrlInSystemBrowser(String url) async {
   try {
     final ok = await _browserChannel.invokeMethod<bool>('openUrl', {'url': url});
     return ok == true;
@@ -20,6 +23,11 @@ Future<bool> openVillageNetAcadShopUrl() async {
   } on MissingPluginException {
     return false;
   }
+}
+
+/// Opens the shared website cart (Phase 5 PayFast checkout).
+Future<bool> openVillageNetAcadCartUrl() async {
+  return openUrlInSystemBrowser(AppConfig.villageNetAcadCartUrl);
 }
 
 /// Backward-compatible alias.
@@ -67,6 +75,42 @@ Future<void> openVillageNetAcadShop(BuildContext context) async {
       ],
     ),
   );
+}
+
+/// Opens website cart; returns whether the browser launch succeeded.
+Future<bool> openVillageNetAcadCart(BuildContext context) async {
+  final url = AppConfig.villageNetAcadCartUrl;
+  final opened = await openVillageNetAcadCartUrl();
+  if (!context.mounted) return opened;
+
+  if (opened) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Opening website cart for PayFast...')),
+    );
+    return true;
+  }
+
+  await Clipboard.setData(ClipboardData(text: url));
+  if (!context.mounted) return false;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Website cart'),
+      content: Text(
+        'Open this URL to finish checkout:\n\n$url\n\n'
+        '(Copied to clipboard.)\n'
+        'Sign in on the website with the same account as the app.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+  return false;
 }
 
 /// Backward-compatible alias.
