@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/repositories/store_repository.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
 import '../../infrastructure/dummy/dummy_store_repository.dart';
 import '../../shared/config/app_config.dart';
@@ -26,6 +27,9 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   late final TextEditingController _code;
   String? _codeHint;
+  bool _loading = true;
+  List<CartLine> _lines = const [];
+  double _total = 0;
 
   @override
   void initState() {
@@ -39,6 +43,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           ? null
           : 'Saved code: ${issued.code} (${issued.type.label} — ${issued.resellerName})';
     }
+    _loadCart();
+  }
+
+  Future<void> _loadCart() async {
+    final store = widget.container.storeRepository;
+    final lines = await store.getCart();
+    final total = await store.cartTotal();
+    if (!mounted) return;
+    setState(() {
+      _lines = lines;
+      _total = total;
+      _loading = false;
+    });
   }
 
   @override
@@ -68,8 +85,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final total = widget.container.storeRepository.cartTotal();
-    final lines = widget.container.storeRepository.getCart();
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Checkout')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
@@ -81,7 +102,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Text('Buyer: ${widget.user.name}'),
             Text(widget.user.email),
             const SizedBox(height: 12),
-            Text('${lines.length} line(s) · Total R${total.toStringAsFixed(0)}'),
+            Text('${_lines.length} line(s) · Total R${_total.toStringAsFixed(0)}'),
             const SizedBox(height: 16),
             Text(
               'Reseller referral code',

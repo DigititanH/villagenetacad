@@ -67,7 +67,11 @@ class _StoreTabState extends State<StoreTab> {
               : ListView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                   children: [
-                    QuietNotice(message: AppConfig.storeModeMessage),
+                    QuietNotice(
+                      message: AppConfig.useLiveApi
+                          ? AppConfig.storeLiveCartMessage
+                          : AppConfig.storeModeMessage,
+                    ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () => openVillageNetAcadShop(context),

@@ -5,7 +5,14 @@ class CartLine {
   final Product product;
   final int quantity;
 
-  const CartLine({required this.product, required this.quantity});
+  /// Live API cart row id (null for in-memory demo cart).
+  final String? cartItemId;
+
+  const CartLine({
+    required this.product,
+    required this.quantity,
+    this.cartItemId,
+  });
 
   double get lineTotal => product.price * quantity;
 }
@@ -14,13 +21,16 @@ abstract class StoreRepository {
   Future<List<Product>> getProducts();
   Future<Product?> getProduct(String id);
 
-  List<CartLine> getCart();
-  void addToCart(Product product, {int quantity = 1});
-  void updateQuantity(String productId, int quantity);
-  void clearCart();
-  double cartTotal();
+  Future<List<CartLine>> getCart();
+  Future<void> addToCart(Product product, {int quantity = 1});
+  Future<void> updateQuantity(CartLine line, int quantity);
+  Future<void> clearCart();
+  Future<double> cartTotal();
 
-  /// Prototype: creates order after OTP is confirmed.
+  /// True when checkout must open the website (Phase 5 live path).
+  bool get checkoutOnWebsite;
+
+  /// Prototype: creates order after OTP is confirmed (dummy only).
   Future<ShopOrder> placeOrder({
     required String buyerEmail,
     required String buyerName,

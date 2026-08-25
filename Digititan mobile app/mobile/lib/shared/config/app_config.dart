@@ -15,16 +15,30 @@ class AppConfig {
     defaultValue: '',
   );
 
-  /// True when [apiBaseUrl] is set — use live `/api/auth`.
+  /// True when [apiBaseUrl] is set — use live `/api` (auth + store cart).
   static bool get useLiveApi => apiBaseUrl.trim().isNotEmpty;
+
+  /// Website cart (Phase 5 checkout / PayFast).
+  static String get villageNetAcadCartUrl {
+    final base = apiBaseUrl.trim().isNotEmpty
+        ? apiBaseUrl.replaceAll(RegExp(r'/$'), '')
+        : 'https://villagenetacad.co.za';
+    return '$base/cart';
+  }
 
   /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
   static const paymentGatewayName = 'PayFast';
 
-  /// Prototype notice shown in Store tab.
+  /// Prototype notice shown in Store tab (dummy).
   static const storeModeMessage =
       'Browse sample products here. Full shop is the Village NetAcad website '
       '(same PayFast gateway story — live pay in later phases).';
+
+  /// Live Phase 5 notice.
+  static const storeLiveCartMessage =
+      'Live catalogue + shared cart with the website. '
+      'Checkout opens villagenetacad.co.za for PayFast. '
+      'Orders appear under My orders after payment.';
 
   static const emailOtpDemo = '123456';
   static const smsOtpDemo = '123456';
@@ -47,8 +61,8 @@ class AppConfig {
       'where applicable. Never pay cash to individuals or ambassadors.';
 
   static String get demoModeLine => useLiveApi
-      ? 'Phase 4 · live API · $apiBaseUrl'
-      : 'Presentation demo · Phase 3/4 · dummy auth (set API_BASE_URL for live)';
+      ? 'Phase 5 · live API · $apiBaseUrl'
+      : 'Presentation demo · Phase 3/5 · dummy auth (set API_BASE_URL for live)';
 
   /// Deep-link / QR payload for reseller legitimacy check.
   static String resellerVerifyPayload(String code) =>

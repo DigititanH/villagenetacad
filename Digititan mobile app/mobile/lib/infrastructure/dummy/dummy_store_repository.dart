@@ -24,7 +24,7 @@ class DummyStoreRepository implements StoreRepository {
   }
 
   @override
-  List<CartLine> getCart() {
+  Future<List<CartLine>> getCart() async {
     final lines = <CartLine>[];
     for (final entry in _cart.entries) {
       final product = _hub.products.firstWhere((p) => p.id == entry.key);
@@ -34,12 +34,13 @@ class DummyStoreRepository implements StoreRepository {
   }
 
   @override
-  void addToCart(Product product, {int quantity = 1}) {
+  Future<void> addToCart(Product product, {int quantity = 1}) async {
     _cart.update(product.id, (q) => q + quantity, ifAbsent: () => quantity);
   }
 
   @override
-  void updateQuantity(String productId, int quantity) {
+  Future<void> updateQuantity(CartLine line, int quantity) async {
+    final productId = line.product.id;
     if (quantity <= 0) {
       _cart.remove(productId);
     } else {
@@ -48,10 +49,16 @@ class DummyStoreRepository implements StoreRepository {
   }
 
   @override
-  void clearCart() => _cart.clear();
+  Future<void> clearCart() async => _cart.clear();
 
   @override
-  double cartTotal() => getCart().fold(0, (sum, l) => sum + l.lineTotal);
+  Future<double> cartTotal() async {
+    final lines = await getCart();
+    return lines.fold<double>(0, (sum, l) => sum + l.lineTotal);
+  }
+
+  @override
+  bool get checkoutOnWebsite => false;
 
   @override
   String startPaymentOtp(String email) {
@@ -74,7 +81,7 @@ class DummyStoreRepository implements StoreRepository {
     required String buyerName,
     String? referralCode,
   }) async {
-    final lines = getCart();
+    final lines = await getCart();
     if (lines.isEmpty) throw Exception('Cart is empty');
 
     final codeRaw = (referralCode ??
@@ -124,7 +131,7 @@ class DummyStoreRepository implements StoreRepository {
       );
     }
 
-    clearCart();
+    await clearCart();
     _paymentOtps.remove(buyerEmail.trim().toLowerCase());
     _hub.log('Order ${order.id} placed R${order.total.toStringAsFixed(0)}');
     return order;

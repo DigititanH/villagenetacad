@@ -20,6 +20,7 @@ import '../../domain/repositories/store_repository.dart';
 import '../../domain/repositories/training_repository.dart';
 import '../../infrastructure/api/api_client.dart';
 import '../../infrastructure/api/http_auth_repository.dart';
+import '../../infrastructure/api/http_store_repository.dart';
 import '../../infrastructure/api/token_store.dart';
 import '../../infrastructure/dummy/dummy_academy_repository.dart';
 import '../../infrastructure/dummy/dummy_admin_repository.dart';
@@ -68,15 +69,16 @@ class AppContainer {
         api: apiClient!,
         tokens: tokenStore,
       );
+      storeRepository = HttpStoreRepository(api: apiClient!);
     } else {
       apiClient = null;
       authRepository = DummyAuthRepository();
+      storeRepository = DummyStoreRepository();
     }
 
     emailSender = ConsoleEmailSender();
     trainingRepository = DummyTrainingRepository();
     academyRepository = DummyAcademyRepository();
-    storeRepository = DummyStoreRepository();
     resellerRepository = DummyResellerRepository();
     adminRepository = DummyAdminRepository();
 

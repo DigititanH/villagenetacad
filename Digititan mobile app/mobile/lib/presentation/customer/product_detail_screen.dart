@@ -97,7 +97,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 18),
                     QuietNotice(
-                      message: AppConfig.storeModeMessage,
+                      message: AppConfig.useLiveApi
+                          ? AppConfig.storeLiveCartMessage
+                          : AppConfig.storeModeMessage,
                     ),
                     const SizedBox(height: 10),
                     const VillageNetAcadShopLink(),
@@ -111,13 +113,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     OutlinedButton(
                       onPressed: !p.inStock
                           ? null
-                          : () {
-                              widget.container.storeRepository.addToCart(p);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Added to demo cart')),
-                              );
+                          : () async {
+                              try {
+                                await widget.container.storeRepository
+                                    .addToCart(p);
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppConfig.useLiveApi
+                                          ? 'Added to shared cart'
+                                          : 'Added to demo cart',
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('$e')),
+                                );
+                              }
                             },
-                      child: const Text('Add to demo cart'),
+                      child: Text(
+                        AppConfig.useLiveApi
+                            ? 'Add to shared cart'
+                            : 'Add to demo cart',
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -130,7 +151,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                         );
                       },
-                      child: const Text('View demo cart'),
+                      child: Text(
+                        AppConfig.useLiveApi
+                            ? 'View shared cart'
+                            : 'View demo cart',
+                      ),
                     ),
                   ],
                 ),

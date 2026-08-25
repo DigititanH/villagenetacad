@@ -149,6 +149,9 @@ What you described earlier.
 
 **Done when:** add hoodie in the app → pay on the site → order appears in the app.
 
+### Phase 5 delivery note
+Branch `cursor/phase5-shared-cart-09ad`: live products + server cart + website PayFast checkout CTA + my-orders from API. Dummy store remains when `API_BASE_URL` is empty.
+
 ---
 
 ## Phase 6 — Store parity (live catalogue)
