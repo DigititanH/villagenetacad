@@ -44,7 +44,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     switch (result) {
       case Success(:final data):
-        if (AppConfig.useLiveApi && data.emailVerified) {
+        if (AppConfig.useLiveApi) {
+          await _showLiveRegisterDone(data);
+          if (!mounted) return;
           Navigator.of(context).pop(data);
           return;
         }
@@ -62,6 +64,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
       case Failure(:final message):
         setState(() => _error = message);
     }
+  }
+
+  Future<void> _showLiveRegisterDone(User user) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Account created'),
+        content: Text(
+          'You are signed in on the app as ${user.email}.\n\n'
+          'This is the same account as the website — you can open '
+          'villagenetacad.co.za and sign in with the same email and password.\n\n'
+          'Check your inbox for the website email-verification link '
+          '(same flow as registering on the site).',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -86,23 +110,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  'Live API · same account as the website\n${AppConfig.apiBaseUrl}',
+                  'Creates a real Village NetAcad account (same database as '
+                  'the website). After this, that email/password works on '
+                  'villagenetacad.co.za too.\n\nAPI: ${AppConfig.apiBaseUrl}',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Full name'),
+              textCapitalization: TextCapitalization.words,
             ),
             TextField(
               controller: _email,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
             ),
             TextField(
               controller: _password,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(
+                labelText: 'Password (min 6 characters)',
+              ),
               obscureText: true,
+              autofillHints: const [AutofillHints.newPassword],
             ),
             const SizedBox(height: 8),
             const Text('Register as'),
@@ -158,9 +189,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             Text(
               live
-                  ? '\nAfter create, you are signed in (customer). '
-                      'Verify email via the website link when prompted. '
-                      'Reseller: wait for admin approval, then sign in.'
+                  ? '\nCustomer: signed in immediately; same login on the website.\n'
+                      'Reseller: wait for admin approval, then sign in on app or site.'
                   : '\nAfter create, OTP email is printed in the flutter run console.\n'
                       'Prototype OTP = 123456',
               style: const TextStyle(fontSize: 12),

@@ -131,7 +131,7 @@ First engineering phase. Absorbs early **[W3]** auth hygiene.
 **Done when:** website register → app login with the same details (and the reverse).
 
 ### Phase 4 delivery note
-Branch `cursor/phase4-shared-accounts-09ad`: HTTP auth client + JWT secure storage behind `API_BASE_URL`. Dummy auth remains default for decks. Next: exercise against local/staging backend, then UAT against production when the team agrees.
+Branch `cursor/phase4-shared-accounts-09ad`: HTTP auth + JWT; production UAT verified for website→app login. Live UI hides demo credentials. Next UAT: app register → website login; then Phase 5 cart.
 
 ---
 

@@ -3,7 +3,7 @@
 Branch: `cursor/phase4-shared-accounts-09ad`  
 Base: Phase 3.
 
-## Slice shipped (4.1–4.2)
+## Slice shipped (4.1–4.3)
 
 | Item | Notes |
 |------|--------|
@@ -12,6 +12,8 @@ Base: Phase 3.
 | `HttpAuthRepository` | login, register (+ academy), `/me`, logout |
 | JWT in `flutter_secure_storage` | Restored on launch via `getCurrentUser` |
 | Dummy still default | Safe for presentation without a server |
+| Live login screen | Hides demo emails + Google stub when `API_BASE_URL` is set |
+| Live register | Success dialog: same account works on the website |
 
 ## Android / Windows build notes
 
@@ -64,14 +66,23 @@ flutter run -d windows --dart-define=API_BASE_URL=http://127.0.0.1:5000
 |-------|--------|
 | Website account → app login (existing) | **Verified** (production API) |
 | Website register → app login (new account) | **Verified** (production API) |
-| App register → website login | Still open |
-| Drop demo emails for UAT / staging DB / HTTPS-only policy | Still open |
+| App register → website login | **Ready for UAT** (see below) |
+| Drop demo emails on live login UI | **Done** (hidden when `API_BASE_URL` set) |
+| Staging DB / HTTPS-only policy sign-off | Still open |
 
 Run command used for UAT:
 
 ```powershell
 flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 ```
+
+### UAT — app register → website login
+
+1. App → **Create account** → new email + password (Customer).
+2. Confirm the success dialog (same account as website).
+3. You should land inside the app signed in.
+4. On a browser open https://villagenetacad.co.za → Log in with **that same email/password**.
+5. Pass = website accepts the account created in the app.
 
 ## Laptop sync
 

@@ -125,11 +125,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _loading ? null : _signInEmail,
                     child: Text(_loading ? 'Please wait...' : 'Sign in'),
                   ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: _loading ? null : _signInGoogle,
-                    child: const Text('Google (stub)'),
-                  ),
+                  if (!AppConfig.useLiveApi) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: _loading ? null : _signInGoogle,
+                      child: const Text('Google (stub)'),
+                    ),
+                  ],
                   TextButton(
                     onPressed: _loading
                         ? null
@@ -144,34 +146,36 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                     child: const Text('Create account / apply as reseller'),
                   ),
-                  const SizedBox(height: 8),
-                  Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      tilePadding: EdgeInsets.zero,
-                      title: Text(
-                        'Demo login details',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      childrenPadding: const EdgeInsets.only(bottom: 8),
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Password for all accounts: demo123\n\n'
-                            'Customer:  customer@demo.com\n'
-                            'Reseller:  reseller@demo.com\n'
-                            'Ops Admin: ops@demo.com\n'
-                            'Super Admin: super@demo.com\n\n'
-                            'Email OTP: ${AppConfig.emailOtpDemo}\n'
-                            'Payment OTP: ${AppConfig.paymentOtpDemo}\n'
-                            'Fast sale code: VNA-B-LERATO',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                  if (!AppConfig.useLiveApi) ...[
+                    const SizedBox(height: 8),
+                    Theme(
+                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        title: Text(
+                          'Demo login details',
+                          style: Theme.of(context).textTheme.titleSmall,
                         ),
-                      ],
+                        childrenPadding: const EdgeInsets.only(bottom: 8),
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Password for all accounts: demo123\n\n'
+                              'Customer:  customer@demo.com\n'
+                              'Reseller:  reseller@demo.com\n'
+                              'Ops Admin: ops@demo.com\n'
+                              'Super Admin: super@demo.com\n\n'
+                              'Email OTP: ${AppConfig.emailOtpDemo}\n'
+                              'Payment OTP: ${AppConfig.paymentOtpDemo}\n'
+                              'Fast sale code: VNA-B-LERATO',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
