@@ -55,6 +55,11 @@ Still open: drop demo emails for UAT, staging DB, HTTPS-only policy sign-off.
 
 ```powershell
 cd S:\WORK\VillageNetAcad
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DigititanH/villagenetacad/cursor/phase4-shared-accounts-09ad/Digititan%20mobile%20app/INSTALL-PHASE4.ps1" -OutFile .\INSTALL-PHASE4.ps1
-powershell -ExecutionPolicy Bypass -File .\INSTALL-PHASE4.ps1
+Remove-Item .\INSTALL-PHASE4.ps1 -ErrorAction SilentlyContinue
+Remove-Item .\INSTALL-PHASE4B.ps1 -ErrorAction SilentlyContinue
+# Use 4B (new filename) so Windows/CDN cannot reuse a cached broken script
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DigititanH/villagenetacad/cursor/phase4-shared-accounts-09ad/Digititan%20mobile%20app/INSTALL-PHASE4B.ps1?v=2" -OutFile .\INSTALL-PHASE4B.ps1 -Headers @{ "Cache-Control" = "no-cache" }
+# Confirm no broken arrow bytes (should print 0)
+([System.IO.File]::ReadAllBytes((Resolve-Path .\INSTALL-PHASE4B.ps1)) | Where-Object { $_ -gt 127 }).Count
+powershell -ExecutionPolicy Bypass -File .\INSTALL-PHASE4B.ps1
 ```
