@@ -139,11 +139,10 @@ Branch `cursor/phase4-shared-accounts-09ad`: shared accounts verified both ways 
 
 What you described earlier.
 
-- App `POST /api/cart` (server cart, not phone RAM)  
-- Checkout button opens live site login → Cart  
-- Same items on the website; **PayFast stays on the web for this phase**  
+- App opens website `/cart` (no website frontend deploy). User taps Proceed to Checkout on the site.  
+- Same items on the website when live products exist; **PayFast stays on the web for this phase**  
 - App My Orders reads `GET /api/orders/my-orders`  
-- Done (Phase 6): app “Complete on website” opens `/checkout`; login honors `?next=` (ProtectedRoute / Cart) so you are not dumped on home  
+- Later (needs website permission): `?next=/cart` or `/checkout` after login so users are not dumped on home  
 
 **Meeting note:** In-app PayFast waits for **Phase 7** unless leadership insists earlier.
 

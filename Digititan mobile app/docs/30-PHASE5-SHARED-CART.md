@@ -34,8 +34,8 @@ flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 1. Sign in with a real website account.
 2. Store tab shows **live** products (not only demo bags).
 3. Add an item → snackbar **Added to shared cart**.
-4. Cart → **Complete on website (PayFast)** → browser opens `/checkout` (if logged out → login → back to `/checkout`).
-5. Sign in on the website with the **same** account if prompted; then complete PayFast on checkout.
+4. Cart → **Complete on website (PayFast)** → browser opens `/cart`.
+5. Sign in on the website with the **same** account if prompted; open Cart if needed, then **Proceed to Checkout**.
 6. Pay (or leave pending) on the website.
 7. App → Profile → **My orders** → order appears.
 
