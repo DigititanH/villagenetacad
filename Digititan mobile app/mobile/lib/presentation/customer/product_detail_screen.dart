@@ -273,40 +273,38 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ElevatedButton.icon(
                       onPressed: () => openVillageNetAcadShop(context),
                       icon: const Icon(Icons.open_in_browser),
-                      label: Text(
-                        liveSample
-                            ? 'Buy on Village NetAcad shop'
-                            : 'Open Village NetAcad shop',
+                      label: const Text('Open Village NetAcad shop'),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: !p.inStock ? null : _addToCart,
+                      child: Text(
+                        AppConfig.useLiveApi
+                            ? (liveSample
+                                ? 'Add to walkthrough cart'
+                                : 'Add to shared cart')
+                            : 'Add to demo cart',
                       ),
                     ),
-                    if (!liveSample) ...[
-                      const SizedBox(height: 10),
-                      OutlinedButton(
-                        onPressed: !p.inStock ? null : _addToCart,
-                        child: Text(
-                          AppConfig.useLiveApi
-                              ? 'Add to shared cart'
-                              : 'Add to demo cart',
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => CartScreen(
-                                container: widget.container,
-                                user: widget.user,
-                              ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => CartScreen(
+                              container: widget.container,
+                              user: widget.user,
                             ),
-                          );
-                        },
-                        child: Text(
-                          AppConfig.useLiveApi
-                              ? 'View shared cart'
-                              : 'View demo cart',
-                        ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        AppConfig.useLiveApi
+                            ? (liveSample
+                                ? 'View walkthrough cart'
+                                : 'View shared cart')
+                            : 'View demo cart',
                       ),
-                    ],
+                    ),
                   ],
                 ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../../infrastructure/api/http_store_repository.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/utils/friendly_api_error.dart';
 import '../../shared/utils/open_digititan_store.dart';
@@ -106,10 +107,16 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final store = widget.container.storeRepository;
+    final sampleWalkthrough = store is HttpStoreRepository &&
+        store.usingSampleCatalogue;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          AppConfig.useLiveApi ? 'Cart (shared)' : 'Cart',
+          sampleWalkthrough
+              ? 'Cart (walkthrough)'
+              : (AppConfig.useLiveApi ? 'Cart (shared)' : 'Cart'),
         ),
         actions: [
           IconButton(
@@ -132,14 +139,19 @@ class _CartScreenState extends State<CartScreen> {
                   : Column(
                       children: [
                         if (AppConfig.useLiveApi)
-                          const Material(
-                            color: Color(0xFFE8F0FE),
+                          Material(
+                            color: const Color(0xFFE8F0FE),
                             child: Padding(
-                              padding: EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
                               child: Text(
-                                'This cart is shared with villagenetacad.co.za. '
-                                'Checkout opens the website for PayFast.',
-                                style: TextStyle(fontSize: 13, height: 1.35),
+                                sampleWalkthrough
+                                    ? 'Walkthrough cart (samples). '
+                                        'Complete on website opens /cart so you '
+                                        'can see the PayFast path. Items will not '
+                                        'appear on the site until Admin adds products.'
+                                    : 'This cart is shared with villagenetacad.co.za. '
+                                        'Checkout opens the website for PayFast.',
+                                style: const TextStyle(fontSize: 13, height: 1.35),
                               ),
                             ),
                           ),

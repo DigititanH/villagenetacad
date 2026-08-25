@@ -42,10 +42,10 @@ class AppConfig {
 
   /// Shown when live `/api/products` returns empty (production today).
   static const storeLiveEmptyCatalogueMessage =
-      'The live shop API currently has no products (website DB is empty). '
-      'Showing sample items for Home/Store. '
-      'Use Open Village NetAcad shop for the real website — '
-      'add products in website Admin to fill the app catalogue.';
+      'Live shop DB has no products yet — showing samples for UAT. '
+      'You can add to a walkthrough cart and tap Complete on website '
+      'to open villagenetacad.co.za/cart (real shared cart starts when '
+      'Admin adds products).';
 
   static const emailOtpDemo = '123456';
   static const smsOtpDemo = '123456';

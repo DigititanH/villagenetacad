@@ -259,8 +259,18 @@ class HttpStoreRepository implements StoreRepository {
 
   bool canAddToLiveCart(Product product) => int.tryParse(product.id) != null;
 
+  /// Walkthrough cart while production catalogue is empty (sample SKUs).
+  final Map<String, CartLine> _sampleCart = {};
+
+  String _sampleLineKey(Product product, String? size, String? color) =>
+      '${product.id}|${size ?? ''}|${color ?? ''}';
+
   @override
   Future<List<CartLine>> getCart() async {
+    if (_sampleCatalogue) {
+      return _sampleCart.values.toList(growable: false);
+    }
+
     final rows = await _api.getList('/api/cart', auth: true);
     final lines = <CartLine>[];
     for (final raw in rows) {
@@ -297,17 +307,23 @@ class HttpStoreRepository implements StoreRepository {
     String? size,
     String? color,
   }) async {
-    final productId = int.tryParse(product.id);
-    if (productId == null) {
-      throw Exception(
-        'This is a sample product. The live shop catalogue is empty — '
-        'open Village NetAcad shop on the website to buy real items.',
+    if (_sampleCatalogue || int.tryParse(product.id) == null) {
+      final key = _sampleLineKey(product, size, color);
+      final existing = _sampleCart[key];
+      _sampleCart[key] = CartLine(
+        product: product,
+        quantity: (existing?.quantity ?? 0) + quantity,
+        cartItemId: key,
+        size: size,
+        color: color,
       );
+      return;
     }
+
     await _api.postJson(
       '/api/cart',
       {
-        'product_id': productId,
+        'product_id': int.parse(product.id),
         'quantity': quantity,
         if (size != null && size.isNotEmpty) 'size': size,
         if (color != null && color.isNotEmpty) 'color': color,
@@ -318,6 +334,24 @@ class HttpStoreRepository implements StoreRepository {
 
   @override
   Future<void> updateQuantity(CartLine line, int quantity) async {
+    if (_sampleCatalogue ||
+        (line.cartItemId != null && line.cartItemId!.contains('|'))) {
+      final key = line.cartItemId ??
+          _sampleLineKey(line.product, line.size, line.color);
+      if (quantity < 1) {
+        _sampleCart.remove(key);
+      } else {
+        _sampleCart[key] = CartLine(
+          product: line.product,
+          quantity: quantity,
+          cartItemId: key,
+          size: line.size,
+          color: line.color,
+        );
+      }
+      return;
+    }
+
     final cartId = line.cartItemId;
     if (cartId == null || cartId.isEmpty) {
       throw Exception('Missing cart item id');
@@ -335,6 +369,10 @@ class HttpStoreRepository implements StoreRepository {
 
   @override
   Future<void> clearCart() async {
+    if (_sampleCatalogue) {
+      _sampleCart.clear();
+      return;
+    }
     await _api.deleteJson('/api/cart', auth: true);
   }
 
