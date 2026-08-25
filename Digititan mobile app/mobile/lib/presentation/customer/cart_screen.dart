@@ -146,11 +146,12 @@ class _CartScreenState extends State<CartScreen> {
                               child: Text(
                                 sampleWalkthrough
                                     ? 'Walkthrough cart (samples). '
-                                        'Complete on website opens /cart so you '
-                                        'can see the PayFast path. Items will not '
-                                        'appear on the site until Admin adds products.'
+                                        'Complete on website opens site checkout '
+                                        '(PayFast). Sample items will not appear '
+                                        'on the site until Admin adds products.'
                                     : 'This cart is shared with villagenetacad.co.za. '
-                                        'Checkout opens the website for PayFast.',
+                                        'Complete on website opens site checkout '
+                                        '(PayFast).',
                                 style: const TextStyle(fontSize: 13, height: 1.35),
                               ),
                             ),

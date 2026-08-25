@@ -143,7 +143,7 @@ What you described earlier.
 - Checkout button opens live site login → Cart  
 - Same items on the website; **PayFast stays on the web for this phase**  
 - App My Orders reads `GET /api/orders/my-orders`  
-- Done (Phase 6): `?next=/cart` on website login — Cart / ProtectedRoute / app checkout open `/login?next=/cart`  
+- Done (Phase 6): app “Complete on website” opens `/checkout`; login honors `?next=` (ProtectedRoute / Cart) so you are not dumped on home  
 
 **Meeting note:** In-app PayFast waits for **Phase 7** unless leadership insists earlier.
 

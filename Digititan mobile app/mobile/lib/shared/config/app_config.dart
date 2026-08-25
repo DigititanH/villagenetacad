@@ -18,13 +18,14 @@ class AppConfig {
   /// True when [apiBaseUrl] is set — use live `/api` (auth + store cart).
   static bool get useLiveApi => apiBaseUrl.trim().isNotEmpty;
 
-  /// Website cart checkout (Phase 5 / PayFast). Opens login first with return to /cart
-  /// so customers are not dumped on home after signing in on the site.
+  /// Website PayFast checkout (Phase 5+). Opens `/checkout` so after login the
+  /// customer lands on checkout (not home). Unauthenticated users hit
+  /// ProtectedRoute → `/login?next=/checkout` → checkout.
   static String get villageNetAcadCartUrl {
     final base = apiBaseUrl.trim().isNotEmpty
         ? apiBaseUrl.replaceAll(RegExp(r'/$'), '')
         : 'https://villagenetacad.co.za';
-    return '$base/login?next=${Uri.encodeComponent('/cart')}';
+    return '$base/checkout';
   }
 
   /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
