@@ -7,6 +7,7 @@ import '../../infrastructure/api/http_auth_repository.dart';
 import '../../infrastructure/dummy/dummy_auth_repository.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
+import '../../shared/utils/friendly_api_error.dart';
 
 /// Register flow:
 /// - Dummy: create unverified user → optional reseller apply → OTP email
@@ -73,7 +74,7 @@ class RegisterWithEmail {
 
       return Success(user);
     } catch (e) {
-      return Failure(e.toString().replaceFirst('Exception: ', ''));
+      return Failure(friendlyApiError(e));
     }
   }
 }

@@ -24,14 +24,19 @@ Base: Phase 3.
 ## Run against local backend
 
 ```powershell
-# Terminal A — backend (must be running, not just a comment)
+# Terminal A — backend (leave this window open; you must see PHP "Development Server")
 cd S:\WORK\VillageNetAcad
-# e.g. npm run dev:backend   — confirm http://127.0.0.1:5000 responds
+npm run dev:backend
+# If that fails / port busy, use:
+# php -S 0.0.0.0:5000 -t backend-php/public backend-php/public/index.php
+
+# Prove it from Windows (should return JSON/OK, not connection refused):
+Invoke-WebRequest http://127.0.0.1:5000/health
 
 # Terminal B — app (Android emulator → host loopback)
 cd S:\WORK\VillageNetAcad\mobile
 flutter pub get
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000
+flutter run --no-dds --dart-define=API_BASE_URL=http://10.0.2.2:5000
 ```
 
 Windows desktop / Chrome against local:
