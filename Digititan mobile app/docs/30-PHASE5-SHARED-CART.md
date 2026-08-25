@@ -50,4 +50,4 @@ powershell -ExecutionPolicy Bypass -File .\INSTALL-PHASE5.ps1
 ## Out of scope (later)
 
 - Full catalogue polish / wishlist / stock UX → **Phase 6**
-- In-app PayFast → **Phase 7**
+- In-app PayFast → **deferred** (v1 = website browser checkout; store compliance)
