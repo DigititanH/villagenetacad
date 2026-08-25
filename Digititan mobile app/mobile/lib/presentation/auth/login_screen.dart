@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Column(
         children: [
-          const DemoBanner(message: AppConfig.demoModeLine),
+          DemoBanner(message: AppConfig.demoModeLine),
           Expanded(
             child: BrandBackdrop(
               child: ListView(
