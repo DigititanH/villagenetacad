@@ -15,6 +15,10 @@ Base: Phase 5 (`cursor/phase5-shared-cart-09ad`).
 | Empty live catalogue | Still falls back to samples (production DB may have 0 products) |
 | App → website | “Complete on website” opens `/cart` only (no website frontend change). User taps Proceed to Checkout. |
 
+## Parked (website frontend permission)
+
+When allowed to change/deploy the website frontend: login must honor `?next=` and return to **`/checkout`** (or `/cart`) after sign-in from the app handoff — not home.
+
 ## Run
 
 ```powershell

@@ -142,7 +142,10 @@ What you described earlier.
 - App opens website `/cart` (no website frontend deploy). User taps Proceed to Checkout on the site.  
 - Same items on the website when live products exist; **PayFast stays on the web for this phase**  
 - App My Orders reads `GET /api/orders/my-orders`  
-- Later (needs website permission): `?next=/cart` or `/checkout` after login so users are not dumped on home  
+
+**Parked — needs website frontend permission (do when allowed):**  
+After app “Complete on website”, login must return to **`/cart` or `/checkout`** (not home).  
+Implement `?next=` on Login + Cart/ProtectedRoute; prefer return to **`/checkout`** so PayFast is one step closer. Until then: log in on the site first, then open cart from the app.
 
 **Meeting note:** In-app PayFast waits for **Phase 7** unless leadership insists earlier.
 
