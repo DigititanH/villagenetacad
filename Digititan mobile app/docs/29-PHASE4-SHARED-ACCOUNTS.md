@@ -19,23 +19,35 @@ Base: Phase 3.
 |-------|-----|
 | `Building with plugins requires symlink support` | Windows → Settings → Developer Mode (`start ms-settings:developers`), then rebuild |
 | `flutter_secure_storage` / `android-37` | Phase 4 pins `flutter_secure_storage: ^9.2.4` (works with compileSdk **36**). Do **not** bump to SDK 37 unless Platform `android-37` exists under your SDK (the `android-37.0` install path often fails Gradle’s hash lookup) |
-| Backend not running | Terminal A must actually start `backend-php` / your usual `npm run dev:backend` so something listens on port **5000** |
+| `npm run dev:backend` → no package.json | **`S:\WORK\VillageNetAcad` is mobile-only.** There is no root `package.json` / PHP API there. Use production API **or** `START-LOCAL-API.ps1` below |
+| Backend not running | Nothing on host `:5000` → login shows connection refused |
 
-## Run against local backend
+## Run against live website API (simplest for Phase 4 login UAT)
+
+No local PHP/MySQL needed. App talks to the same accounts as the website.
 
 ```powershell
-# Terminal A — backend (leave this window open; you must see PHP "Development Server")
-cd S:\WORK\VillageNetAcad
-npm run dev:backend
-# If that fails / port busy, use:
-# php -S 0.0.0.0:5000 -t backend-php/public backend-php/public/index.php
+cd S:\WORK\VillageNetAcad\mobile
+flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
+```
 
-# Prove it from Windows (should return JSON/OK, not connection refused):
+Register on the website (or in-app), then sign in with the same email/password.
+
+## Run against local API (optional)
+
+`VillageNetAcad` does not contain `backend-php`. Pull it once and start PHP:
+
+```powershell
+# Terminal A — API (needs php on PATH + MySQL village_netacad)
+cd S:\WORK\VillageNetAcad
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DigititanH/villagenetacad/cursor/phase4-shared-accounts-09ad/Digititan%20mobile%20app/START-LOCAL-API.ps1?v=1" -OutFile .\START-LOCAL-API.ps1 -Headers @{ "Cache-Control" = "no-cache" }
+powershell -ExecutionPolicy Bypass -File .\START-LOCAL-API.ps1
+
+# Other window — prove it:
 Invoke-WebRequest http://127.0.0.1:5000/health
 
-# Terminal B — app (Android emulator → host loopback)
+# Terminal B — app (emulator → host)
 cd S:\WORK\VillageNetAcad\mobile
-flutter pub get
 flutter run --no-dds --dart-define=API_BASE_URL=http://10.0.2.2:5000
 ```
 
@@ -45,11 +57,6 @@ Windows desktop / Chrome against local:
 flutter run -d windows --dart-define=API_BASE_URL=http://127.0.0.1:5000
 ```
 
-Production (only when team agrees):
-
-```powershell
-flutter run --dart-define=API_BASE_URL=https://villagenetacad.co.za
-```
 
 ## Done when (full Phase 4)
 
