@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LogIn } from "lucide-react";
 import toast from "react-hot-toast";
+
+/** Only allow same-origin relative paths (e.g. /cart). Blocks //evil.com open redirects. */
+function safeNextPath(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const path = raw.trim();
+  if (!path.startsWith("/") || path.startsWith("//")) return null;
+  if (path.includes("://")) return null;
+  return path;
+}
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,6 +19,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextAfterLogin = safeNextPath(searchParams.get("next"));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,9 +28,15 @@ export default function Login() {
     try {
       const user = await login(email.trim().toLowerCase(), password);
       toast.success(`Welcome back, ${user.name}!`);
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "reseller") navigate("/reseller/dashboard");
-      else navigate("/");
+      if (nextAfterLogin) {
+        navigate(nextAfterLogin);
+      } else if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (user.role === "reseller") {
+        navigate("/reseller/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     }

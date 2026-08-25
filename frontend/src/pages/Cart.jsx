@@ -18,7 +18,7 @@ export default function Cart() {
       <div className="text-center">
         <ShoppingCart size={48} className="text-gray-600 mx-auto mb-4" />
         <h2 className="text-xl font-black mb-2">Please login to view your cart</h2>
-        <Link to="/login" className="btn-primary inline-block mt-4">Login</Link>
+        <Link to="/login?next=/cart" className="btn-primary inline-block mt-4">Login</Link>
       </div>
     </div>
   );

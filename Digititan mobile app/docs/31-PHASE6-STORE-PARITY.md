@@ -13,6 +13,7 @@ Base: Phase 5 (`cursor/phase5-shared-cart-09ad`).
 | Wishlist | `GET /api/wishlist` + `POST /api/wishlist/toggle`; Profile → Wishlist |
 | Order status | Pipeline UI: placed → paid → processing → shipped → delivered |
 | Empty live catalogue | Still falls back to samples (production DB may have 0 products) |
+| Login → cart return | Website `?next=/cart` after login; app checkout opens that URL |
 
 ## Run
 
