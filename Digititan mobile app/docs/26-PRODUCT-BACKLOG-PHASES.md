@@ -130,6 +130,9 @@ First engineering phase. Absorbs early **[W3]** auth hygiene.
 
 **Done when:** website register → app login with the same details (and the reverse).
 
+### Phase 4 delivery note
+Branch `cursor/phase4-shared-accounts-09ad`: shared accounts verified both ways on production (website↔app login + app register→website). Live UI hides demo credentials. Remaining: staging/HTTPS policy if needed; then **Phase 5** shared cart.
+
 ---
 
 ## Phase 5 — Shared cart + checkout on the website

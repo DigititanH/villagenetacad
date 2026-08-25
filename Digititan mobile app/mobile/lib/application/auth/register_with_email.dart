@@ -3,14 +3,15 @@ import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/email_sender.dart';
 import '../../domain/repositories/reseller_repository.dart';
+import '../../infrastructure/api/http_auth_repository.dart';
 import '../../infrastructure/dummy/dummy_auth_repository.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
+import '../../shared/utils/friendly_api_error.dart';
 
 /// Register flow:
-/// 1) create unverified user
-/// 2) if reseller → submit application (pending until Ops Admin issues code)
-/// 3) send OTP email (event-driven)
-/// 4) UI navigates to OTP screen
+/// - Dummy: create unverified user → optional reseller apply → OTP email
+/// - Live API: POST /api/auth/register (academy for reseller); JWT session; no app OTP
 class RegisterWithEmail {
   final AuthRepository _authRepository;
   final EmailSender _emailSender;
@@ -32,6 +33,11 @@ class RegisterWithEmail {
     if (name.trim().isEmpty || email.trim().isEmpty || password.length < 6) {
       return const Failure('Name, email and password (min 6) are required');
     }
+    if (role == UserRole.reseller &&
+        AppConfig.useLiveApi &&
+        (academyName == null || academyName.trim().isEmpty)) {
+      return const Failure('Please enter the name of your academy');
+    }
 
     try {
       final user = await _authRepository.registerWithEmail(
@@ -39,9 +45,11 @@ class RegisterWithEmail {
         email: email,
         password: password,
         role: role,
+        academyName: academyName,
       );
 
-      if (role == UserRole.reseller) {
+      // Dummy path only — live API already creates reseller_profiles.
+      if (role == UserRole.reseller && _authRepository is DummyAuthRepository) {
         await _resellerRepository.applyToBecomeReseller(
           name: name,
           email: email,
@@ -49,7 +57,10 @@ class RegisterWithEmail {
         );
       }
 
-      // Prototype OTP is fixed in DummyAuthRepository ("123456").
+      if (_authRepository is HttpAuthRepository) {
+        return Success(user);
+      }
+
       final otp = _authRepository is DummyAuthRepository
           ? (_authRepository.debugOtpFor(email) ?? '123456')
           : '******';
@@ -63,7 +74,7 @@ class RegisterWithEmail {
 
       return Success(user);
     } catch (e) {
-      return Failure(e.toString().replaceFirst('Exception: ', ''));
+      return Failure(friendlyApiError(e));
     }
   }
 }

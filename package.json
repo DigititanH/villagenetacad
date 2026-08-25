@@ -9,11 +9,11 @@
     "validate:routes": "php backend-php/scripts/validate-routes.php",
     "prepare:deploy": "powershell -ExecutionPolicy Bypass -File deploy/prepare-production.ps1",
     "migrate": "php backend-php/database/migrate.php",
-    "dev:backend": "php -S localhost:5000 -t backend-php/public backend-php/public/index.php",
+    "dev:backend": "php -S 0.0.0.0:5000 -t backend-php/public backend-php/public/index.php",
     "dev:frontend": "npm run dev --prefix frontend",
     "package:afrihost": "powershell -ExecutionPolicy Bypass -File deploy/package-for-upload.ps1",
     "package:azure": "powershell -ExecutionPolicy Bypass -File deploy/azure/package-for-azure.ps1",
     "deploy:azure": "powershell -ExecutionPolicy Bypass -File deploy/azure/deploy-now.ps1",
-    "start": "php -S localhost:5000 -t backend-php/public backend-php/public/index.php"
+    "start": "php -S 0.0.0.0:5000 -t backend-php/public backend-php/public/index.php"
   }
 }

@@ -1,6 +1,7 @@
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../shared/result/result.dart';
+import '../../shared/utils/friendly_api_error.dart';
 
 /// One use-case = one business action (SOLID S).
 /// Presentation calls this — not the repository directly.
@@ -23,7 +24,7 @@ class SignInWithEmail {
       );
       return Success(user);
     } catch (e) {
-      return Failure(e.toString().replaceFirst('Exception: ', ''));
+      return Failure(friendlyApiError(e));
     }
   }
 }

@@ -14,13 +14,14 @@ abstract class AuthRepository {
     required String password,
   });
 
-  /// Creates an unverified account and returns it.
-  /// OTP sending is orchestrated by a use-case, not hidden forever.
+  /// Creates an account and returns it.
+  /// [academyName] is required by the live API when [role] is reseller.
   Future<User> registerWithEmail({
     required String name,
     required String email,
     required String password,
     required UserRole role,
+    String? academyName,
   });
 
   Future<User> verifyEmailOtp({
