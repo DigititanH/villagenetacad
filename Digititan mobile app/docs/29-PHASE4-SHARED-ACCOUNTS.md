@@ -60,8 +60,18 @@ flutter run -d windows --dart-define=API_BASE_URL=http://127.0.0.1:5000
 
 ## Done when (full Phase 4)
 
-Website register → app login with the same details (and reverse).  
-Still open: drop demo emails for UAT, staging DB, HTTPS-only policy sign-off.
+| Check | Status |
+|-------|--------|
+| Website account → app login (existing) | **Verified** (production API) |
+| Website register → app login (new account) | **Verified** (production API) |
+| App register → website login | Still open |
+| Drop demo emails for UAT / staging DB / HTTPS-only policy | Still open |
+
+Run command used for UAT:
+
+```powershell
+flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
+```
 
 ## Laptop sync
 
