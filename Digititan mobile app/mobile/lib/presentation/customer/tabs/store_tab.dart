@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/injection.dart';
 import '../../../domain/entities/product.dart';
 import '../../../domain/entities/user.dart';
+import '../../../infrastructure/api/http_store_repository.dart';
 import '../../../shared/config/app_config.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/theme/digititan_theme.dart';
@@ -68,9 +69,17 @@ class _StoreTabState extends State<StoreTab> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                   children: [
                     QuietNotice(
-                      message: AppConfig.useLiveApi
-                          ? AppConfig.storeLiveCartMessage
-                          : AppConfig.storeModeMessage,
+                      message: () {
+                        if (!AppConfig.useLiveApi) {
+                          return AppConfig.storeModeMessage;
+                        }
+                        final store = widget.container.storeRepository;
+                        if (store is HttpStoreRepository &&
+                            store.usingSampleCatalogue) {
+                          return AppConfig.storeLiveEmptyCatalogueMessage;
+                        }
+                        return AppConfig.storeLiveCartMessage;
+                      }(),
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
@@ -81,8 +90,24 @@ class _StoreTabState extends State<StoreTab> {
                     const SizedBox(height: 4),
                     const VillageNetAcadShopLink(),
                     const SizedBox(height: 8),
-                    const SectionHeader(title: 'Sample catalogue'),
-                    ..._products.map(_productTile),
+                    SectionHeader(
+                      title: () {
+                        if (!AppConfig.useLiveApi) return 'Sample catalogue';
+                        final store = widget.container.storeRepository;
+                        if (store is HttpStoreRepository &&
+                            store.usingSampleCatalogue) {
+                          return 'Sample catalogue (live shop empty)';
+                        }
+                        return 'Live catalogue';
+                      }(),
+                    ),
+                    if (_products.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Text('No products to show.'),
+                      )
+                    else
+                      ..._products.map(_productTile),
                   ],
                 ),
     );

@@ -34,11 +34,18 @@ class AppConfig {
       'Browse sample products here. Full shop is the Village NetAcad website '
       '(same PayFast gateway story — live pay in later phases).';
 
-  /// Live Phase 5 notice.
+  /// Live Phase 5 notice (when API has products).
   static const storeLiveCartMessage =
       'Live catalogue + shared cart with the website. '
       'Checkout opens villagenetacad.co.za for PayFast. '
       'Orders appear under My orders after payment.';
+
+  /// Shown when live `/api/products` returns empty (production today).
+  static const storeLiveEmptyCatalogueMessage =
+      'The live shop API currently has no products (website DB is empty). '
+      'Showing sample items for Home/Store. '
+      'Use Open Village NetAcad shop for the real website — '
+      'add products in website Admin to fill the app catalogue.';
 
   static const emailOtpDemo = '123456';
   static const smsOtpDemo = '123456';

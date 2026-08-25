@@ -3,7 +3,16 @@
 Branch: `cursor/phase5-shared-cart-09ad`  
 Base: Phase 4 (`cursor/phase4-shared-accounts-09ad`).
 
-## What shipped
+## Important: production catalogue
+
+`GET https://villagenetacad.co.za/api/products` currently returns **`products: []`**
+(categories exist; no active products in MySQL).
+
+The app therefore **falls back to sample products** for Home (best sellers /
+promotions) and Store so the UI is not blank. Sample SKUs cannot go into the
+live server cart — use **Open Village NetAcad shop** until Admin adds products.
+
+When live products exist again, the app shows them automatically and shared cart works.
 
 | Item | Notes |
 |------|--------|

@@ -1,17 +1,26 @@
 import '../../domain/entities/product.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../dummy/demo_hub.dart';
 import 'api_client.dart';
 
 /// Live store: catalogue + server cart + my-orders (Phase 5).
 /// Checkout / PayFast stay on the website.
+///
+/// If production `/api/products` is empty (current live DB), we fall back to
+/// the sample catalogue so Home/Store are not blank. Sample SKUs cannot be
+/// POSTed to `/api/cart` — the UI opens the website shop instead.
 class HttpStoreRepository implements StoreRepository {
   final ApiClient _api;
+  bool _sampleCatalogue = false;
 
   HttpStoreRepository({required ApiClient api}) : _api = api;
 
   @override
   bool get checkoutOnWebsite => true;
+
+  /// True when last [getProducts] used DemoHub because live catalogue was empty.
+  bool get usingSampleCatalogue => _sampleCatalogue;
 
   Product _mapProduct(Map<String, dynamic> json) {
     final id = json['id']?.toString() ?? '';
@@ -23,10 +32,15 @@ class HttpStoreRepository implements StoreRepository {
         .toString()
         .trim();
     final price = _asDouble(json['price']);
+    final compareAt = _asDouble(json['compare_at_price']);
     final stock = json['stock'];
     final inStock = stock == null
         ? true
         : (stock is num ? stock > 0 : int.tryParse(stock.toString()) != 0);
+    final featured = json['is_featured'] == true ||
+        json['is_featured'] == 1 ||
+        json['featured'] == true ||
+        json['featured'] == 1;
     return Product(
       id: id,
       name: name,
@@ -34,8 +48,17 @@ class HttpStoreRepository implements StoreRepository {
       summary: summary.isEmpty ? name : summary,
       price: price,
       inStock: inStock,
-      isBestSeller: json['is_bestseller'] == true || json['is_bestseller'] == 1,
-      onPromotion: json['on_promotion'] == true || json['on_promotion'] == 1,
+      isBestSeller: featured ||
+          json['is_bestseller'] == true ||
+          json['is_bestseller'] == 1 ||
+          json['is_best_seller'] == true ||
+          json['is_best_seller'] == 1,
+      onPromotion: json['on_promotion'] == true ||
+          json['on_promotion'] == 1 ||
+          json['on_sale'] == true ||
+          json['on_sale'] == 1 ||
+          (compareAt > price && compareAt > 0),
+      compareAtPrice: compareAt > price ? compareAt : null,
     );
   }
 
@@ -123,17 +146,26 @@ class HttpStoreRepository implements StoreRepository {
 
   @override
   Future<List<Product>> getProducts() async {
-    final json = await _api.getJson(
-      '/api/products',
-      auth: false,
-      query: {'limit': '50', 'page': '1'},
-    );
-    final list = json['products'];
-    if (list is! List) return const [];
-    return list
-        .whereType<Map>()
-        .map((e) => _mapProduct(Map<String, dynamic>.from(e)))
-        .toList(growable: false);
+    try {
+      final json = await _api.getJson(
+        '/api/products',
+        auth: false,
+        query: {'limit': '50', 'page': '1'},
+      );
+      final list = json['products'];
+      if (list is List && list.isNotEmpty) {
+        _sampleCatalogue = false;
+        return list
+            .whereType<Map>()
+            .map((e) => _mapProduct(Map<String, dynamic>.from(e)))
+            .toList(growable: false);
+      }
+    } catch (_) {
+      // Fall through to samples.
+    }
+    // Production currently has categories but 0 active products.
+    _sampleCatalogue = true;
+    return List<Product>.unmodifiable(DemoHub.instance.products);
   }
 
   @override
@@ -145,6 +177,9 @@ class HttpStoreRepository implements StoreRepository {
       return null;
     }
   }
+
+  /// Live MySQL product ids are integers. Sample demo ids like `p-hoodie` are not.
+  bool canAddToLiveCart(Product product) => int.tryParse(product.id) != null;
 
   @override
   Future<List<CartLine>> getCart() async {
@@ -176,7 +211,10 @@ class HttpStoreRepository implements StoreRepository {
   Future<void> addToCart(Product product, {int quantity = 1}) async {
     final productId = int.tryParse(product.id);
     if (productId == null) {
-      throw Exception('Invalid product id for live cart');
+      throw Exception(
+        'This is a sample product. The live shop catalogue is empty — '
+        'open Village NetAcad shop on the website to buy real items.',
+      );
     }
     await _api.postJson(
       '/api/cart',
@@ -247,7 +285,6 @@ class HttpStoreRepository implements StoreRepository {
     final rawId = id.startsWith('ORD-') ? id.substring(4) : id;
     try {
       final json = await _api.getJson('/api/orders/$rawId', auth: true);
-      // show() returns the order object directly as a map
       return _mapOrder(json, email: '');
     } on ApiException catch (e) {
       if (e.statusCode == 404) return null;
