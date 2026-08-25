@@ -68,8 +68,8 @@ class AppConfig {
       'where applicable. Never pay cash to individuals or ambassadors.';
 
   static String get demoModeLine => useLiveApi
-      ? 'Phase 5 · live API · $apiBaseUrl'
-      : 'Presentation demo · Phase 3/5 · dummy auth (set API_BASE_URL for live)';
+      ? 'Phase 6 · live API · $apiBaseUrl'
+      : 'Presentation demo · Phase 3/6 · dummy auth (set API_BASE_URL for live)';
 
   /// Deep-link / QR payload for reseller legitimacy check.
   static String resellerVerifyPayload(String code) =>

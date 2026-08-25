@@ -12,6 +12,7 @@ import '../legal_hub_screen.dart';
 import '../my_orders_screen.dart';
 import '../notifications_screen.dart';
 import '../verify_reseller_screen.dart';
+import '../wishlist_screen.dart';
 import '../widgets/demo_role_switcher.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -125,6 +126,20 @@ class ProfileTab extends StatelessWidget {
               );
             },
             child: const Text('My orders'),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WishlistScreen(
+                    container: container,
+                    user: user,
+                  ),
+                ),
+              );
+            },
+            child: const Text('Wishlist'),
           ),
           const SizedBox(height: 10),
           OutlinedButton(

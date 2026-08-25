@@ -164,6 +164,9 @@ Branch `cursor/phase5-shared-cart-09ad`: live products + server cart + website P
 
 **Done when:** the app catalogue is the Digititan / Village NetAcad store, not sample SKUs.
 
+### Phase 6 delivery note
+Branch `cursor/phase6-store-parity-09ad`: product images, sizes/colours into cart, wishlist screen, order status pipeline. Still depends on live products existing in MySQL for full production UAT.
+
 ---
 
 ## Phase 7 — Payments, security, policy (live)

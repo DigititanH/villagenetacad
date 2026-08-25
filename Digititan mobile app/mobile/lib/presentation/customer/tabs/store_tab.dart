@@ -9,6 +9,7 @@ import '../../../shared/result/result.dart';
 import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/utils/open_digititan_store.dart';
 import '../../../shared/widgets/demo_banner.dart';
+import '../../../shared/widgets/product_image.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 
@@ -140,6 +141,8 @@ class _StoreTabState extends State<StoreTab> {
             ),
             child: Row(
               children: [
+                ProductImage(imageUrl: p.imageUrl, size: 56),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,6 +157,8 @@ class _StoreTabState extends State<StoreTab> {
                           p.category,
                           if (p.isBestSeller) 'Best seller',
                           if (p.onPromotion) 'Promo',
+                          if (!p.inStock) 'Out of stock',
+                          if (p.sizes.isNotEmpty) 'Sizes',
                         ].join(' · '),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),

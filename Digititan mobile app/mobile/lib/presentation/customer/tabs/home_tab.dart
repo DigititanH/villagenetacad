@@ -8,6 +8,7 @@ import '../../../domain/entities/user.dart';
 import '../../../shared/result/result.dart';
 import '../../../shared/theme/digititan_theme.dart';
 import '../../../shared/widgets/demo_banner.dart';
+import '../../../shared/widgets/product_image.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
 import '../training_detail_screen.dart';
@@ -174,21 +175,7 @@ class _HomeTabState extends State<HomeTab> {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: p.onPromotion
-                    ? DigititanColors.softGreen
-                    : DigititanColors.softBlue,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                p.onPromotion ? Icons.local_offer_outlined : Icons.shopping_bag_outlined,
-                color: DigititanColors.primary,
-                size: 22,
-              ),
-            ),
+            ProductImage(imageUrl: p.imageUrl, size: 48),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

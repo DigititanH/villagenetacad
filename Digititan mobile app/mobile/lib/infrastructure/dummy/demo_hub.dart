@@ -42,6 +42,8 @@ class DemoHub {
         summary: 'Durable bag for academy and work use.',
         price: 349,
         isBestSeller: true,
+        stockCount: 12,
+        colors: ['Black', 'Navy'],
       ),
       const Product(
         id: 'p-headset',
@@ -51,6 +53,7 @@ class DemoHub {
         price: 399,
         compareAtPrice: 499,
         onPromotion: true,
+        stockCount: 8,
       ),
       const Product(
         id: 'p-network-kit',
@@ -59,6 +62,7 @@ class DemoHub {
         summary: 'Starter cables and tools for networking practice.',
         price: 899,
         isBestSeller: true,
+        stockCount: 5,
       ),
       const Product(
         id: 'p-hoodie',
@@ -68,6 +72,9 @@ class DemoHub {
         price: 349,
         compareAtPrice: 420,
         onPromotion: true,
+        stockCount: 20,
+        sizes: ['S', 'M', 'L', 'XL'],
+        colors: ['Burnt orange', 'Black'],
       ),
       const Product(
         id: 'p-mouse',
@@ -75,6 +82,7 @@ class DemoHub {
         category: 'Hardware',
         summary: 'Simple wireless mouse for digital literacy classes.',
         price: 199,
+        stockCount: 30,
       ),
     ]);
 

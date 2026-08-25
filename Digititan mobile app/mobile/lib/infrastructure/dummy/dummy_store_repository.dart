@@ -34,7 +34,12 @@ class DummyStoreRepository implements StoreRepository {
   }
 
   @override
-  Future<void> addToCart(Product product, {int quantity = 1}) async {
+  Future<void> addToCart(
+    Product product, {
+    int quantity = 1,
+    String? size,
+    String? color,
+  }) async {
     _cart.update(product.id, (q) => q + quantity, ifAbsent: () => quantity);
   }
 
@@ -59,6 +64,42 @@ class DummyStoreRepository implements StoreRepository {
 
   @override
   bool get checkoutOnWebsite => false;
+
+  final Set<String> _wishlist = {};
+
+  @override
+  Future<List<WishlistItem>> getWishlist() async {
+    final items = <WishlistItem>[];
+    for (final id in _wishlist) {
+      Product? p;
+      try {
+        p = _hub.products.firstWhere((e) => e.id == id);
+      } catch (_) {
+        continue;
+      }
+      items.add(
+        WishlistItem(
+          id: id,
+          productId: p.id,
+          name: p.name,
+          price: p.price,
+          imageUrl: p.imageUrl,
+          slug: p.slug,
+        ),
+      );
+    }
+    return items;
+  }
+
+  @override
+  Future<bool> toggleWishlist(String productId) async {
+    if (_wishlist.contains(productId)) {
+      _wishlist.remove(productId);
+      return false;
+    }
+    _wishlist.add(productId);
+    return true;
+  }
 
   @override
   String startPaymentOtp(String email) {

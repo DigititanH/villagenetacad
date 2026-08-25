@@ -6,6 +6,7 @@ import '../../domain/repositories/store_repository.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/utils/friendly_api_error.dart';
 import '../../shared/utils/open_digititan_store.dart';
+import '../../shared/widgets/product_image.dart';
 import '../../shared/widgets/product_price_text.dart';
 import 'checkout_screen.dart';
 
@@ -148,6 +149,10 @@ class _CartScreenState extends State<CartScreen> {
                             itemBuilder: (context, i) {
                               final line = _lines[i];
                               return ListTile(
+                                leading: ProductImage(
+                                  imageUrl: line.product.imageUrl,
+                                  size: 48,
+                                ),
                                 title: Text(line.product.name),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,6 +161,16 @@ class _CartScreenState extends State<CartScreen> {
                                       product: line.product,
                                       compact: true,
                                     ),
+                                    if ((line.size ?? '').isNotEmpty ||
+                                        (line.color ?? '').isNotEmpty)
+                                      Text(
+                                        [
+                                          if ((line.size ?? '').isNotEmpty)
+                                            'Size ${line.size}',
+                                          if ((line.color ?? '').isNotEmpty)
+                                            line.color!,
+                                        ].join(' · '),
+                                      ),
                                     Text(
                                       '× ${line.quantity} = R${line.lineTotal.toStringAsFixed(0)}',
                                     ),
