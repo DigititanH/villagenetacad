@@ -120,7 +120,7 @@ class _AcademiesTabState extends State<AcademiesTab> {
               child: const Text('All SA'),
             ),
           IconButton(
-            tooltip: 'Register academy / org with Digititan',
+            tooltip: 'ASC Registration Form (same as website)',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

@@ -14,6 +14,7 @@ Base: Phase 5 (`cursor/phase5-shared-cart-09ad`).
 | Order status | Pipeline UI: placed → paid → processing → shipped → delivered |
 | Empty live catalogue | Still falls back to samples (production DB may have 0 products) |
 | App → website | “Complete on website” opens `/cart` only (no website frontend change). User taps Proceed to Checkout. |
+| ASC registration | App opens the same Microsoft ASC form as the website (not a custom in-app form). |
 
 ## Parked (website frontend permission)
 

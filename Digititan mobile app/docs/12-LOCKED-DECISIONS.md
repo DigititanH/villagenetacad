@@ -28,6 +28,8 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 ## Academies (Wave 1)
 - New academies / orgs **register with Digititan first**
 - Cisco NetAcad may follow — do **not** Cisco-only redirect
+- **ASC registration:** same Microsoft Form as the website (Home → ASC Registration).
+  App opens that form in the browser — do not maintain a separate shortened in-app form.
 
 ## Reseller model
 - Codes: Beneficiary (VNA-B) / Centre (VNA-C)

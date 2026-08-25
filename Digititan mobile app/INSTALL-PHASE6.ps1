@@ -40,12 +40,15 @@ $docsDest = Join-Path (Get-Location) "docs"
 if (-not (Test-Path $docsDest)) { New-Item -ItemType Directory -Path $docsDest | Out-Null }
 Copy-Item (Join-Path $pack "docs\31-PHASE6-STORE-PARITY.md") $docsDest -Force -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $pack "docs\26-PRODUCT-BACKLOG-PHASES.md") $docsDest -Force -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $pack "docs\32-UAT-PAY-PATH.md") $docsDest -Force -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $pack "docs\12-LOCKED-DECISIONS.md") $docsDest -Force -ErrorAction SilentlyContinue
 
 $checks = @(
   "infrastructure\api\http_store_repository.dart",
   "presentation\customer\wishlist_screen.dart",
   "shared\widgets\product_image.dart",
-  "shared\widgets\order_status_tracker.dart"
+  "shared\widgets\order_status_tracker.dart",
+  "presentation\customer\organisation_register_screen.dart"
 )
 foreach ($rel in $checks) {
   $p = Join-Path $libDest $rel

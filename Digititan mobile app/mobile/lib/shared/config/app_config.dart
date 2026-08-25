@@ -27,6 +27,12 @@ class AppConfig {
     return '$base/cart';
   }
 
+  /// Same ASC Microsoft Form as the website (Home → ASC Registration).
+  /// Do not replace with a custom in-app form — fields must stay identical.
+  static const ascRegistrationFormUrl =
+      'https://forms.office.com/Pages/ResponsePage.aspx?id='
+      'DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__oJs_XlUMlc0REVGOUVBSVowUkdZVDlDOTlCQjBOTC4u';
+
   /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
   static const paymentGatewayName = 'PayFast';
 
