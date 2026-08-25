@@ -13,12 +13,20 @@ Base: Phase 3.
 | JWT in `flutter_secure_storage` | Restored on launch via `getCurrentUser` |
 | Dummy still default | Safe for presentation without a server |
 
+## Android / Windows build notes
+
+| Issue | Fix |
+|-------|-----|
+| `Building with plugins requires symlink support` | Windows → Settings → Developer Mode (`start ms-settings:developers`), then rebuild |
+| `flutter_secure_storage` / `android-37` | Phase 4 pins `flutter_secure_storage: ^9.2.4` (works with compileSdk **36**). Do **not** bump to SDK 37 unless Platform `android-37` exists under your SDK (the `android-37.0` install path often fails Gradle’s hash lookup) |
+| Backend not running | Terminal A must actually start `backend-php` / your usual `npm run dev:backend` so something listens on port **5000** |
+
 ## Run against local backend
 
 ```powershell
-# Terminal A — backend
+# Terminal A — backend (must be running, not just a comment)
 cd S:\WORK\VillageNetAcad
-# start backend-php as you usually do (e.g. npm run dev:backend)
+# e.g. npm run dev:backend   — confirm http://127.0.0.1:5000 responds
 
 # Terminal B — app (Android emulator → host loopback)
 cd S:\WORK\VillageNetAcad\mobile
