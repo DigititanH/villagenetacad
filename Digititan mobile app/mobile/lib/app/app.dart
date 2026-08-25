@@ -11,8 +11,13 @@ import 'injection.dart';
 /// App shell with Village NetAcad brand theme.
 class DigititanApp extends StatefulWidget {
   final AppContainer container;
+  final User? initialUser;
 
-  const DigititanApp({super.key, required this.container});
+  const DigititanApp({
+    super.key,
+    required this.container,
+    this.initialUser,
+  });
 
   @override
   State<DigititanApp> createState() => _DigititanAppState();
@@ -21,6 +26,16 @@ class DigititanApp extends StatefulWidget {
 class _DigititanAppState extends State<DigititanApp> {
   User? _user;
   AppHat _hat = AppHat.customer;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialUser;
+    if (initial != null) {
+      _user = initial;
+      _hat = _defaultHatFor(initial);
+    }
+  }
 
   AppHat _defaultHatFor(User user) {
     if (user.role == UserRole.reseller) return AppHat.reseller;

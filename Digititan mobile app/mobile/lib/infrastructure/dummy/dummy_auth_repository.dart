@@ -103,6 +103,7 @@ class DummyAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required UserRole role,
+    String? academyName,
   }) async {
     final key = email.trim().toLowerCase();
     if (_accounts.containsKey(key)) {

@@ -18,6 +18,9 @@ import '../../domain/repositories/email_sender.dart';
 import '../../domain/repositories/reseller_repository.dart';
 import '../../domain/repositories/store_repository.dart';
 import '../../domain/repositories/training_repository.dart';
+import '../../infrastructure/api/api_client.dart';
+import '../../infrastructure/api/http_auth_repository.dart';
+import '../../infrastructure/api/token_store.dart';
 import '../../infrastructure/dummy/dummy_academy_repository.dart';
 import '../../infrastructure/dummy/dummy_admin_repository.dart';
 import '../../infrastructure/dummy/dummy_auth_repository.dart';
@@ -25,8 +28,11 @@ import '../../infrastructure/dummy/dummy_reseller_repository.dart';
 import '../../infrastructure/dummy/dummy_store_repository.dart';
 import '../../infrastructure/dummy/dummy_training_repository.dart';
 import '../../infrastructure/email/console_email_sender.dart';
+import '../../shared/config/app_config.dart';
 
 class AppContainer {
+  late final TokenStore tokenStore;
+  late final ApiClient? apiClient;
   late final AuthRepository authRepository;
   late final EmailSender emailSender;
   late final TrainingRepository trainingRepository;
@@ -52,8 +58,21 @@ class AppContainer {
   late final PlaceOrder placeOrder;
   late final GetMyOrders getMyOrders;
 
-  AppContainer() {
-    authRepository = DummyAuthRepository();
+  AppContainer({TokenStore? tokenStoreOverride}) {
+    tokenStore = tokenStoreOverride ??
+        (AppConfig.useLiveApi ? SecureTokenStore() : MemoryTokenStore());
+
+    if (AppConfig.useLiveApi) {
+      apiClient = ApiClient(tokenStore: tokenStore);
+      authRepository = HttpAuthRepository(
+        api: apiClient!,
+        tokens: tokenStore,
+      );
+    } else {
+      apiClient = null;
+      authRepository = DummyAuthRepository();
+    }
+
     emailSender = ConsoleEmailSender();
     trainingRepository = DummyTrainingRepository();
     academyRepository = DummyAcademyRepository();

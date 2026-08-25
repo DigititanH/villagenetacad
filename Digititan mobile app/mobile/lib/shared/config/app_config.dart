@@ -6,6 +6,18 @@ class AppConfig {
   /// @Deprecated Prefer [villageNetAcadShopUrl]. Kept so older call sites compile.
   static const digititanStoreUrl = villageNetAcadShopUrl;
 
+  /// Phase 4 — shared accounts API (same as website).
+  /// Pass via `--dart-define=API_BASE_URL=https://villagenetacad.co.za`
+  /// or local e.g. `http://10.0.2.2:5000` (Android emulator → host).
+  /// Empty = keep dummy auth for decks.
+  static const apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: '',
+  );
+
+  /// True when [apiBaseUrl] is set — use live `/api/auth`.
+  static bool get useLiveApi => apiBaseUrl.trim().isNotEmpty;
+
   /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
   static const paymentGatewayName = 'PayFast';
 
@@ -34,8 +46,9 @@ class AppConfig {
       '$returnWindowDays days of delivery if unused; warranty via Pinnacle '
       'where applicable. Never pay cash to individuals or ambassadors.';
 
-  static const demoModeLine =
-      'Presentation demo · Phase 3 · one Village NetAcad product · sample data';
+  static String get demoModeLine => useLiveApi
+      ? 'Phase 4 · live API · $apiBaseUrl'
+      : 'Presentation demo · Phase 3/4 · dummy auth (set API_BASE_URL for live)';
 
   /// Deep-link / QR payload for reseller legitimacy check.
   static String resellerVerifyPayload(String code) =>
