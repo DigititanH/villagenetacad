@@ -25,7 +25,7 @@ Future<bool> openUrlInSystemBrowser(String url) async {
   }
 }
 
-/// Opens the shared website cart (Phase 5 PayFast checkout).
+/// Opens the shared website cart. User continues to checkout on the site.
 Future<bool> openVillageNetAcadCartUrl() async {
   return openUrlInSystemBrowser(AppConfig.villageNetAcadCartUrl);
 }

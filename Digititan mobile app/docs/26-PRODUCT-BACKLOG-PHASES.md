@@ -95,19 +95,21 @@ Still prototype, but stop looking like a separate Digititan app.
 - Demo role-switch only if you still need it for decks  
 - Home: keep Training / Academies / Store equal  
 
-### Checkout story — resolve the conflict *(open)*
+### Checkout story — **locked for v1** (store compliance)
 
 | Source | Says |
 |--------|------|
 | Older Phase 3 / 5 | No in-app PayFast — “Complete on website” |
-| Meeting **[W2] #10–11** | Same gateway as Digititan Store (**PayFast**) + **payment in the app** |
+| Meeting **[W2] #10–11** | Same gateway (**PayFast**) + optional payment in the app |
+| **Investigation (Play / App Store)** | Digital goods often require Apple/Google IAP; in-app PayFast = higher rejection risk |
 
-**Orderly approach (recommended):**
-1. **Phase 3:** one brand + store URL; copy can say “same PayFast as the website.”  
-2. **Phase 5:** shared cart; **pay on website** first (ecosystem already works).  
-3. **Phase 7:** live PayFast + OTP; **then** in-app PayFast (WebView / hosted) if leadership confirms meeting #11.
+**Locked approach (v1):**
+1. Browse / add to cart **in the app**.  
+2. **Pay on the website** (system browser → `/cart` → Proceed to Checkout → PayFast).  
+3. Do **not** embed PayFast (or WebView checkout) in the app for v1.  
+4. Revisit in-app pay / store IAP only after: digital vs physical goods classification, Play/Apple account ownership, and leadership sign-off.
 
-Do **not** build two gateways.
+Do **not** build two gateways. Website PayFast remains the only money path for now.
 
 **Done when:** a stakeholder can’t tell the app and site are two different brands.
 
@@ -139,13 +141,15 @@ Branch `cursor/phase4-shared-accounts-09ad`: shared accounts verified both ways 
 
 What you described earlier.
 
-- App `POST /api/cart` (server cart, not phone RAM)  
-- Checkout button opens live site login → Cart  
-- Same items on the website; **PayFast stays on the web for this phase**  
+- App opens website `/cart` (no website frontend deploy). User taps Proceed to Checkout on the site.  
+- Same items on the website when live products exist; **PayFast stays on the web for this phase**  
 - App My Orders reads `GET /api/orders/my-orders`  
-- Optional: `?next=/cart` on website login (website change — only when you choose to)  
 
-**Meeting note:** In-app PayFast waits for **Phase 7** unless leadership insists earlier.
+**Parked — needs website frontend permission (do when allowed):**  
+After app “Complete on website”, login must return to **`/cart` or `/checkout`** (not home).  
+Implement `?next=` on Login + Cart/ProtectedRoute; prefer return to **`/checkout`** so PayFast is one step closer. Until then: log in on the site first, then open cart from the app.
+
+**Meeting note:** In-app PayFast is **deferred** (store compliance). v1 = pay on website.
 
 **Done when:** add hoodie in the app → pay on the site → order appears in the app.
 
@@ -164,11 +168,19 @@ Branch `cursor/phase5-shared-cart-09ad`: live products + server cart + website P
 
 **Done when:** the app catalogue is the Digititan / Village NetAcad store, not sample SKUs.
 
+### Phase 6 delivery note
+Branch `cursor/phase6-store-parity-09ad`: product images, sizes/colours into cart, wishlist screen, order status pipeline. Still depends on live products existing in MySQL for full production UAT.
+
 ---
 
 ## Phase 7 — Payments, security, policy (live)
 
 Where **[W2] money/OTP** and **[W3] security/legal** become real.
+
+### Payment path (locked for v1)
+- Money moves via **website PayFast** only (app → browser cart/checkout).  
+- **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
+- Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**.
 
 ### Original Phase 7
 - Approved gateway = **PayFast** (already on the website)  
@@ -181,13 +193,13 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 ### Meeting inserts
 | Meeting | Work | Notes |
 |---------|------|--------|
-| **#10 [W2]** | Same PayFast merchant as the website | One gateway only |
-| **#11 [W2]** | Payment via the app as well | In-app hosted / WebView PayFast **after** website path is solid |
+| **#10 [W2]** | Same PayFast merchant as the website | One gateway only — **do this** |
+| **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout (Play/App Store risk) |
 | **#2 [W2]** | Live SMS + email OTP | Provider + rate limit + expiry (Phase 2 was UI only) |
 | **#3 [W3]** | Tight security | TLS, hashed passwords, role authz, PayFast ITN verify, audit log |
 | **#8 [W3]** | Lawyer-ready legal + **POPI** | Replace Wave 1 drafts |
 
-**Done when:** money only moves through the gateway, with T&Cs + OTP + security signed off.
+**Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
 
 ---
 
@@ -307,7 +319,7 @@ Locked: downloadable Windows/Mac later. Meeting example: Standard Bank desktop.
 6. Donations — out of scope unless they reverse that  
 7. LMS / actual course playback — training is info + register only; **fields still required** (Phase 2 → 9)  
 8. Shared login is not “data migration”; it’s one API (Phase 4)  
-9. **In-app PayFast vs website-only** — meeting vs older Phase 3/5 *(resolve in Phase 7)*  
+9. **In-app PayFast vs website-only** — **locked website-only for v1** (store compliance); revisit later  
 
 ---
 
@@ -319,7 +331,7 @@ Locked: downloadable Windows/Mac later. Meeting example: Standard Bank desktop.
 | Reseller QR / buyer verify | 2 | **Phase 2** | **Phase 8** |
 | SMS + email OTP | 2 | **Phase 2** (picker) | **Phase 7** (live) |
 | LMS name / gender / email | 2 | **Phase 2** (forms) | **Phase 9** (DB / LMS) |
-| Same PayFast + pay in app | 2 | **Phase 3** (story) | **Phase 5** (web) → **Phase 7** (live + in-app) |
+| Same PayFast + pay in app | 2 | **Phase 3** (story) | **Phase 5** web checkout **= v1**. In-app pay deferred |
 | Tight security | 3 | — | **Phase 4** (basics) + **Phase 7** (full) |
 | POPI / final legal | 3 | — | **Phase 7** + Launch gate |
 | Everything up / minor polish | 3 | — | **Phase 10** + **Launch gate** |

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../app/injection.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../../infrastructure/api/http_store_repository.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/utils/friendly_api_error.dart';
 import '../../shared/utils/open_digititan_store.dart';
+import '../../shared/widgets/product_image.dart';
 import '../../shared/widgets/product_price_text.dart';
 import 'checkout_screen.dart';
 
@@ -105,10 +107,16 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final store = widget.container.storeRepository;
+    final sampleWalkthrough = store is HttpStoreRepository &&
+        store.usingSampleCatalogue;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          AppConfig.useLiveApi ? 'Cart (shared)' : 'Cart',
+          sampleWalkthrough
+              ? 'Cart (walkthrough)'
+              : (AppConfig.useLiveApi ? 'Cart (shared)' : 'Cart'),
         ),
         actions: [
           IconButton(
@@ -131,14 +139,21 @@ class _CartScreenState extends State<CartScreen> {
                   : Column(
                       children: [
                         if (AppConfig.useLiveApi)
-                          const Material(
-                            color: Color(0xFFE8F0FE),
+                          Material(
+                            color: const Color(0xFFE8F0FE),
                             child: Padding(
-                              padding: EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
                               child: Text(
-                                'This cart is shared with villagenetacad.co.za. '
-                                'Checkout opens the website for PayFast.',
-                                style: TextStyle(fontSize: 13, height: 1.35),
+                                sampleWalkthrough
+                                    ? 'Walkthrough cart (samples). '
+                                        'Complete on website opens the site cart. '
+                                        'Tap Proceed to Checkout there for PayFast. '
+                                        'Sample items will not appear on the site '
+                                        'until Admin adds products.'
+                                    : 'This cart is shared with villagenetacad.co.za. '
+                                        'Complete on website opens the site cart — '
+                                        'tap Proceed to Checkout for PayFast.',
+                                style: const TextStyle(fontSize: 13, height: 1.35),
                               ),
                             ),
                           ),
@@ -148,6 +163,10 @@ class _CartScreenState extends State<CartScreen> {
                             itemBuilder: (context, i) {
                               final line = _lines[i];
                               return ListTile(
+                                leading: ProductImage(
+                                  imageUrl: line.product.imageUrl,
+                                  size: 48,
+                                ),
                                 title: Text(line.product.name),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,6 +175,16 @@ class _CartScreenState extends State<CartScreen> {
                                       product: line.product,
                                       compact: true,
                                     ),
+                                    if ((line.size ?? '').isNotEmpty ||
+                                        (line.color ?? '').isNotEmpty)
+                                      Text(
+                                        [
+                                          if ((line.size ?? '').isNotEmpty)
+                                            'Size ${line.size}',
+                                          if ((line.color ?? '').isNotEmpty)
+                                            line.color!,
+                                        ].join(' · '),
+                                      ),
                                     Text(
                                       '× ${line.quantity} = R${line.lineTotal.toStringAsFixed(0)}',
                                     ),

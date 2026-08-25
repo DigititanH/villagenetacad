@@ -9,6 +9,12 @@ class Product {
   final bool inStock;
   final bool isBestSeller;
   final bool onPromotion;
+  /// Absolute or site-relative image URL from MySQL.
+  final String? imageUrl;
+  final String? slug;
+  final int stockCount;
+  final List<String> sizes;
+  final List<String> colors;
 
   const Product({
     required this.id,
@@ -20,10 +26,17 @@ class Product {
     this.inStock = true,
     this.isBestSeller = false,
     this.onPromotion = false,
+    this.imageUrl,
+    this.slug,
+    this.stockCount = 0,
+    this.sizes = const [],
+    this.colors = const [],
   });
 
   bool get showsSalePrice =>
       onPromotion && compareAtPrice != null && compareAtPrice! > price;
+
+  bool get hasVariants => sizes.isNotEmpty || colors.isNotEmpty;
 
   Product copyWith({
     double? price,
@@ -32,6 +45,11 @@ class Product {
     bool? inStock,
     bool? isBestSeller,
     bool? onPromotion,
+    String? imageUrl,
+    String? slug,
+    int? stockCount,
+    List<String>? sizes,
+    List<String>? colors,
   }) {
     return Product(
       id: id,
@@ -44,6 +62,11 @@ class Product {
       inStock: inStock ?? this.inStock,
       isBestSeller: isBestSeller ?? this.isBestSeller,
       onPromotion: onPromotion ?? this.onPromotion,
+      imageUrl: imageUrl ?? this.imageUrl,
+      slug: slug ?? this.slug,
+      stockCount: stockCount ?? this.stockCount,
+      sizes: sizes ?? this.sizes,
+      colors: colors ?? this.colors,
     );
   }
 }

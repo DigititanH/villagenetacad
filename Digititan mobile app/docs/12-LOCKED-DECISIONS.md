@@ -9,9 +9,13 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 - Shoppers
 
 ## Store
-- App shows sample products
+- App shows sample products (until live catalogue is filled in Admin)
 - Website shop: `https://villagenetacad.co.za/shop` (Phase 3 — not shop.digititan.co.za)
-- Same PayFast gateway story as the website; live in-app pay later (Phase 7)
+- **v1 payments (locked):** browse / cart in app → **pay on the website** (system browser).  
+  Prefer this over in-app PayFast / WebView to reduce Play Store & App Store rejection risk  
+  (especially if digital courses/goods are sold — Apple/Google often require their IAP).  
+- Same **PayFast merchant** as the website (money still PayFast; just not embedded in the app yet).  
+- **In-app PayFast / store IAP:** deferred until leadership answers digital-goods + console ownership; not required for Phase 7 go-live.
 
 ## Desktop
 - Downloadable Windows/Mac app required (Flutter desktop later)
@@ -24,6 +28,8 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 ## Academies (Wave 1)
 - New academies / orgs **register with Digititan first**
 - Cisco NetAcad may follow — do **not** Cisco-only redirect
+- **ASC registration:** same Microsoft Form as the website (Home → ASC Registration).
+  App opens that form in the browser — do not maintain a separate shortened in-app form.
 
 ## Reseller model
 - Codes: Beneficiary (VNA-B) / Centre (VNA-C)
@@ -57,5 +63,5 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 1. **Wave 2A** QR / verify reseller  
 2. **Wave 2B** SMS + email OTP  
 3. **Wave 2C** LMS learner fields  
-4. **Wave 2D** In-app PayFast  
+4. **Wave 2D** PayFast on **website** (app opens browser) — in-app PayFast deferred (store compliance)  
 5. **Wave 3A–C** Security → POPI → launch checklist  

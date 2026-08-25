@@ -4,6 +4,7 @@ import '../../app/injection.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
+import '../../shared/widgets/order_status_tracker.dart';
 import 'return_request_screen.dart';
 import 'review_order_screen.dart';
 
@@ -88,7 +89,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Tracking', style: Theme.of(context).textTheme.titleMedium),
+                    Text('Status', style: Theme.of(context).textTheme.titleMedium),
+                    OrderStatusTracker(status: _order!.status),
+                    const SizedBox(height: 8),
+                    Text('Tracking detail', style: Theme.of(context).textTheme.titleMedium),
                     ..._order!.trackingTimeline.map(
                       (t) => ListTile(
                         contentPadding: EdgeInsets.zero,

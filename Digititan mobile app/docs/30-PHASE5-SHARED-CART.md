@@ -35,7 +35,7 @@ flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 2. Store tab shows **live** products (not only demo bags).
 3. Add an item → snackbar **Added to shared cart**.
 4. Cart → **Complete on website (PayFast)** → browser opens `/cart`.
-5. Sign in on the website with the **same** account if prompted; cart should match.
+5. Sign in on the website with the **same** account if prompted; open Cart if needed, then **Proceed to Checkout**.
 6. Pay (or leave pending) on the website.
 7. App → Profile → **My orders** → order appears.
 
@@ -50,4 +50,4 @@ powershell -ExecutionPolicy Bypass -File .\INSTALL-PHASE5.ps1
 ## Out of scope (later)
 
 - Full catalogue polish / wishlist / stock UX → **Phase 6**
-- In-app PayFast → **Phase 7**
+- In-app PayFast → **deferred** (v1 = website browser checkout; store compliance)

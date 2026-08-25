@@ -7,14 +7,36 @@ class CartLine {
 
   /// Live API cart row id (null for in-memory demo cart).
   final String? cartItemId;
+  final String? size;
+  final String? color;
 
   const CartLine({
     required this.product,
     required this.quantity,
     this.cartItemId,
+    this.size,
+    this.color,
   });
 
   double get lineTotal => product.price * quantity;
+}
+
+class WishlistItem {
+  final String id;
+  final String productId;
+  final String name;
+  final double price;
+  final String? imageUrl;
+  final String? slug;
+
+  const WishlistItem({
+    required this.id,
+    required this.productId,
+    required this.name,
+    required this.price,
+    this.imageUrl,
+    this.slug,
+  });
 }
 
 abstract class StoreRepository {
@@ -22,13 +44,21 @@ abstract class StoreRepository {
   Future<Product?> getProduct(String id);
 
   Future<List<CartLine>> getCart();
-  Future<void> addToCart(Product product, {int quantity = 1});
+  Future<void> addToCart(
+    Product product, {
+    int quantity = 1,
+    String? size,
+    String? color,
+  });
   Future<void> updateQuantity(CartLine line, int quantity);
   Future<void> clearCart();
   Future<double> cartTotal();
 
-  /// True when checkout must open the website (Phase 5 live path).
+  /// True when checkout must open the website (Phase 5+ live path).
   bool get checkoutOnWebsite;
+
+  Future<List<WishlistItem>> getWishlist();
+  Future<bool> toggleWishlist(String productId);
 
   /// Prototype: creates order after OTP is confirmed (dummy only).
   Future<ShopOrder> placeOrder({

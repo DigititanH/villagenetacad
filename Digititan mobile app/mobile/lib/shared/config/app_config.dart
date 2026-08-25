@@ -18,13 +18,20 @@ class AppConfig {
   /// True when [apiBaseUrl] is set — use live `/api` (auth + store cart).
   static bool get useLiveApi => apiBaseUrl.trim().isNotEmpty;
 
-  /// Website cart (Phase 5 checkout / PayFast).
+  /// Website cart (Phase 5+). App opens `/cart` only — no website frontend
+  /// changes required. User taps Proceed to Checkout on the site for PayFast.
   static String get villageNetAcadCartUrl {
     final base = apiBaseUrl.trim().isNotEmpty
         ? apiBaseUrl.replaceAll(RegExp(r'/$'), '')
         : 'https://villagenetacad.co.za';
     return '$base/cart';
   }
+
+  /// Same ASC Microsoft Form as the website (Home → ASC Registration).
+  /// Do not replace with a custom in-app form — fields must stay identical.
+  static const ascRegistrationFormUrl =
+      'https://forms.office.com/Pages/ResponsePage.aspx?id='
+      'DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAAO__oJs_XlUMlc0REVGOUVBSVowUkdZVDlDOTlCQjBOTC4u';
 
   /// Same PayFast gateway story as the Village NetAcad website (live in Phase 7).
   static const paymentGatewayName = 'PayFast';
@@ -42,10 +49,10 @@ class AppConfig {
 
   /// Shown when live `/api/products` returns empty (production today).
   static const storeLiveEmptyCatalogueMessage =
-      'The live shop API currently has no products (website DB is empty). '
-      'Showing sample items for Home/Store. '
-      'Use Open Village NetAcad shop for the real website — '
-      'add products in website Admin to fill the app catalogue.';
+      'Live shop DB has no products yet — showing samples for UAT. '
+      'You can add to a walkthrough cart and tap Complete on website '
+      'to open villagenetacad.co.za/cart (real shared cart starts when '
+      'Admin adds products).';
 
   static const emailOtpDemo = '123456';
   static const smsOtpDemo = '123456';
@@ -68,8 +75,8 @@ class AppConfig {
       'where applicable. Never pay cash to individuals or ambassadors.';
 
   static String get demoModeLine => useLiveApi
-      ? 'Phase 5 · live API · $apiBaseUrl'
-      : 'Presentation demo · Phase 3/5 · dummy auth (set API_BASE_URL for live)';
+      ? 'Phase 6 · live API · $apiBaseUrl'
+      : 'Presentation demo · Phase 3/6 · dummy auth (set API_BASE_URL for live)';
 
   /// Deep-link / QR payload for reseller legitimacy check.
   static String resellerVerifyPayload(String code) =>

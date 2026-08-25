@@ -1,15 +1,13 @@
+import 'dart:convert';
+
 import '../../domain/entities/product.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/repositories/store_repository.dart';
+import '../../shared/utils/media_url.dart';
 import '../dummy/demo_hub.dart';
 import 'api_client.dart';
 
-/// Live store: catalogue + server cart + my-orders (Phase 5).
-/// Checkout / PayFast stay on the website.
-///
-/// If production `/api/products` is empty (current live DB), we fall back to
-/// the sample catalogue so Home/Store are not blank. Sample SKUs cannot be
-/// POSTed to `/api/cart` — the UI opens the website shop instead.
+/// Live store: catalogue parity + server cart + wishlist + my-orders (Phase 5–6).
 class HttpStoreRepository implements StoreRepository {
   final ApiClient _api;
   bool _sampleCatalogue = false;
@@ -19,8 +17,33 @@ class HttpStoreRepository implements StoreRepository {
   @override
   bool get checkoutOnWebsite => true;
 
-  /// True when last [getProducts] used DemoHub because live catalogue was empty.
   bool get usingSampleCatalogue => _sampleCatalogue;
+
+  List<String> _parseStringList(dynamic raw) {
+    if (raw == null) return const [];
+    if (raw is List) {
+      return raw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    }
+    final text = raw.toString().trim();
+    if (text.isEmpty) return const [];
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is List) {
+        return decoded
+            .map((e) => e.toString())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    } catch (_) {
+      // comma-separated fallback
+      return text
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    return const [];
+  }
 
   Product _mapProduct(Map<String, dynamic> json) {
     final id = json['id']?.toString() ?? '';
@@ -32,33 +55,35 @@ class HttpStoreRepository implements StoreRepository {
         .toString()
         .trim();
     final price = _asDouble(json['price']);
-    final compareAt = _asDouble(json['compare_at_price']);
-    final stock = json['stock'];
-    final inStock = stock == null
-        ? true
-        : (stock is num ? stock > 0 : int.tryParse(stock.toString()) != 0);
-    final featured = json['is_featured'] == true ||
-        json['is_featured'] == 1 ||
-        json['featured'] == true ||
-        json['featured'] == 1;
+    final compareAt = _asDouble(
+      json['compare_price'] ?? json['compare_at_price'],
+    );
+    final stockCount = _asInt(json['stock']);
+    final inStock = stockCount > 0;
+    final sizes = _parseStringList(json['sizes']);
+    final colors = _parseStringList(json['colors']);
+    final onPromo = compareAt > price && compareAt > 0;
     return Product(
       id: id,
       name: name,
       category: category,
       summary: summary.isEmpty ? name : summary,
       price: price,
+      compareAtPrice: onPromo ? compareAt : null,
       inStock: inStock,
-      isBestSeller: featured ||
-          json['is_bestseller'] == true ||
+      stockCount: stockCount,
+      isBestSeller: json['is_bestseller'] == true ||
           json['is_bestseller'] == 1 ||
-          json['is_best_seller'] == true ||
-          json['is_best_seller'] == 1,
-      onPromotion: json['on_promotion'] == true ||
-          json['on_promotion'] == 1 ||
-          json['on_sale'] == true ||
-          json['on_sale'] == 1 ||
-          (compareAt > price && compareAt > 0),
-      compareAtPrice: compareAt > price ? compareAt : null,
+          json['is_featured'] == true ||
+          json['is_featured'] == 1 ||
+          (json['avg_rating'] != null && _asDouble(json['avg_rating']) >= 4.5),
+      onPromotion: onPromo ||
+          json['on_promotion'] == true ||
+          json['on_promotion'] == 1,
+      imageUrl: resolveMediaUrl(json['image']?.toString()),
+      slug: json['slug']?.toString(),
+      sizes: sizes,
+      colors: colors,
     );
   }
 
@@ -80,11 +105,65 @@ class HttpStoreRepository implements StoreRepository {
     if (s == 'shipped') return OrderStatus.shipped;
     if (s == 'cancelled') return OrderStatus.cancelled;
     if (s == 'processing') return OrderStatus.processing;
+    if (s == 'return_requested' || s == 'returnrequested') {
+      return OrderStatus.returnRequested;
+    }
     if (pay == 'paid' || pay == 'complete' || pay == 'completed') {
       return OrderStatus.paid;
     }
-    if (s == 'pending') return OrderStatus.placed;
     return OrderStatus.placed;
+  }
+
+  List<String> _statusTimeline({
+    required OrderStatus status,
+    required String? payment,
+    required String? tracking,
+    required DateTime created,
+  }) {
+    final steps = <String>[
+      'Placed · ${created.toIso8601String().split('T').first}',
+    ];
+    final pay = (payment ?? 'pending').toLowerCase();
+    if (pay == 'paid' ||
+        pay == 'complete' ||
+        pay == 'completed' ||
+        status.index >= OrderStatus.paid.index) {
+      steps.add('Payment: paid');
+    } else {
+      steps.add('Payment: $pay');
+    }
+
+    const pipeline = [
+      OrderStatus.processing,
+      OrderStatus.shipped,
+      OrderStatus.delivered,
+    ];
+    for (final step in pipeline) {
+      final label = switch (step) {
+        OrderStatus.processing => 'Processing',
+        OrderStatus.shipped => 'Shipped',
+        OrderStatus.delivered => 'Delivered',
+        _ => step.name,
+      };
+      if (status == OrderStatus.cancelled) {
+        break;
+      }
+      if (status.index >= step.index || status == OrderStatus.returnRequested) {
+        steps.add('$label ✓');
+      } else {
+        steps.add('$label (pending)');
+      }
+    }
+    if (status == OrderStatus.cancelled) {
+      steps.add('Cancelled');
+    }
+    if (status == OrderStatus.returnRequested) {
+      steps.add('Return requested');
+    }
+    if ((tracking ?? '').isNotEmpty) {
+      steps.add('Tracking: $tracking');
+    }
+    return steps;
   }
 
   ShopOrder _mapOrder(Map<String, dynamic> json, {required String email}) {
@@ -94,15 +173,19 @@ class HttpStoreRepository implements StoreRepository {
       for (final raw in itemsRaw) {
         if (raw is! Map) continue;
         final m = Map<String, dynamic>.from(raw);
-        final qty = _asInt(m['quantity']);
-        final price = _asDouble(m['price']);
+        final size = m['size']?.toString();
+        final color = m['color']?.toString();
+        final baseName = m['name']?.toString() ?? 'Item ${m['product_id'] ?? ''}';
+        final variant = [
+          if (size != null && size.isNotEmpty) size,
+          if (color != null && color.isNotEmpty) color,
+        ].join(' · ');
         items.add(
           OrderItem(
             productId: m['product_id']?.toString() ?? '',
-            productName: m['name']?.toString() ??
-                'Item ${m['product_id'] ?? ''}',
-            quantity: qty,
-            unitPrice: price,
+            productName: variant.isEmpty ? baseName : '$baseName ($variant)',
+            quantity: _asInt(m['quantity']),
+            unitPrice: _asDouble(m['price']),
           ),
         );
       }
@@ -132,15 +215,14 @@ class HttpStoreRepository implements StoreRepository {
       items: items,
       status: status,
       createdAt: created,
-      trackingTimeline: [
-        'Ordered ${created.toIso8601String().split('T').first}',
-        'Payment: ${json['payment_status'] ?? 'pending'}',
-        'Status: ${json['status'] ?? 'pending'}',
-        if ((json['tracking_number']?.toString() ?? '').isNotEmpty)
-          'Tracking: ${json['tracking_number']}',
-        'Pay / track on villagenetacad.co.za',
-      ],
+      trackingTimeline: _statusTimeline(
+        status: status,
+        payment: json['payment_status']?.toString(),
+        tracking: json['tracking_number']?.toString(),
+        created: created,
+      ),
       referralCode: json['referral_code']?.toString(),
+      deliveredAt: status == OrderStatus.delivered ? created : null,
     );
   }
 
@@ -160,10 +242,7 @@ class HttpStoreRepository implements StoreRepository {
             .map((e) => _mapProduct(Map<String, dynamic>.from(e)))
             .toList(growable: false);
       }
-    } catch (_) {
-      // Fall through to samples.
-    }
-    // Production currently has categories but 0 active products.
+    } catch (_) {}
     _sampleCatalogue = true;
     return List<Product>.unmodifiable(DemoHub.instance.products);
   }
@@ -172,17 +251,26 @@ class HttpStoreRepository implements StoreRepository {
   Future<Product?> getProduct(String id) async {
     final products = await getProducts();
     try {
-      return products.firstWhere((p) => p.id == id);
+      return products.firstWhere((p) => p.id == id || p.slug == id);
     } catch (_) {
       return null;
     }
   }
 
-  /// Live MySQL product ids are integers. Sample demo ids like `p-hoodie` are not.
   bool canAddToLiveCart(Product product) => int.tryParse(product.id) != null;
+
+  /// Walkthrough cart while production catalogue is empty (sample SKUs).
+  final Map<String, CartLine> _sampleCart = {};
+
+  String _sampleLineKey(Product product, String? size, String? color) =>
+      '${product.id}|${size ?? ''}|${color ?? ''}';
 
   @override
   Future<List<CartLine>> getCart() async {
+    if (_sampleCatalogue) {
+      return _sampleCart.values.toList(growable: false);
+    }
+
     final rows = await _api.getList('/api/cart', auth: true);
     final lines = <CartLine>[];
     for (final raw in rows) {
@@ -195,12 +283,17 @@ class HttpStoreRepository implements StoreRepository {
         summary: m['name']?.toString() ?? '',
         price: _asDouble(m['price']),
         inStock: _asInt(m['stock']) > 0,
+        stockCount: _asInt(m['stock']),
+        imageUrl: resolveMediaUrl(m['image']?.toString()),
+        sizes: _parseStringList(m['available_sizes']),
       );
       lines.add(
         CartLine(
           product: product,
           quantity: _asInt(m['quantity']),
           cartItemId: m['id']?.toString(),
+          size: m['size']?.toString(),
+          color: m['color']?.toString(),
         ),
       );
     }
@@ -208,19 +301,32 @@ class HttpStoreRepository implements StoreRepository {
   }
 
   @override
-  Future<void> addToCart(Product product, {int quantity = 1}) async {
-    final productId = int.tryParse(product.id);
-    if (productId == null) {
-      throw Exception(
-        'This is a sample product. The live shop catalogue is empty — '
-        'open Village NetAcad shop on the website to buy real items.',
+  Future<void> addToCart(
+    Product product, {
+    int quantity = 1,
+    String? size,
+    String? color,
+  }) async {
+    if (_sampleCatalogue || int.tryParse(product.id) == null) {
+      final key = _sampleLineKey(product, size, color);
+      final existing = _sampleCart[key];
+      _sampleCart[key] = CartLine(
+        product: product,
+        quantity: (existing?.quantity ?? 0) + quantity,
+        cartItemId: key,
+        size: size,
+        color: color,
       );
+      return;
     }
+
     await _api.postJson(
       '/api/cart',
       {
-        'product_id': productId,
+        'product_id': int.parse(product.id),
         'quantity': quantity,
+        if (size != null && size.isNotEmpty) 'size': size,
+        if (color != null && color.isNotEmpty) 'color': color,
       },
       auth: true,
     );
@@ -228,6 +334,24 @@ class HttpStoreRepository implements StoreRepository {
 
   @override
   Future<void> updateQuantity(CartLine line, int quantity) async {
+    if (_sampleCatalogue ||
+        (line.cartItemId != null && line.cartItemId!.contains('|'))) {
+      final key = line.cartItemId ??
+          _sampleLineKey(line.product, line.size, line.color);
+      if (quantity < 1) {
+        _sampleCart.remove(key);
+      } else {
+        _sampleCart[key] = CartLine(
+          product: line.product,
+          quantity: quantity,
+          cartItemId: key,
+          size: line.size,
+          color: line.color,
+        );
+      }
+      return;
+    }
+
     final cartId = line.cartItemId;
     if (cartId == null || cartId.isEmpty) {
       throw Exception('Missing cart item id');
@@ -245,6 +369,10 @@ class HttpStoreRepository implements StoreRepository {
 
   @override
   Future<void> clearCart() async {
+    if (_sampleCatalogue) {
+      _sampleCart.clear();
+      return;
+    }
     await _api.deleteJson('/api/cart', auth: true);
   }
 
@@ -252,6 +380,66 @@ class HttpStoreRepository implements StoreRepository {
   Future<double> cartTotal() async {
     final lines = await getCart();
     return lines.fold<double>(0, (sum, l) => sum + l.lineTotal);
+  }
+
+  final Set<String> _sampleWishlist = {};
+
+  @override
+  Future<List<WishlistItem>> getWishlist() async {
+    if (_sampleCatalogue) {
+      final items = <WishlistItem>[];
+      for (final id in _sampleWishlist) {
+        Product? p;
+        try {
+          p = DemoHub.instance.products.firstWhere((e) => e.id == id);
+        } catch (_) {
+          continue;
+        }
+        items.add(
+          WishlistItem(
+            id: id,
+            productId: p.id,
+            name: p.name,
+            price: p.price,
+            imageUrl: p.imageUrl,
+            slug: p.slug,
+          ),
+        );
+      }
+      return items;
+    }
+
+    final rows = await _api.getList('/api/wishlist', auth: true);
+    return rows.whereType<Map>().map((raw) {
+      final m = Map<String, dynamic>.from(raw);
+      return WishlistItem(
+        id: m['id']?.toString() ?? '',
+        productId: m['product_id']?.toString() ?? '',
+        name: m['name']?.toString() ?? 'Product',
+        price: _asDouble(m['price']),
+        imageUrl: resolveMediaUrl(m['image']?.toString()),
+        slug: m['slug']?.toString(),
+      );
+    }).toList(growable: false);
+  }
+
+  @override
+  Future<bool> toggleWishlist(String productId) async {
+    final id = int.tryParse(productId);
+    if (id == null || _sampleCatalogue) {
+      if (_sampleWishlist.contains(productId)) {
+        _sampleWishlist.remove(productId);
+        return false;
+      }
+      _sampleWishlist.add(productId);
+      return true;
+    }
+    final json = await _api.postJson(
+      '/api/wishlist/toggle',
+      {'product_id': id},
+      auth: true,
+    );
+    return json['wishlisted'] == true;
   }
 
   @override
@@ -272,10 +460,7 @@ class HttpStoreRepository implements StoreRepository {
     return rows
         .whereType<Map>()
         .map(
-          (e) => _mapOrder(
-            Map<String, dynamic>.from(e),
-            email: email,
-          ),
+          (e) => _mapOrder(Map<String, dynamic>.from(e), email: email),
         )
         .toList(growable: false);
   }
