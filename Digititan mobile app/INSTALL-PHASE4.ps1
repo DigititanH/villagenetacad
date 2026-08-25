@@ -1,5 +1,6 @@
-# PHASE 4 — Shared accounts (HTTP auth + JWT)
+# PHASE 4 - Shared accounts (HTTP auth + JWT)
 # Run from: S:\WORK\VillageNetAcad
+# ASCII-only (Windows PowerShell 5.x mis-parses UTF-8 arrows/dashes from GitHub raw).
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -71,8 +72,8 @@ Write-Host "  1) Enable Developer Mode (symlink support for plugins):"
 Write-Host "       start ms-settings:developers"
 Write-Host "  2) Start backend in Terminal A (must actually be listening on :5000)."
 Write-Host ""
-Write-Host "Default: dummy auth (decks) — flutter run with NO API_BASE_URL."
-Write-Host "Live API (Android emulator → host):"
+Write-Host "Default: dummy auth (decks) - flutter run with NO API_BASE_URL."
+Write-Host "Live API (Android emulator -> host):"
 Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000"
