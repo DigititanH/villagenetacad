@@ -66,7 +66,7 @@ flutter run -d windows --dart-define=API_BASE_URL=http://127.0.0.1:5000
 |-------|--------|
 | Website account → app login (existing) | **Verified** (production API) |
 | Website register → app login (new account) | **Verified** (production API) |
-| App register → website login | **Ready for UAT** (see below) |
+| App register → website login | **Verified** (production API) |
 | Drop demo emails on live login UI | **Done** (hidden when `API_BASE_URL` set) |
 | Staging DB / HTTPS-only policy sign-off | Still open |
 
