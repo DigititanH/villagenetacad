@@ -56,53 +56,17 @@ class Payfast
         if ($api !== '' && !preg_match('/your-public-api|example\.com|placeholder/i', $api)) {
             return $api;
         }
-        $client = rtrim(Env::get('CLIENT_URL', '') ?? '', '/');
-        if ($client !== '' && !preg_match('/localhost|127\.0\.0\.1/i', $client)) {
-            return $client;
-        }
         $port = Env::get('PORT', '5000');
         return "http://localhost:$port";
     }
 
-    /**
-     * PayFast ITN callback URL.
-     * Legacy Afrihost installs used /payfast/notify.php — map those to the
-     * current API route so paid orders update in MySQL / the app.
-     */
     public static function getNotifyUrl(): string
     {
         $custom = trim(Env::get('PAYFAST_NOTIFY_URL', '') ?? '');
         if ($custom !== '') {
-            return self::normalizeNotifyUrl($custom);
+            return rtrim($custom, '/');
         }
-        return rtrim(self::getApiBaseUrl(), '/') . '/api/payfast/notify';
-    }
-
-    public static function normalizeNotifyUrl(string $url): string
-    {
-        $url = rtrim(trim($url), '/');
-        if ($url === '') {
-            return rtrim(self::getApiBaseUrl(), '/') . '/api/payfast/notify';
-        }
-
-        // Old static/PHP notify scripts → current router endpoint
-        if (preg_match('#/payfast/notify(\.php)?$#i', $url)) {
-            $parts = parse_url($url);
-            $scheme = $parts['scheme'] ?? 'https';
-            $host = $parts['host'] ?? 'villagenetacad.co.za';
-            // Prefer apex host used by the app API
-            if (strcasecmp($host, 'www.villagenetacad.co.za') === 0) {
-                $host = 'villagenetacad.co.za';
-            }
-            return $scheme . '://' . $host . '/api/payfast/notify';
-        }
-
-        return $url;
-    }
-
-    public static function isLegacyNotifyUrl(string $url): bool
-    {
-        return (bool) preg_match('#/payfast/notify(\.php)?$#i', $url);
+        return self::getApiBaseUrl() . '/api/payfast/notify';
     }
 
     public static function isNotifyUrlLocal(string $url): bool
@@ -229,9 +193,8 @@ class Payfast
             'configured' => self::isConfigured(),
             'sandbox' => self::isSandbox(),
             'process_url' => self::processUrl(),
-            'notify_url' => self::getNotifyUrl(),
+            'notify_url' => self::getApiBaseUrl() . '/api/payfast/notify',
             'has_passphrase' => self::passphrase() !== '',
-            'min_amount' => 5,
         ];
     }
 
