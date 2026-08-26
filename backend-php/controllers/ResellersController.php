@@ -2,6 +2,8 @@
 
 class ResellersController
 {
+    private const MIN_WITHDRAWAL_ZAR = 100.0;
+
     private static function requireApprovedReseller(): void
     {
         $profile = Database::queryGet('SELECT status FROM reseller_profiles WHERE user_id = ?', [Auth::$user['id']]);
@@ -11,6 +13,39 @@ class ResellersController
         if ($profile['status'] !== 'approved') {
             Response::error('Reseller account is pending admin approval', 403);
         }
+    }
+
+    /**
+     * Public legitimacy check — no auth, no wallet/bank/email secrets.
+     * GET /api/resellers/verify/{code}
+     */
+    public static function verify(array $params): void
+    {
+        $code = strtoupper(trim((string) ($params['code'] ?? '')));
+        if ($code === '') {
+            Response::error('Reseller code is required', 400);
+        }
+
+        $row = Database::queryGet(
+            'SELECT rp.referral_code, rp.status, rp.academy, r.name
+             FROM reseller_profiles rp
+             JOIN registrations r ON rp.user_id = r.id
+             WHERE UPPER(rp.referral_code) = ?',
+            [$code]
+        );
+        if (!$row) {
+            Response::error('Code not found or inactive', 404);
+        }
+
+        $approved = ($row['status'] ?? '') === 'approved';
+        Response::json([
+            'code' => $row['referral_code'],
+            'name' => $row['name'],
+            'academy' => $row['academy'],
+            'status' => $row['status'],
+            'approved' => $approved,
+            'active' => $approved,
+        ]);
     }
 
     public static function profile(): void
@@ -76,6 +111,22 @@ class ResellersController
         $body = Request::jsonBody();
         $amount = (float) ($body['amount'] ?? 0);
         $bankDetails = $body['bank_details'] ?? [];
+
+        if ($amount <= 0) {
+            Response::error('Withdrawal amount must be greater than zero', 400);
+        }
+        if ($amount < self::MIN_WITHDRAWAL_ZAR) {
+            Response::error('Minimum withdrawal is R100', 400);
+        }
+
+        $today = (int) gmdate('j');
+        $lastDay = (int) gmdate('t');
+        if ($today !== $lastDay) {
+            Response::error(
+                'Withdrawals are only allowed on the last calendar day of the month',
+                400
+            );
+        }
 
         $profile = Database::queryGet('SELECT id, wallet_balance FROM reseller_profiles WHERE user_id = ?', [Auth::$user['id']]);
         if (!$profile) {

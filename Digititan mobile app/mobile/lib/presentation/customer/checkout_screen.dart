@@ -137,6 +137,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => VerifyResellerScreen(
+                      resellerRepository:
+                          widget.container.resellerRepository,
                       initialCode: _code.text.trim().isEmpty
                           ? null
                           : _code.text.trim(),

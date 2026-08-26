@@ -97,6 +97,7 @@ class Router
         self::post('/api/payfast/notify', [PayfastController::class, 'notify']);
 
         // Resellers
+        self::get('/api/resellers/verify/{code}', fn ($p) => ResellersController::verify($p));
         self::get('/api/resellers/profile', [ResellersController::class, 'profile']);
         self::get('/api/resellers/commissions', [ResellersController::class, 'commissions']);
         self::get('/api/resellers/sales', [ResellersController::class, 'sales']);
