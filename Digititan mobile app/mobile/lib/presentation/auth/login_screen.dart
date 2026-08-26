@@ -9,6 +9,7 @@ import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 import 'account_deactivated_screen.dart';
 import 'register_screen.dart';
+import 'reseller_pending_approval_screen.dart';
 
 /// Branded Auth UI — presentation-first layout for stakeholder demos.
 class LoginScreen extends StatefulWidget {
@@ -34,6 +35,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isDeactivatedMessage(String message) =>
       message.toLowerCase().contains('deactivated');
 
+  bool _isPendingApprovalMessage(String message) {
+    final m = message.toLowerCase();
+    return m.contains('pending admin approval') ||
+        m.contains('admin must approve');
+  }
+
   Future<void> _signInEmail() async {
     setState(() {
       _loading = true;
@@ -54,6 +61,14 @@ class _LoginScreenState extends State<LoginScreen> {
           await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (_) => AccountDeactivatedScreen(
+                email: _email.text.trim().toLowerCase(),
+              ),
+            ),
+          );
+        } else if (_isPendingApprovalMessage(message)) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ResellerPendingApprovalScreen(
                 email: _email.text.trim().toLowerCase(),
               ),
             ),

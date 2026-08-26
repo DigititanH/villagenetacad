@@ -210,22 +210,28 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 ## Phase 8 — Reseller production
 
+**Slice 1 (this branch):** live verify API + server R100 / last-day withdraw + app `HttpResellerRepository`.
+
 ### Original
-- Live referral codes (`VNA-B-*` / `VNA-C-*`)  
-- Independent seller → programme-support bucket (not a centre)  
-- Beneficiary under a centre: sales split **53 / 26 / 21** as locked  
-- Clients: bought / pending / confirmed / did not buy — from real orders + leads  
-- Reseller sees their earnings; Digititan 21% for ops/statements  
-- Month-end statement from real sales  
-- Withdrawals last calendar day + Super Admin approval (live, not DemoHub)  
+- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **later** (live today often `VNA-{hex}`)  
+- Independent seller → programme-support bucket (not a centre) — **later**  
+- Beneficiary under a centre: sales split **53 / 26 / 21** as locked — **later** (flat `commission_rate` still on live)  
+- Clients: bought / pending / confirmed / did not buy — from real orders + leads — **later**  
+- Reseller sees their earnings; Digititan 21% for ops/statements — **partial** (profile + sales via live API)  
+- Month-end statement from real sales — **partial**  
+- Withdrawals last calendar day + Super Admin approval (live, not DemoHub) — **slice 1: server gate done**  
 
 ### Meeting inserts
 | Meeting | Work | Notes |
 |---------|------|--------|
-| **#4 [W2]** | Live QR / verify API | `GET /api/resellers/verify/{code}` in production (Phase 2 was demo) |
-| **#7 [W1→live]** | Min withdraw **R100** server-side | UI already done in Phase 1 |
+| **#4 [W2]** | Live QR / verify API | **Slice 1:** `GET /api/resellers/verify/{code}` + app wired |
+| **#7 [W1→live]** | Min withdraw **R100** server-side | **Slice 1:** enforced in `ResellersController::withdraw` (+ last calendar day) |
 
 **Done when:** a centre and an independent seller can each show a real month-end number, **and** a buyer can verify the reseller is legit.
+
+**Slice 1 done when:** verify works on live API + app; withdraw rejects &lt; R100 and non–last-day.
+
+**Slice 1 UAT (26 Aug 2026): PASSED** — live verify, app verify, withdraw locked / R50 / R100 last-day gates.
 
 ---
 

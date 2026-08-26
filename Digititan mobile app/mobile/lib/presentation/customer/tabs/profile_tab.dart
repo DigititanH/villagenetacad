@@ -157,7 +157,9 @@ class ProfileTab extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => const VerifyResellerScreen(),
+                  builder: (_) => VerifyResellerScreen(
+                    resellerRepository: container.resellerRepository,
+                  ),
                 ),
               );
             },

@@ -6,6 +6,7 @@ import '../../domain/enums/user_role.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
 import 'otp_screen.dart';
+import 'reseller_pending_approval_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final AppContainer container;
@@ -24,6 +25,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   UserRole _role = UserRole.customer;
   bool _loading = false;
   String? _error;
+
+  bool _isPendingApprovalMessage(String message) {
+    final m = message.toLowerCase();
+    return m.contains('admin must approve') ||
+        m.contains('pending admin approval') ||
+        m.contains('pending until');
+  }
 
   Future<void> _submit() async {
     setState(() {
@@ -62,7 +70,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
           Navigator.of(context).pop(verified);
         }
       case Failure(:final message):
-        setState(() => _error = message);
+        if (_isPendingApprovalMessage(message)) {
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => ResellerPendingApprovalScreen(
+                email: _email.text.trim().toLowerCase(),
+              ),
+            ),
+          );
+          if (mounted) {
+            // Leave register entirely — back on sign-in.
+            Navigator.of(context).pop();
+          }
+        } else {
+          setState(() => _error = message);
+        }
     }
   }
 
@@ -106,16 +128,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            if (live)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  'Creates a real Village NetAcad account (same database as '
-                  'the website). After this, that email/password works on '
-                  'villagenetacad.co.za too.\n\nAPI: ${AppConfig.apiBaseUrl}',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
             TextField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'Full name'),
@@ -147,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 DropdownMenuItem(
                   value: UserRole.reseller,
-                  child: Text('Reseller (needs Admin approval)'),
+                  child: Text('Reseller'),
                 ),
               ],
               onChanged: (v) => setState(() => _role = v ?? UserRole.customer),
@@ -162,14 +174,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       : 'Academy / centre (optional)',
                   hintText: 'e.g. Lesedi Labatu Academy',
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                live
-                    ? 'Reseller accounts stay pending until an admin approves '
-                        '(same as the website). You cannot sign in until then.'
-                    : 'Reseller journey: Apply → Ops Admin approves → you receive a code.',
-                style: const TextStyle(fontSize: 12),
               ),
             ],
             if (_error != null) ...[
@@ -186,14 +190,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? 'Apply as reseller'
                         : 'Create account',
               ),
-            ),
-            Text(
-              live
-                  ? '\nCustomer: signed in immediately; same login on the website.\n'
-                      'Reseller: wait for admin approval, then sign in on app or site.'
-                  : '\nAfter create, OTP email is printed in the flutter run console.\n'
-                      'Prototype OTP = 123456',
-              style: const TextStyle(fontSize: 12),
             ),
           ],
         ),

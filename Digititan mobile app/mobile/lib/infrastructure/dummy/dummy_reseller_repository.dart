@@ -148,4 +148,14 @@ Super Admin still approves the payout.
     );
     _hub.log('Withdrawal requested $key R$amount (awaiting Super Admin)');
   }
+
+  @override
+  Future<IssuedResellerCode> verifyCode(String code) async {
+    final normalized = code.trim().toUpperCase();
+    final issued = _hub.findCode(normalized);
+    if (issued == null || !issued.active) {
+      throw Exception('Code not found or inactive');
+    }
+    return issued;
+  }
 }

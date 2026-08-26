@@ -30,4 +30,7 @@ abstract class ResellerRepository {
     required String email,
     required double amount,
   });
+
+  /// Public legitimacy check (live API or DemoHub).
+  Future<IssuedResellerCode> verifyCode(String code);
 }

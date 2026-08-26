@@ -32,11 +32,11 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
   App opens that form in the browser — do not maintain a separate shortened in-app form.
 
 ## Reseller model
-- Codes: Beneficiary (VNA-B) / Centre (VNA-C)
-- Month-end withdrawals only
-- **Minimum withdrawal: R100** (Wave 1 — button blocked under R100)
-- Split: **53%** / **26%** / **21%**
-- **Wave 2A:** buyer verifies reseller via QR / code (DB + PHP API)
+- Codes: Beneficiary (VNA-B) / Centre (VNA-C) — **target**; live may still issue `VNA-{hex}` until Phase 8 later slices
+- Month-end withdrawals only (**server-enforced** in Phase 8 slice 1)
+- **Minimum withdrawal: R100** (UI + **server** in Phase 8 slice 1)
+- Split: **53%** / **26%** / **21%** (accounting later in Phase 8)
+- **Wave 2A / Phase 8 slice 1:** buyer verifies reseller via code → `GET /api/resellers/verify/{code}`
 
 ## OTP
 - **Wave 2B:** Email **and** SMS channel choice  
