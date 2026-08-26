@@ -127,11 +127,6 @@ class HttpAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> signInWithGoogle() async {
-    throw Exception('Google sign-in is not available on the live API yet');
-  }
-
-  @override
   Future<void> signOut() async {
     try {
       await _api.postJson('/api/auth/logout', {}, auth: true);

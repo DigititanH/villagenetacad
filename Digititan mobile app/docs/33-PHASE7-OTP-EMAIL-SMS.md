@@ -62,15 +62,8 @@ Old Mailer logged “would send” / used `mail()` without SMTP login — App Pa
 
 ## If you still create an OAuth client (optional — Sign in with Google later)
 
-Only if leadership wants **Google login** (not OTP mail):
-
-| Field | Choose |
-|-------|--------|
-| Application type | **Web application** (website) and/or **Android** / **iOS** for the app |
-| Name | `Village NetAcad Web` / `Village NetAcad Android` |
-| Authorized redirect URIs | Your site callback (when Google Sign-In is wired) |
-
-That is a **different** Phase 7+ feature from email OTP.
+**Removed from the app for now** — website has no Google Sign-In, so the app
+no longer shows a Google button. Revisit only if the website adds Google login.
 
 ---
 
