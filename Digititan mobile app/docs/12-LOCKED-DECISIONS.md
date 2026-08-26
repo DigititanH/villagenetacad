@@ -40,10 +40,10 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 
 ## OTP
 - **Wave 2B:** Email **and** SMS channel choice  
-- **Phase 7 email:** Gmail SMTP / live inbox OTP **on hold** (host path TBD).  
+- **Phase 7 email:** real SMTP via **cPanel mailbox** on live `public_html/backend-php/` (Gmail often blocked on Afrihost). Website uses verify-**link** mail, not 6-digit OTP.  
 - **Google Sign-In:** removed from the app for now (website has no Google login).  
 - **Phase 7 SMS:** provider not chosen yet (Africa’s Talking / Twilio / Clickatell).  
-- **Parked in Phase 7:** lawyer POPI, T&Cs-before-pay (do after email OTP works).
+- **Parked in Phase 7:** lawyer POPI, T&Cs-before-pay (do after email works).
 
 ## Returns
 - 7 days after delivery
