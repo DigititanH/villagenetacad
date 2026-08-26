@@ -1,31 +1,26 @@
-# Phase 7 — OTP / email / SMS (status)
+# Phase 7 — OTP / email / SMS — **PARKED**
 
-Branch: `cursor/phase7-smtp-cpanel-09ad` (SMTP resume)  
-Earlier park notes were on `cursor/phase7-otp-security-09ad`.
+**Status: parked** — resume at work with the team (not a solo prod change).
 
-## Current status
+Branch kept ready: `cursor/phase7-smtp-cpanel-09ad` (PR #18, draft)  
+Deploy pack already written: `deploy/phase7-smtp-live/`
 
+## Why parked
+Team needs to own mailbox / `.env` / Afrihost SMTP together. Not urgent vs consulting on reseller B/C rules.
+
+## When you resume (with the team)
+1. **Live tree only:** `public_html/backend-php/` (not `village-netacad/backend-php/`)
+2. Prefer **cPanel mailbox** SMTP (`localhost` or `mail.villagenetacad.co.za`) — Gmail often blocked on Afrihost
+3. Upload pack from `deploy/phase7-smtp-live/README.md` (`Mailer.php` + optional keyed `smtp-ping.php`, then **delete** ping)
+4. Live auth uses a **verify-email link**, not a 6-digit app OTP
+
+## Still parked separately
 | Item | Status |
 |------|--------|
-| Google Sign-In in app | **Removed** (website has none) |
-| Real SMTP Mailer | **This branch** — deploy to **`public_html/backend-php/`** |
-| Live “OTP” | Website uses **email verify link** (not 6-digit OTP). SMTP unblocks that mail. |
-| SMS OTP | Parked (provider TBD) |
+| SMS OTP | Provider TBD |
 | Lawyer POPI / legal | Parked |
 | T&Cs before pay | Parked |
-| In-app PayFast | Deferred (v1 = website browser) |
+| PayFast ITN notify URL | See `34-PHASE7-PAYFAST-ITN.md` |
+| Google Sign-In | Removed from app (website has none) |
 
-## Critical path lesson
-Live API is **`/home/villagenetacad/public_html/backend-php/`**  
-(health `uploads_dir`). Edits under `village-netacad/backend-php/` do **not** affect production mail.
-
-## Deploy pack
-See `deploy/phase7-smtp-live/README.md`:
-
-1. Upload `Mailer.php` → `public_html/backend-php/lib/`
-2. Set `.env` SMTP_* to a **cPanel mailbox** (`localhost` / `mail.villagenetacad.co.za`)
-3. Optional `smtp-ping.php` smoke test → **delete after**
-4. Register → check verify-email arrives
-
-## Why not Gmail first?
-Afrihost often blocks outbound `smtp.gmail.com`. Prefer hosting mailbox SMTP.
+Do **not** leave `smtp-ping.php` on production if it was ever uploaded.

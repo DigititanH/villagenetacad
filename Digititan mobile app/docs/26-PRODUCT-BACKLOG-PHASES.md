@@ -187,7 +187,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - See `docs/34-PHASE7-PAYFAST-ITN.md`.
 
 ### Parked / later in Phase 7
-- Live email / SMTP — **in progress** on `cursor/phase7-smtp-cpanel-09ad` (deploy pack → `public_html/backend-php/`)  
+- Live email / SMTP — **PARKED** (pack ready on `cursor/phase7-smtp-cpanel-09ad` → resume with team; live tree = `public_html/backend-php/`)  
 - PayFast ITN notify URL — **on hold**  
 - SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
