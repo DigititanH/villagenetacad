@@ -155,13 +155,6 @@ class DummyAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> signInWithGoogle() async {
-    final account = _accounts['customer@demo.com']!;
-    _current = account.user;
-    return account.user;
-  }
-
-  @override
   Future<void> signOut() async {
     _current = null;
   }

@@ -22,9 +22,14 @@ Suggested test SKU:
 
 Save, then confirm `GET /api/products` returns the item (not `products: []`).
 
+**Compare Price:** leave blank for no promo — backend must treat empty as SQL `NULL` (fixed in ProductsController). Until that deploy is live, a temporary workaround is to put any number in Compare Price (e.g. same as Price).
+
 **Note:** Mobile Admin → Add product is **dummy only** — it does not write to MySQL.
 
-## 2. Ops: PayFast **sandbox** on the server
+## 2. Ops: PayFast **sandbox** on the **website server** (not the mobile app)
+
+PayFast merchant keys live only in **`backend-php/.env` on the host** that serves `villagenetacad.co.za`.  
+The Flutter app never stores Merchant ID/Key — it only opens the website cart/checkout in the browser.
 
 Use **test** merchant keys from [PayFast sandbox](https://sandbox.payfast.co.za) — **not** production keys.
 

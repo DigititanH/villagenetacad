@@ -3,7 +3,6 @@ import '../../application/academy/register_academy_interest.dart';
 import '../../application/academy/register_academy_organisation.dart';
 import '../../application/auth/register_with_email.dart';
 import '../../application/auth/sign_in_with_email.dart';
-import '../../application/auth/sign_in_with_google.dart';
 import '../../application/auth/verify_email_otp.dart';
 import '../../application/store/get_my_orders.dart';
 import '../../application/store/get_products.dart';
@@ -45,7 +44,6 @@ class AppContainer {
   late final SignInWithEmail signInWithEmail;
   late final RegisterWithEmail registerWithEmail;
   late final VerifyEmailOtp verifyEmailOtp;
-  late final SignInWithGoogle signInWithGoogle;
 
   late final GetTrainingOffers getTrainingOffers;
   late final GetProgrammes getProgrammes;
@@ -89,7 +87,6 @@ class AppContainer {
       resellerRepository,
     );
     verifyEmailOtp = VerifyEmailOtp(authRepository);
-    signInWithGoogle = SignInWithGoogle(authRepository);
 
     getTrainingOffers = GetTrainingOffers(trainingRepository);
     getProgrammes = GetProgrammes(trainingRepository);

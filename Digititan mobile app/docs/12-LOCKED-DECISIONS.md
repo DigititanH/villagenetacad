@@ -39,7 +39,11 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 - **Wave 2A:** buyer verifies reseller via QR / code (DB + PHP API)
 
 ## OTP
-- **Wave 2B:** Email **and** SMS channel choice
+- **Wave 2B:** Email **and** SMS channel choice  
+- **Phase 7 email:** Gmail SMTP / live inbox OTP **on hold** (host path TBD).  
+- **Google Sign-In:** removed from the app for now (website has no Google login).  
+- **Phase 7 SMS:** provider not chosen yet (Africa’s Talking / Twilio / Clickatell).  
+- **Parked in Phase 7:** lawyer POPI, T&Cs-before-pay (do after email OTP works).
 
 ## Returns
 - 7 days after delivery

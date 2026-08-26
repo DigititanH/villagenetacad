@@ -29,8 +29,5 @@ abstract class AuthRepository {
     required String otp,
   });
 
-  /// Google path — implementation later.
-  Future<User> signInWithGoogle();
-
   Future<void> signOut();
 }

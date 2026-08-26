@@ -64,23 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _signInGoogle() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    final result = await widget.container.signInWithGoogle();
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    switch (result) {
-      case Success(:final data):
-        widget.onLoggedIn(data);
-      case Failure(:final message):
-        setState(() => _error = message);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,13 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _loading ? null : _signInEmail,
                     child: Text(_loading ? 'Please wait...' : 'Sign in'),
                   ),
-                  if (!AppConfig.useLiveApi) ...[
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: _loading ? null : _signInGoogle,
-                      child: const Text('Google (stub)'),
-                    ),
-                  ],
                   TextButton(
                     onPressed: _loading
                         ? null
