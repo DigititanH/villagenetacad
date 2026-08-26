@@ -231,6 +231,8 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 **Slice 1 done when:** verify works on live API + app; withdraw rejects &lt; R100 and non–last-day.
 
+**Slice 1 UAT (26 Aug 2026): PASSED** — live verify, app verify, withdraw locked / R50 / R100 last-day gates.
+
 ---
 
 ## Phase 9 — Academies + training (live, not dummy)

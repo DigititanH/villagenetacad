@@ -51,5 +51,10 @@ flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 3. Bad code → not found  
 4. Reseller withdraw (last day of month only, ≥ R100) — server returns clear error otherwise  
 
-## Laptop sync
-Run `INSTALL-PHASE8.ps1` from `S:\WORK\VillageNetAcad`.
+### Slice 1 UAT status (26 Aug 2026) — **PASSED**
+- Live verify: real code `VNA-2D23BA54` + fake code  
+- App verify with live code  
+- Withdraw locked (not last day)  
+- Simulate month-end → R50 → min R100  
+- Simulate month-end → R100 → last-calendar-day server gate  
+- (Successful payout not required for slice 1 — needs commission balance later)
