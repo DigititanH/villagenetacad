@@ -44,6 +44,10 @@ class PayfastController
         if (Payfast::isNotifyUrlLocal($notifyUrl)) {
             $warnings[] = 'notify_url uses localhost — payments may work, but PayFast cannot confirm them. Use ngrok: PAYFAST_NOTIFY_URL=https://YOUR-ID.ngrok-free.app/api/payfast/notify';
         }
+        $rawNotify = trim(Env::get('PAYFAST_NOTIFY_URL', '') ?? '');
+        if ($rawNotify !== '' && Payfast::isLegacyNotifyUrl($rawNotify)) {
+            $warnings[] = 'PAYFAST_NOTIFY_URL still points at legacy notify.php — server now rewrites to /api/payfast/notify. Update .env to https://villagenetacad.co.za/api/payfast/notify';
+        }
         if (Payfast::passphrase() !== '') {
             $warnings[] = 'Passphrase is set — it must match PayFast → Settings → Security exactly, or remove PAYFAST_PASSPHRASE from .env if disabled.';
         }

@@ -182,12 +182,13 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
 - Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**. **Live keys done (UAT).**
 
-### This slice (in progress) — live email OTP
-- Gmail **App Password** + SMTP (not Google OAuth Client ID — that is for Sign-In).  
-- Server `Mailer` SMTP AUTH. See `docs/33-PHASE7-OTP-EMAIL-SMS.md`.  
-- SMS OTP: provider TBD (Africa’s Talking / Twilio / Clickatell).
+### This slice — PayFast ITN
+- Notify URL must be `https://villagenetacad.co.za/api/payfast/notify` (not legacy `notify.php`).  
+- See `docs/34-PHASE7-PAYFAST-ITN.md`. Code rewrites legacy URLs; still update `.env` on cPanel.
 
 ### Parked / later in Phase 7
+- Live email OTP (Gmail/cPanel SMTP) — **on hold**  
+- SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
 - Returns policy wording polish  
@@ -198,8 +199,8 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 |---------|------|--------|
 | **#10 [W2]** | Same PayFast merchant as the website | **Done** (live) |
 | **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout |
-| **#2 [W2]** | Live SMS + email OTP | Email first (SMTP); SMS later |
-| **#3 [W3]** | Tight security | ITN verify + hardening — after OTP mail |
+| **#2 [W2]** | Live SMS + email OTP | **On hold** |
+| **#3 [W3]** | Tight security | ITN notify URL this slice; more later |
 | **#8 [W3]** | Lawyer-ready legal + **POPI** | **Parked** |
 
 **Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
