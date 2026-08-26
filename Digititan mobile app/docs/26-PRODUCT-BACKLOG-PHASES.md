@@ -180,24 +180,27 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 ### Payment path (locked for v1)
 - Money moves via **website PayFast** only (app → browser cart/checkout).  
 - **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
-- Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**.
+- Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**. **Live keys done (UAT).**
 
-### Original Phase 7
-- Approved gateway = **PayFast** (already on the website)  
-- OTP: decide SMS / email / gateway *(open — meeting wants Email + SMS)*  
+### This slice (in progress) — live email OTP
+- Gmail **App Password** + SMTP (not Google OAuth Client ID — that is for Sign-In).  
+- Server `Mailer` SMTP AUTH. See `docs/33-PHASE7-OTP-EMAIL-SMS.md`.  
+- SMS OTP: provider TBD (Africa’s Talking / Twilio / Clickatell).
+
+### Parked / later in Phase 7
+- Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
-- Returns policy enforced (no return after 7 days / 1 month — wording *(open)*)  
-- Warranty messaging = Pinnacle  
-- No cash / no pay-an-ambassador copy in checkout  
+- Returns policy wording polish  
+- Full security audit log pass  
 
 ### Meeting inserts
 | Meeting | Work | Notes |
 |---------|------|--------|
-| **#10 [W2]** | Same PayFast merchant as the website | One gateway only — **do this** |
-| **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout (Play/App Store risk) |
-| **#2 [W2]** | Live SMS + email OTP | Provider + rate limit + expiry (Phase 2 was UI only) |
-| **#3 [W3]** | Tight security | TLS, hashed passwords, role authz, PayFast ITN verify, audit log |
-| **#8 [W3]** | Lawyer-ready legal + **POPI** | Replace Wave 1 drafts |
+| **#10 [W2]** | Same PayFast merchant as the website | **Done** (live) |
+| **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout |
+| **#2 [W2]** | Live SMS + email OTP | Email first (SMTP); SMS later |
+| **#3 [W3]** | Tight security | ITN verify + hardening — after OTP mail |
+| **#8 [W3]** | Lawyer-ready legal + **POPI** | **Parked** |
 
 **Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
 
