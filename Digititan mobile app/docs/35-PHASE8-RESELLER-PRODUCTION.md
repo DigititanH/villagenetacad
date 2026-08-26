@@ -26,11 +26,18 @@ Live **buyer verify** + **server-enforced** withdraw rules (R100 + last calendar
 - Full month-end statement from live ledger beyond profile + sales lists
 
 ## Production deploy (when ready)
-Upload only the live tree under `public_html/village-netacad/backend-php/`:
-- `controllers/ResellersController.php`
-- `routes/Router.php`
 
-Do **not** edit duplicate trees under `public_html/backend-php/` or root `public_html/.env`.
+**Live API tree (confirmed via `/health` uploads_dir):**  
+`public_html/backend-php/`  
+(not `public_html/village-netacad/backend-php/` — that copy is a stale duplicate)
+
+- **`controllers/ResellersController.php`** — safe to overwrite with Phase 8 file (adds `verify()` + R100/last-day withdraw gates).
+- **`routes/Router.php`** — **do not overwrite wholesale**. Live Router has extra routes (CCNA, products admin, etc.) that are not in this repo zip.  
+  **Only add** this line in the Resellers section:
+
+```php
+self::get('/api/resellers/verify/{code}', fn ($p) => ResellersController::verify($p));
+```
 
 ## App UAT (after deploy)
 ```
