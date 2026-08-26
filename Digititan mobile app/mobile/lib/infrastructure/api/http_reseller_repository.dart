@@ -66,14 +66,14 @@ class HttpResellerRepository implements ResellerRepository {
       if (raw is! Map) continue;
       final m = Map<String, dynamic>.from(raw);
       final orderId = m['order_id']?.toString() ?? '';
-      final amount = (m['amount'] as num?)?.toDouble() ?? 0;
+      final amount = _asDouble(m['amount']) ?? 0;
       if (orderId.isNotEmpty) commissionByOrder[orderId] = amount;
     }
 
     return sales.whereType<Map>().map((raw) {
       final m = Map<String, dynamic>.from(raw);
       final id = m['id']?.toString() ?? '';
-      final total = (m['total'] as num?)?.toDouble() ?? 0;
+      final total = _asDouble(m['total']) ?? 0;
       return ResellerSale(
         id: id,
         clientName: m['customer_name']?.toString() ?? 'Customer',
@@ -146,7 +146,7 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
     required String fallbackEmail,
   }) {
     final code = json['referral_code']?.toString() ?? 'PENDING';
-    final rate = (json['commission_rate'] as num?)?.toDouble() ??
+    final rate = _asDouble(json['commission_rate']) ??
         RevenueSplit.beneficiaryPercent;
     final status = _mapStatus(json['status']?.toString());
     return ResellerProfile(
@@ -155,13 +155,21 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
       code: code,
       codeType: _codeTypeFrom(code),
       status: status,
-      totalEarned: (json['total_earned'] as num?)?.toDouble() ?? 0,
-      balance: (json['wallet_balance'] as num?)?.toDouble() ?? 0,
+      totalEarned: _asDouble(json['total_earned']) ?? 0,
+      balance: _asDouble(json['wallet_balance']) ?? 0,
       amountDueToDigititan: 0,
       centreShareTotal: 0,
       commissionRate: rate,
       academyName: json['academy']?.toString(),
     );
+  }
+
+  /// PHP/MySQL JSON often sends decimals as strings ("0.00").
+  static double? _asDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return null;
   }
 
   String _mapStatus(String? raw) {
