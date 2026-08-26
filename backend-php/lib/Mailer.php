@@ -44,6 +44,8 @@ class Mailer
             ]);
         } catch (Throwable $e) {
             error_log('[Mailer] Send failed: ' . $e->getMessage());
+            // Re-throw so temporary smtp-test.php can show the real error.
+            throw $e;
         }
     }
 
