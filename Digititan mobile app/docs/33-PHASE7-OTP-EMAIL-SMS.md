@@ -40,17 +40,25 @@ Path: `/public_html/village-netacad/backend-php/.env`
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your.gmail.or.workspace@email.com
-SMTP_PASS=xxxx xxxx xxxx xxxx
+SMTP_PASS=xxxxxxxxxxxxxxxx
 SITE_EMAIL=info@villagenetacad.co.za
+SMTP_FROM=Village NetAcad
 ```
 
 - `SMTP_PASS` = the **App Password**, not your normal Google password.  
+- **No spaces** in `SMTP_PASS` (Google shows groups of 4; paste as 16 characters with no spaces).  
+- `SMTP_FROM` = display name only (optional). The From **address** is always `SMTP_USER`.  
 - Don’t paste App Passwords into chat.
 
-### C. Deploy Mailer
+### C. Deploy Mailer (required — old file ignores Gmail)
 
-Upload updated `backend-php/lib/Mailer.php` from this branch (real SMTP AUTH).  
-Old Mailer logged “would send” / used `mail()` without SMTP login — App Passwords would not work.
+Production still had the old `Mailer.php` that calls PHP `mail()` and **never uses** `SMTP_HOST` / App Password.
+
+Upload this branch’s `backend-php/lib/Mailer.php` to:
+
+`/public_html/village-netacad/backend-php/lib/Mailer.php`
+
+Overwrite the old file, then test again.
 
 ### D. Smoke test
 

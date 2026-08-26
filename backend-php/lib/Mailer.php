@@ -14,8 +14,10 @@ class Mailer
         $replyTo = $opts['replyTo'] ?? null;
 
         $smtpUser = Env::get('SMTP_USER');
-        $smtpPass = Env::get('SMTP_PASS');
+        // Gmail App Passwords are often copied with spaces — strip them.
+        $smtpPass = preg_replace('/\s+/', '', (string) (Env::get('SMTP_PASS') ?? ''));
         $from = $smtpUser ?: Site::email();
+        $fromName = Env::get('SMTP_FROM', 'Village NetAcad') ?: 'Village NetAcad';
 
         if (!$to || !$subject) {
             error_log('[Mailer] Missing to/subject');
@@ -34,7 +36,7 @@ class Mailer
                 'user' => $smtpUser,
                 'pass' => $smtpPass,
                 'from' => $from,
-                'fromName' => 'Village NetAcad',
+                'fromName' => $fromName,
                 'to' => $to,
                 'replyTo' => $replyTo,
                 'subject' => $subject,
