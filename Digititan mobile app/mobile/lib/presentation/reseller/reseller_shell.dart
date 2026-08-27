@@ -540,6 +540,23 @@ class _ResellerShellState extends State<ResellerShell> {
                   fontSize: 13,
                 ),
               ),
+              if (p.centreShareTotal > 0 || p.amountDueToDigititan > 0) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Centre share (lifetime): R${p.centreShareTotal.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  'Digititan share (lifetime): R${p.amountDueToDigititan.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

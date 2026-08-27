@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * LIVE-compatible Router for public_html/backend-php/routes/Router.php
+ * Based on production Router (CCNA + products admin) + Phase 8 verify route.
+ * Safe to overwrite that live file with this one.
+ */
 class Router
 {
     /** @var array<int, array{method: string, pattern: string, handler: callable}> */
@@ -48,9 +53,11 @@ class Router
 
         // Products
         self::get('/api/products/meta/categories', [ProductsController::class, 'categories']);
+        self::get('/api/products/admin/all', [ProductsController::class, 'adminIndex']);
         self::get('/api/products', [ProductsController::class, 'index']);
         self::get('/api/products/{slug}', fn ($p) => ProductsController::show($p));
         self::post('/api/products', [ProductsController::class, 'create']);
+        self::post('/api/products/{id}', fn ($p) => ProductsController::update($p));
         self::put('/api/products/{id}', fn ($p) => ProductsController::update($p));
         self::delete('/api/products/{id}', fn ($p) => ProductsController::destroy($p));
 
@@ -85,6 +92,11 @@ class Router
 
         // Contact
         self::post('/api/contact', [ContactController::class, 'create']);
+
+        // CCNA enrolment (PayFast subscription)
+        self::get('/api/ccna/plans', [CcnaEnrolmentsController::class, 'plans']);
+        self::post('/api/ccna/enrol', [CcnaEnrolmentsController::class, 'enrol']);
+        self::get('/api/ccna/enrolments/{id}/summary', fn ($p) => CcnaEnrolmentsController::summary($p));
 
         // PayFast
         self::get('/api/payfast/status', [PayfastController::class, 'status']);

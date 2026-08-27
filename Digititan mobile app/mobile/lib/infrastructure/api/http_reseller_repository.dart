@@ -5,8 +5,6 @@ import '../../shared/config/app_config.dart';
 import 'api_client.dart';
 
 /// Live reseller APIs on villagenetacad.co.za.
-///
-/// Clients CRM is not on the website yet — [getClients] returns empty.
 class HttpResellerRepository implements ResellerRepository {
   final ApiClient _api;
 
@@ -32,8 +30,19 @@ class HttpResellerRepository implements ResellerRepository {
 
   @override
   Future<List<ResellerClient>> getClients(String email) async {
-    // No live clients/leads API yet (Phase 8 later).
-    return const [];
+    final list = await _api.getList('/api/resellers/clients', auth: true);
+    return list.whereType<Map>().map((raw) {
+      final m = Map<String, dynamic>.from(raw);
+      return ResellerClient(
+        id: m['id']?.toString() ?? '',
+        name: m['name']?.toString() ?? '',
+        email: m['email']?.toString() ?? '',
+        status: _mapClientStatus(m['status']?.toString()),
+        productInterest: m['product_interest']?.toString(),
+        updatedAt: DateTime.tryParse(m['updated_at']?.toString() ?? '') ??
+            DateTime.now(),
+      );
+    }).toList();
   }
 
   @override
@@ -44,7 +53,26 @@ class HttpResellerRepository implements ResellerRepository {
     String? productInterest,
     ResellerClientStatus status = ResellerClientStatus.pending,
   }) async {
-    throw Exception('Client CRM is not available on the live API yet');
+    final json = await _api.postJson(
+      '/api/resellers/clients',
+      {
+        'name': name,
+        'email': email,
+        if (productInterest != null && productInterest.trim().isNotEmpty)
+          'product_interest': productInterest.trim(),
+        'status': _clientStatusApi(status),
+      },
+      auth: true,
+    );
+    return ResellerClient(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? name,
+      email: json['email']?.toString() ?? email,
+      status: _mapClientStatus(json['status']?.toString()),
+      productInterest: json['product_interest']?.toString() ?? productInterest,
+      updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? '') ??
+          DateTime.now(),
+    );
   }
 
   @override
@@ -53,7 +81,11 @@ class HttpResellerRepository implements ResellerRepository {
     required String clientId,
     required ResellerClientStatus status,
   }) async {
-    throw Exception('Client CRM is not available on the live API yet');
+    await _api.putJson(
+      '/api/resellers/clients/$clientId',
+      {'status': _clientStatusApi(status)},
+      auth: true,
+    );
   }
 
   @override
@@ -65,21 +97,26 @@ class HttpResellerRepository implements ResellerRepository {
     for (final raw in commissions) {
       if (raw is! Map) continue;
       final m = Map<String, dynamic>.from(raw);
+      final party = (m['party']?.toString() ?? 'seller').toLowerCase();
+      if (party == 'digititan') continue;
       final orderId = m['order_id']?.toString() ?? '';
       final amount = _asDouble(m['amount']) ?? 0;
-      if (orderId.isNotEmpty) commissionByOrder[orderId] = amount;
+      if (orderId.isNotEmpty) {
+        commissionByOrder[orderId] = (commissionByOrder[orderId] ?? 0) + amount;
+      }
     }
 
     return sales.whereType<Map>().map((raw) {
       final m = Map<String, dynamic>.from(raw);
       final id = m['id']?.toString() ?? '';
       final total = _asDouble(m['total']) ?? 0;
+      final fromSale = _asDouble(m['commission_amount']);
       return ResellerSale(
         id: id,
         clientName: m['customer_name']?.toString() ?? 'Customer',
         productName: 'Order #$id',
         amount: total,
-        commission: commissionByOrder[id] ?? 0,
+        commission: fromSale ?? commissionByOrder[id] ?? 0,
         date: DateTime.tryParse(m['created_at']?.toString() ?? '') ??
             DateTime.now(),
       );
@@ -88,8 +125,73 @@ class HttpResellerRepository implements ResellerRepository {
 
   @override
   Future<String> getMonthlyStatement(String email) async {
-    final profile = await getProfile(email);
-    return '''
+    final now = DateTime.now().toUtc();
+    final month =
+        '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}';
+    try {
+      final json = await _api.getJson(
+        '/api/resellers/statement',
+        auth: true,
+        query: {'month': month},
+      );
+      final period = json['period'] is Map
+          ? Map<String, dynamic>.from(json['period'] as Map)
+          : <String, dynamic>{};
+      final code = json['referral_code']?.toString() ?? '';
+      final academy = json['academy']?.toString();
+      final affiliated = json['affiliated'] == true;
+      final isCentre = json['is_centre'] == true;
+      final path = isCentre
+          ? 'Centre (VNA-C) · 26%'
+          : affiliated
+              ? 'Affiliated (VNA-B) · 53 / 26 / 21'
+              : 'Independent (VNA-B) · 53%';
+
+      final buf = StringBuffer()
+        ..writeln('DIGITITAN / VILLAGE NETACAD — MONTHLY STATEMENT')
+        ..writeln('Period: $month (UTC)')
+        ..writeln('Reseller: ${json['referral_code'] ?? code}')
+        ..writeln('Path: $path')
+        ..writeln(
+            'Academy / centre note: ${academy == null || academy.isEmpty ? '—' : academy}')
+        ..writeln('')
+        ..writeln(
+            'Orders (period): R${_fmt(period['orders_total'])}')
+        ..writeln(
+            'Your wallet credit (period): R${_fmt(period['seller_earned'])}')
+        ..writeln(
+            'Centre share credited (period): R${_fmt(period['centre_earned'])}')
+        ..writeln(
+            'Digititan share (period): R${_fmt(period['digititan_due'])}')
+        ..writeln('')
+        ..writeln(
+            'Lifetime total earned: R${_fmt(json['total_earned'])}')
+        ..writeln(
+            'Wallet balance now: R${_fmt(json['wallet_balance'])}')
+        ..writeln('')
+        ..writeln(
+            'Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}')
+        ..writeln('(Server-enforced on live API.)');
+
+      final lines = json['lines'];
+      if (lines is List && lines.isNotEmpty) {
+        buf.writeln('');
+        buf.writeln('Lines:');
+        for (final raw in lines.take(40)) {
+          if (raw is! Map) continue;
+          final m = Map<String, dynamic>.from(raw);
+          final party = m['party']?.toString() ?? 'seller';
+          final oid = m['order_id']?.toString() ?? '?';
+          final cust = m['customer_name']?.toString() ?? '';
+          buf.writeln(
+            '  #$oid · $party · R${_fmt(m['amount'])} · $cust',
+          );
+        }
+      }
+      return buf.toString();
+    } catch (_) {
+      final profile = await getProfile(email);
+      return '''
 DIGITITAN / VILLAGE NETACAD — EARNINGS STATEMENT
 Reseller: ${profile.name} <$email>
 Code: ${profile.code}
@@ -98,10 +200,13 @@ Status: ${profile.status}
 Total earned: R${profile.totalEarned.toStringAsFixed(2)}
 Wallet balance: R${profile.balance.toStringAsFixed(2)}
 Commission rate: ${profile.commissionRate.toStringAsFixed(0)}%
+Centre share (lifetime): R${profile.centreShareTotal.toStringAsFixed(2)}
+Digititan share (lifetime): R${profile.amountDueToDigititan.toStringAsFixed(2)}
 
 Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdrawalZar.toStringAsFixed(0)}
 (Server-enforced on live API.)
 ''';
+    }
   }
 
   @override
@@ -126,9 +231,6 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
     final status = (json['status']?.toString() ?? '').toLowerCase();
     final approved = json['approved'] == true || status == 'approved';
     final active = json['active'] == true || approved;
-    if (!active && !approved) {
-      // Still return details so UI can show "not approved"
-    }
     final rawCode = json['code']?.toString() ?? code.trim().toUpperCase();
     return IssuedResellerCode(
       code: rawCode,
@@ -157,14 +259,18 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
       status: status,
       totalEarned: _asDouble(json['total_earned']) ?? 0,
       balance: _asDouble(json['wallet_balance']) ?? 0,
-      amountDueToDigititan: 0,
-      centreShareTotal: 0,
+      amountDueToDigititan: _asDouble(json['amount_due_to_digititan']) ?? 0,
+      centreShareTotal: _asDouble(json['centre_share_total']) ?? 0,
       commissionRate: rate,
       academyName: json['academy']?.toString(),
     );
   }
 
-  /// PHP/MySQL JSON often sends decimals as strings ("0.00").
+  static String _fmt(dynamic value) {
+    final n = _asDouble(value) ?? 0;
+    return n.toStringAsFixed(2);
+  }
+
   static double? _asDouble(dynamic value) {
     if (value == null) return null;
     if (value is num) return value.toDouble();
@@ -186,9 +292,37 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
     }
   }
 
+  ResellerClientStatus _mapClientStatus(String? raw) {
+    switch ((raw ?? '').toLowerCase().replaceAll('-', '_')) {
+      case 'confirmed':
+        return ResellerClientStatus.confirmed;
+      case 'bought':
+        return ResellerClientStatus.bought;
+      case 'did_not_buy':
+      case 'didnotbuy':
+        return ResellerClientStatus.didNotBuy;
+      default:
+        return ResellerClientStatus.pending;
+    }
+  }
+
+  String _clientStatusApi(ResellerClientStatus status) {
+    switch (status) {
+      case ResellerClientStatus.pending:
+        return 'pending';
+      case ResellerClientStatus.confirmed:
+        return 'confirmed';
+      case ResellerClientStatus.bought:
+        return 'bought';
+      case ResellerClientStatus.didNotBuy:
+        return 'did_not_buy';
+    }
+  }
+
   ResellerCodeType _codeTypeFrom(String code) {
-    final upper = code.toUpperCase();
-    if (upper.startsWith('VNA-C')) return ResellerCodeType.centre;
+    final upper = code.trim().toUpperCase();
+    if (upper.startsWith('VNA-C-')) return ResellerCodeType.centre;
+    if (upper.startsWith('VNA-B-')) return ResellerCodeType.beneficiary;
     return ResellerCodeType.beneficiary;
   }
 }

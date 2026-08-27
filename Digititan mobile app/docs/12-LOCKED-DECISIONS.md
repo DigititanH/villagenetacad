@@ -41,10 +41,11 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 - **Wave 2C:** learner full name, gender, email — only when website/DB path exists (tied to academies work with Khanyi)
 
 ## Reseller model
-- Codes: Beneficiary (VNA-B) / Centre (VNA-C) — **target**; live may still issue `VNA-{hex}` until Phase 8 later slices
+- Codes: Beneficiary (VNA-B) / Centre (VNA-C) — issued at register (reseller UX); live hex codes may remain on older accounts
 - Month-end withdrawals only (**server-enforced** in Phase 8 slice 1)
 - **Minimum withdrawal: R100** (UI + **server** in Phase 8 slice 1)
-- Split: **53%** / **26%** / **21%** (accounting later in Phase 8)
+- Split: **53%** / **26%** / **21%** — **auto on paid fulfill** (Phase 8 slice 2; PayFast ITN file unchanged)
+- Clients CRM + monthly statement API — Phase 8 slice 2
 - **Wave 2A / Phase 8 slice 1:** buyer verifies reseller via code → `GET /api/resellers/verify/{code}`
 
 ## OTP
