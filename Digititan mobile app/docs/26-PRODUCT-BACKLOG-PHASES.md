@@ -213,9 +213,9 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 **Slice 1 (this branch):** live verify API + server R100 / last-day withdraw + app `HttpResellerRepository`.
 
 ### Original
-- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **later** (live today often `VNA-{hex}`)  
-- Independent seller → programme-support bucket (not a centre) — **later**  
-- Beneficiary under a centre: sales split **53 / 26 / 21** as locked — **later** (flat `commission_rate` still on live)  
+- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **issued at register** (UAT passed 27 Aug 2026 on app + AuthController)  
+- Independent seller → Digititan programme-support label — **done at register** (53%; multi-party ledger polish later)  
+- Beneficiary under a centre: sales split **53 / 26 / 21** as locked — **rates + affiliation at register**; full auto-split accounting **later**  
 - Clients: bought / pending / confirmed / did not buy — from real orders + leads — **later**  
 - Reseller sees their earnings; Digititan 21% for ops/statements — **partial** (profile + sales via live API)  
 - Month-end statement from real sales — **partial**  

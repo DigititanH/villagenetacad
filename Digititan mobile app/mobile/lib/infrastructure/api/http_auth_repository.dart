@@ -66,6 +66,7 @@ class HttpAuthRepository implements AuthRepository {
     required String password,
     required UserRole role,
     String? academyName,
+    String? resellerKind,
   }) async {
     if (role.isAdmin) {
       throw Exception('Admin accounts are created by Super Admin only');
@@ -81,11 +82,9 @@ class HttpAuthRepository implements AuthRepository {
       'role': role == UserRole.reseller ? 'reseller' : 'customer',
     };
     if (role == UserRole.reseller) {
-      final academy = (academyName ?? '').trim();
-      if (academy.isEmpty) {
-        throw Exception('Please enter the name of your academy');
-      }
-      body['academy'] = academy;
+      final kind = (resellerKind ?? 'independent').trim().toLowerCase();
+      body['reseller_kind'] = kind;
+      body['academy'] = (academyName ?? '').trim();
     }
 
     final json = await _api.postJson('/api/auth/register', body);

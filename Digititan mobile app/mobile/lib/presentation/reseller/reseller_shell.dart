@@ -434,8 +434,12 @@ class _ResellerShellState extends State<ResellerShell> {
   Widget _dashboard() {
     final p = _profile!;
     final shareLabel = p.codeType == ResellerCodeType.centre
-        ? 'Centre earnings · 26%'
-        : 'Your earnings · 53%';
+        ? 'Centre (VNA-C) · ${p.commissionRate.toStringAsFixed(0)}%'
+        : (p.academyName != null &&
+                p.academyName!.toLowerCase().contains('independent'))
+            ? 'Independent (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}% · rest Digititan'
+            : 'Beneficiary (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}%'
+                '${p.academyName != null && p.academyName!.trim().isNotEmpty ? ' · centre noted for 26%' : ''}';
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
