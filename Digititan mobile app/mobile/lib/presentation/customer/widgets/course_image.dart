@@ -39,21 +39,18 @@ class CourseImage extends StatelessWidget {
 
   Widget _placeholder({bool loading = false, bool broken = false}) {
     return ColoredBox(
-      color: const Color(0xFF0F172A),
+      color: DigititanColors.muted,
       child: Center(
         child: loading
             ? const SizedBox(
                 width: 28,
                 height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: DigititanColors.teal,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             : Icon(
                 broken ? Icons.broken_image_outlined : Icons.school_outlined,
                 size: 40,
-                color: DigititanColors.teal.withValues(alpha: 0.75),
+                color: DigititanColors.primary,
               ),
       ),
     );
@@ -148,17 +145,17 @@ class CourseImageThumb extends StatelessWidget {
         height: size,
         child: url == null || url.isEmpty
             ? const ColoredBox(
-                color: Color(0xFF0F172A),
-                child: Icon(Icons.school_outlined, color: DigititanColors.teal),
+                color: DigititanColors.muted,
+                child: Icon(Icons.school_outlined, color: DigititanColors.primary),
               )
             : Image.network(
                 url,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => const ColoredBox(
-                  color: Color(0xFF0F172A),
+                  color: DigititanColors.muted,
                   child: Icon(
                     Icons.broken_image_outlined,
-                    color: DigititanColors.teal,
+                    color: DigititanColors.primary,
                   ),
                 ),
               ),

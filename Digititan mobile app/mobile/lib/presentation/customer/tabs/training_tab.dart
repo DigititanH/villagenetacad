@@ -8,7 +8,7 @@ import '../../../shared/theme/digititan_theme.dart';
 import '../training_detail_screen.dart';
 import '../widgets/course_image.dart';
 
-/// Website category order (same chips as /courses).
+/// Category chips — same labels as website, app light theme.
 const _kCategories = <String>[
   'All Courses',
   'Digital Literacy',
@@ -78,32 +78,34 @@ class _TrainingTabState extends State<TrainingTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1220),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0B1220),
-        title: const Text('Courses'),
-      ),
+      backgroundColor: DigititanColors.background,
+      appBar: AppBar(title: const Text('Courses')),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: DigititanColors.teal))
+          ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                )
+              ? Center(child: Text(_error!))
               : CustomScrollView(
                   slivers: [
-                    SliverToBoxAdapter(child: _HeroHeader()),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                        child: Text(
-                          'Cisco NetAcad Course Catalog',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                              ),
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Cisco NetAcad catalogue',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Same courses & photos as the website. '
+                              'Free → Cisco · Paid CCNA → website PayFast.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -118,24 +120,25 @@ class _TrainingTabState extends State<TrainingTab> {
                           itemBuilder: (context, i) {
                             final label = _kCategories[i];
                             final selected = label == _category;
-                            return ChoiceChip(
+                            return FilterChip(
                               label: Text(label),
                               selected: selected,
+                              showCheckmark: false,
                               onSelected: (_) =>
                                   setState(() => _category = label),
-                              selectedColor: DigititanColors.teal,
-                              backgroundColor: const Color(0xFF1A2438),
+                              selectedColor: DigititanColors.primary,
+                              backgroundColor: DigititanColors.surface,
                               labelStyle: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: selected
-                                    ? const Color(0xFF0B1220)
-                                    : Colors.white70,
+                                    ? Colors.white
+                                    : DigititanColors.foreground,
                               ),
                               side: BorderSide(
                                 color: selected
-                                    ? DigititanColors.teal
-                                    : const Color(0xFF2A3A55),
+                                    ? DigititanColors.primary
+                                    : DigititanColors.muted,
                               ),
                               visualDensity: VisualDensity.compact,
                             );
@@ -146,24 +149,18 @@ class _TrainingTabState extends State<TrainingTab> {
                     if (_filtered.isEmpty)
                       const SliverFillRemaining(
                         hasScrollBody: false,
-                        child: Center(
-                          child: Text(
-                            'No courses in this category',
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        ),
+                        child: Center(child: Text('No courses in this category')),
                       )
                     else
-                      // Force rebuild marker when category changes — image cards.
                       SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
                         sliver: SliverList.separated(
                           itemCount: _filtered.length,
                           separatorBuilder: (_, _) =>
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
                           itemBuilder: (context, i) {
                             final o = _filtered[i];
-                            return _WebsiteStyleCourseCard(
+                            return _CoursePhotoCard(
                               offer: o,
                               onTap: () => _open(o),
                             );
@@ -176,76 +173,22 @@ class _TrainingTabState extends State<TrainingTab> {
   }
 }
 
-class _HeroHeader extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0B1220),
-            Color(0xFF12263F),
-            Color(0xFF0E3A4F),
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'VILLAGE NETACAD · CISCO',
-            style: TextStyle(
-              color: DigititanColors.teal.withValues(alpha: 0.95),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 2.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Digital skills courses',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              height: 1.15,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Same catalogue & photos as villagenetacad.co.za/courses. '
-            'Free → Cisco · Paid CCNA → website PayFast.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.72),
-              height: 1.4,
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Matches live site course card: 16:10 photo screen + title block below.
-class _WebsiteStyleCourseCard extends StatelessWidget {
+/// Light-theme photo card — matches Home/Store surfaces, keeps Unsplash tile.
+class _CoursePhotoCard extends StatelessWidget {
   final TrainingOffer offer;
   final VoidCallback onTap;
 
-  const _WebsiteStyleCourseCard({
-    required this.offer,
-    required this.onTap,
-  });
+  const _CoursePhotoCard({required this.offer, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF142033),
-      borderRadius: BorderRadius.circular(18),
+      color: DigititanColors.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: DigititanColors.muted),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -265,35 +208,29 @@ class _WebsiteStyleCourseCard extends StatelessWidget {
                 children: [
                   Text(
                     offer.category.toUpperCase(),
-                    style: TextStyle(
-                      color: DigititanColors.teal.withValues(alpha: 0.95),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: DigititanColors.primary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     offer.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      height: 1.25,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     offer.summary,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.68),
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          height: 1.35,
+                        ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Icon(
@@ -301,23 +238,22 @@ class _WebsiteStyleCourseCard extends StatelessWidget {
                             ? Icons.payments_outlined
                             : Icons.open_in_new,
                         size: 16,
-                        color: DigititanColors.teal,
+                        color: DigititanColors.primary,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         offer.isPaidOnWebsite
                             ? 'Pay & enrol on website'
                             : 'Enroll on Cisco',
-                        style: const TextStyle(
-                          color: DigititanColors.teal,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 13,
-                        ),
+                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: DigititanColors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       const Spacer(),
                       const Icon(
                         Icons.chevron_right,
-                        color: DigititanColors.teal,
+                        color: DigititanColors.primary,
                       ),
                     ],
                   ),

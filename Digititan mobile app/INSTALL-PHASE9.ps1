@@ -69,7 +69,7 @@ foreach ($rel in $checks) {
   if (-not (Test-Path $p)) { Write-Error "Missing after sync: $rel" }
 }
 
-# Hard proof the digital photo UI landed (not the old text list)
+# Hard proof the photo cards landed (app light theme — not website dark)
 $tab = Join-Path $libDest "presentation\customer\tabs\training_tab.dart"
 $img = Join-Path $libDest "presentation\customer\widgets\course_image.dart"
 $tabText = Get-Content $tab -Raw
@@ -77,11 +77,11 @@ $imgText = Get-Content $img -Raw
 if ($tabText -notmatch "CourseDigitalTile") {
   Write-Error "Sync incomplete: training_tab.dart missing CourseDigitalTile"
 }
-if ($tabText -notmatch "0xFF0B1220") {
-  Write-Error "Sync incomplete: training_tab.dart missing dark Courses theme"
+if ($tabText -notmatch "DigititanColors.background") {
+  Write-Error "Sync incomplete: training_tab.dart missing app light theme"
 }
-if ($imgText -notmatch "images.unsplash.com" -and $tabText -notmatch "CourseDigitalTile") {
-  Write-Error "Sync incomplete: course image widgets missing"
+if ($tabText -match "0xFF0B1220") {
+  Write-Error "Sync incomplete: training_tab.dart still has website dark theme"
 }
 if ($imgText -notmatch "CourseDigitalTile") {
   Write-Error "Sync incomplete: course_image.dart missing CourseDigitalTile"
@@ -92,8 +92,8 @@ Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
 Remove-Item $extractRoot -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "SUCCESS - Phase 9 courses (photos + digital cards) synced." -ForegroundColor Green
-Write-Host "Proof: CourseDigitalTile + dark Courses theme (0xFF0B1220) present." -ForegroundColor Green
+Write-Host "SUCCESS - Phase 9 courses (photos + app light theme) synced." -ForegroundColor Green
+Write-Host "Proof: CourseDigitalTile + DigititanColors.background (matches Home/Store)." -ForegroundColor Green
 Write-Host ""
 Write-Host "STOP the running app completely (hot reload will NOT pick this up)." -ForegroundColor Yellow
 Write-Host "Then:"
@@ -101,7 +101,6 @@ Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
-Write-Host "You MUST see: dark Courses screen + big photo cards (like the website)." -ForegroundColor Cyan
-Write-Host "If you still see a plain light text list, tell me the output of:"
-Write-Host "  Select-String -Path mobile\lib\presentation\customer\tabs\training_tab.dart -Pattern CourseDigitalTile"
+Write-Host "You MUST see: light Courses screen (same as Home/Store) + photo cards." -ForegroundColor Cyan
+Write-Host "If Courses is still dark blue, sync failed — re-download INSTALL-PHASE9.ps1."
 Write-Host "See docs\36-PHASE9-COURSES-SLICE-A.md"

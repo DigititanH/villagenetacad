@@ -288,8 +288,11 @@ class _FeaturedCourseCard extends StatelessWidget {
     return SizedBox(
       width: 260,
       child: Material(
-        color: const Color(0xFF142033),
-        borderRadius: BorderRadius.circular(16),
+        color: DigititanColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: DigititanColors.muted),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -309,7 +312,7 @@ class _FeaturedCourseCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: DigititanColors.foreground,
                     fontWeight: FontWeight.w800,
                     fontSize: 13,
                     height: 1.25,
