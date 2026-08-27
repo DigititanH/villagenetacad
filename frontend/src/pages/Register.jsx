@@ -9,21 +9,36 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("customer");
+  const [resellerKind, setResellerKind] = useState("independent");
   const [academy, setAcademy] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const isReseller = role === "reseller";
+  const needAcademy = isReseller && (resellerKind === "affiliated" || resellerKind === "centre");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password.length < 6) return toast.error("Password must be at least 6 characters");
-    if (isReseller && !academy.trim()) return toast.error("Please enter the name of your academy");
+    if (needAcademy && !academy.trim()) {
+      return toast.error(
+        resellerKind === "centre"
+          ? "Please enter your centre / academy organisation name"
+          : "Please enter the centre / academy you are affiliated with"
+      );
+    }
 
     setLoading(true);
     try {
-      const user = await register(name, email, password, role, isReseller ? academy.trim() : undefined);
+      const user = await register(
+        name,
+        email,
+        password,
+        role,
+        isReseller ? academy.trim() : undefined,
+        isReseller ? resellerKind : undefined
+      );
       if (user.pending) {
         toast.success("Registration received! Sign in after an admin approves your reseller account.");
         navigate("/login");
@@ -67,7 +82,10 @@ export default function Register() {
               value={role}
               onChange={(e) => {
                 setRole(e.target.value);
-                if (e.target.value !== "reseller") setAcademy("");
+                if (e.target.value !== "reseller") {
+                  setAcademy("");
+                  setResellerKind("independent");
+                }
               }}
               className="input-field"
             >
@@ -77,17 +95,69 @@ export default function Register() {
           </div>
 
           {isReseller && (
-            <div>
-              <label className="block text-sm font-semibold mb-1 text-gray-300">Academy name *</label>
-              <input
-                type="text"
-                required
-                value={academy}
-                onChange={(e) => setAcademy(e.target.value)}
-                className="input-field"
-                placeholder="e.g. Village NetAcad Academy"
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter the name of the academy you are registering from</p>
+            <div className="space-y-3">
+              <p className="text-xs text-gray-400">
+                Codes: <strong className="text-gray-300">VNA-B</strong> (person, 53%) vs{" "}
+                <strong className="text-gray-300">VNA-C</strong> (centre, 26%).
+              </p>
+              <label className="flex gap-2 items-start text-sm text-gray-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name="resellerKind"
+                  className="mt-1"
+                  checked={resellerKind === "independent"}
+                  onChange={() => {
+                    setResellerKind("independent");
+                    setAcademy("");
+                  }}
+                />
+                <span>
+                  <span className="font-semibold">Independent (support Digititan)</span>
+                  <span className="block text-xs text-gray-500">VNA-B · you 53% · rest Digititan</span>
+                </span>
+              </label>
+              <label className="flex gap-2 items-start text-sm text-gray-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name="resellerKind"
+                  className="mt-1"
+                  checked={resellerKind === "affiliated"}
+                  onChange={() => setResellerKind("affiliated")}
+                />
+                <span>
+                  <span className="font-semibold">Affiliated with a centre</span>
+                  <span className="block text-xs text-gray-500">VNA-B · you 53% · centre 26% · Digititan 21%</span>
+                </span>
+              </label>
+              <label className="flex gap-2 items-start text-sm text-gray-300 cursor-pointer">
+                <input
+                  type="radio"
+                  name="resellerKind"
+                  className="mt-1"
+                  checked={resellerKind === "centre"}
+                  onChange={() => setResellerKind("centre")}
+                />
+                <span>
+                  <span className="font-semibold">I am registering as a centre</span>
+                  <span className="block text-xs text-gray-500">VNA-C · centre 26% · rest Digititan</span>
+                </span>
+              </label>
+
+              {needAcademy && (
+                <div>
+                  <label className="block text-sm font-semibold mb-1 text-gray-300">
+                    {resellerKind === "centre" ? "Centre / academy name *" : "Centre you are affiliated with *"}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={academy}
+                    onChange={(e) => setAcademy(e.target.value)}
+                    className="input-field"
+                    placeholder="e.g. Village NetAcad Academy"
+                  />
+                </div>
+              )}
             </div>
           )}
 
