@@ -238,7 +238,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 ## Phase 9 — Academies + training (live, not dummy)
 
 **Status (27 Aug 2026):**  
-- **Slice A — UNLOCKED (app):** hardcode courses like the website + paid course → website PayFast (no MySQL courses).  
+- **Slice A — UAT PASSED:** website-parity courses, photos, light theme, pagination, Cisco / website enrol.  
 - **Slice B — WAIT:** academies table/API (**Khanyi** / website).
 
 ### Blockers / owners
@@ -273,6 +273,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - Meeting **#6**: academy register with us first → live admin queue  
 
 **Slice A done when:** app shows website-parity courses; free enrol → Cisco; paid CCNA → website `/courses/enrol`.  
+**Slice A UAT (27 Aug 2026): PASSED** — theme, photos, filters, pagination, enrol CTAs.  
 **Phase 9 done when:** Slice A + academies from website API + enrol rules above.
 
 ---
