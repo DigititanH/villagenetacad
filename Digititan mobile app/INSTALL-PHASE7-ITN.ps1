@@ -27,7 +27,7 @@ Write-Host "  1) Edit public_html/backend-php/.env"
 Write-Host "       PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify"
 Write-Host "  2) Upload Payfast.php  -> public_html/backend-php/lib/Payfast.php"
 Write-Host "  3) Upload notify.php   -> public_html/payfast/notify.php"
-Write-Host "     (site-root /payfast/ — NOT backend-php/payfast/)"
+Write-Host "     (site-root /payfast/ - NOT backend-php/payfast/)"
 Write-Host ""
 Write-Host "DO NOT touch:" -ForegroundColor Red
 Write-Host "  - public_html/village-netacad/backend-php/  (stale duplicate)"
