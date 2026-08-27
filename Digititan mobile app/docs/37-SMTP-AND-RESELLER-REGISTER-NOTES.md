@@ -1,7 +1,7 @@
 # SMTP parked + reseller VNA-B / VNA-C register
 
 ## SMTP
-Live email send is **parked** again (host SMTP not delivering). Register still works; verify-mail is best-effort only.
+Live email send is **parked** (host SMTP not delivering). Register still works; verify-mail is best-effort only.
 
 ## Reseller register (meeting model)
 | Choice | Code | Your cut | Notes |
@@ -10,6 +10,13 @@ Live email send is **parked** again (host SMTP not delivering). Register still w
 | Affiliated with a centre | `VNA-B-*` | **53%** | Centre **26%** · Digititan **21%** (name stored) |
 | I am a centre | `VNA-C-*` | **26%** | Rest Digititan |
 
-### Live upload
-1. App: sync this branch `mobile/lib`
-2. Backend: overwrite `public_html/backend-php/controllers/AuthController.php` from `deploy/reseller-vna-bc-live/`
+## Mobile UAT (27 Aug 2026): **PASSED**
+1. Register UI — 3 paths — PASS  
+2. Independent → `VNA-B-` · 53% — PASS  
+3. Affiliated → `VNA-B-` · 53% + centre name — PASS  
+4. Centre → `VNA-C-` · 26% — PASS  
+5. Pending block / approve login — PASS  
+
+### Live upload (done for UAT)
+1. App: `INSTALL-RESELLER-VNA.ps1` / branch `cursor/reseller-register-ux-09ad`
+2. Backend: `public_html/backend-php/controllers/AuthController.php` (VNA-B/C register)
