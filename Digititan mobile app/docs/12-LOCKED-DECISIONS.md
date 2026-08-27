@@ -44,8 +44,8 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 - Codes: Beneficiary (VNA-B) / Centre (VNA-C) — issued at register (reseller UX); live hex codes may remain on older accounts
 - Month-end withdrawals only (**server-enforced** in Phase 8 slice 1)
 - **Minimum withdrawal: R100** (UI + **server** in Phase 8 slice 1)
-- Split: **53%** / **26%** / **21%** — **auto on paid fulfill** (Phase 8 slice 2; PayFast ITN file unchanged)
-- Clients CRM + monthly statement API — Phase 8 slice 2
+- Split: **53%** / **26%** / **21%** — built in Phase 8 slice 2 repo; **live deploy parked** (no phpMyAdmin until asked)
+- Clients CRM + monthly statement API — Phase 8 slice 2 (**live parked**)
 - **Wave 2A / Phase 8 slice 1:** buyer verifies reseller via code → `GET /api/resellers/verify/{code}`
 
 ## OTP
