@@ -22,10 +22,10 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 
 ## Training / courses / Cisco (updated 27 Aug 2026)
 - Company has **no own LMS** for now — association is with **Cisco NetAcad**.
-- **Free / Cisco pathway:** “Enroll” follows the **website** pattern → redirect to **Cisco** to enrol; learners are under **Village NetAcad** on Cisco’s side (Cisco holds that enrolment DB — **Karabo** for Cisco linking).
-- **Do not** put a full courses catalogue in MySQL for v1 — website `/courses` is **hardcoded**; app matches that (static / same process), wait on website if they change it.
-- **Paid courses (e.g. CCNA R550 × 6 PayFast):** same as shop products — app **opens the website** enrolment/checkout page; **no in-app PayFast**.  
-  Example: website CCNA Subscribe → PayFast (shipping address on site).
+- **Courses catalogue (v1):** **hardcoded in app** to match the website (same as live `/courses` — not MySQL).
+- **Free / Cisco pathway:** “Enroll” → system browser → **Cisco NetAcad** URL; learners under **Village NetAcad** on Cisco’s side (website/Cisco ops see enrolments there).
+- **Paid courses (CCNA R550 × 6 PayFast):** app opens website **`https://villagenetacad.co.za/courses/enrol`** (same idea as shop → website PayFast). **No in-app PayFast.**
+- Do **not** put a full courses catalogue in MySQL for v1.
 
 ## Academies (updated 27 Aug 2026)
 - New academies / orgs **register with Digititan first**
