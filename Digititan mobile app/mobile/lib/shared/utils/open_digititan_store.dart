@@ -113,6 +113,43 @@ Future<bool> openVillageNetAcadCart(BuildContext context) async {
   return false;
 }
 
+/// Opens an enrol URL (Cisco NetAcad or website `/courses/enrol`).
+Future<void> openExternalEnrol(
+  BuildContext context, {
+  required String url,
+  required String successMessage,
+}) async {
+  final opened = await openUrlInSystemBrowser(url);
+  if (!context.mounted) return;
+
+  if (opened) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(successMessage)),
+    );
+    return;
+  }
+
+  await Clipboard.setData(ClipboardData(text: url));
+  if (!context.mounted) return;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Open in browser'),
+      content: Text(
+        'Could not open the browser automatically.\n\n$url\n\n'
+        '(Copied to clipboard.)',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+
 /// Backward-compatible alias.
 Future<void> openDigititanStore(BuildContext context) =>
     openVillageNetAcadShop(context);

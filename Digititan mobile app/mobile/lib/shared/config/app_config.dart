@@ -27,6 +27,21 @@ class AppConfig {
     return '$base/cart';
   }
 
+  /// Paid CCNA (and similar) enrol + PayFast on the website.
+  /// Same pattern as shop: app opens browser, no in-app payment.
+  static String villageNetAcadCoursesEnrolUrl({String? courseTitle}) {
+    final base = apiBaseUrl.trim().isNotEmpty
+        ? apiBaseUrl.replaceAll(RegExp(r'/$'), '')
+        : 'https://villagenetacad.co.za';
+    final root = '$base/courses/enrol';
+    final title = courseTitle?.trim();
+    if (title == null || title.isEmpty) return root;
+    return '$root?course=${Uri.encodeComponent(title)}';
+  }
+
+  static const villageNetAcadCoursesUrl = 'https://villagenetacad.co.za/courses';
+
+
   /// Same ASC Microsoft Form as the website (Home → ASC Registration).
   /// Do not replace with a custom in-app form — fields must stay identical.
   static const ascRegistrationFormUrl =

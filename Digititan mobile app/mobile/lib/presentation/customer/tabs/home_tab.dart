@@ -272,7 +272,7 @@ class _TrainingRow extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(offer.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text('${offer.category} · ${offer.level} · ${offer.hours}h'),
+      subtitle: Text('${offer.category} · ${offer.level} · ${offer.hours}h · ${offer.priceLabel}'),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );
