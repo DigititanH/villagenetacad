@@ -11,6 +11,7 @@ import '../../../shared/widgets/demo_banner.dart';
 import '../../../shared/widgets/product_image.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
+import '../widgets/course_image.dart';
 import '../training_detail_screen.dart';
 
 class HomeTab extends StatefulWidget {
@@ -137,22 +138,37 @@ class _HomeTabState extends State<HomeTab> {
                   title: 'Featured training',
                   onAction: widget.onOpenTraining,
                 ),
-                ..._offers.map(
-                  (o) => _TrainingRow(
-                    offer: o,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => TrainingDetailScreen(
-                            container: widget.container,
-                            user: widget.user,
-                            trainingId: o.id,
-                          ),
-                        ),
-                      );
-                    },
+                if (_offers.isEmpty)
+                  Text(
+                    'No courses yet.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  )
+                else
+                  SizedBox(
+                    height: 210,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _offers.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (context, i) {
+                        final o = _offers[i];
+                        return _FeaturedCourseCard(
+                          offer: o,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => TrainingDetailScreen(
+                                  container: widget.container,
+                                  user: widget.user,
+                                  trainingId: o.id,
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ),
               ],
             ),
     );
@@ -261,20 +277,52 @@ class _ProgrammeHero extends StatelessWidget {
   }
 }
 
-class _TrainingRow extends StatelessWidget {
+class _FeaturedCourseCard extends StatelessWidget {
   final TrainingOffer offer;
   final VoidCallback onTap;
 
-  const _TrainingRow({required this.offer, required this.onTap});
+  const _FeaturedCourseCard({required this.offer, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(offer.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text('${offer.category} · ${offer.level} · ${offer.hours}h'),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
+    return SizedBox(
+      width: 260,
+      child: Material(
+        color: DigititanColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: DigititanColors.muted),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CourseDigitalTile(
+                imageUrl: offer.imageUrl,
+                hours: offer.hours,
+                priceLabel: offer.priceLabel,
+                level: offer.level,
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Text(
+                  offer.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: DigititanColors.foreground,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

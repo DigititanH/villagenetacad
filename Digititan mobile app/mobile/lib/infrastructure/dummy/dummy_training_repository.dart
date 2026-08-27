@@ -1,67 +1,25 @@
 import '../../domain/entities/programme_highlight.dart';
 import '../../domain/entities/training_offer.dart';
 import '../../domain/repositories/training_repository.dart';
+import '../courses/website_courses_catalogue.dart';
 import 'demo_hub.dart';
 
-/// In-memory training catalogue for prototype demos.
+/// Training catalogue = hardcoded website courses (Phase 9 slice A).
+/// Free → Cisco; paid CCNA → website PayFast enrol page.
 class DummyTrainingRepository implements TrainingRepository {
-  final List<TrainingOffer> _offers = const [
-    TrainingOffer(
-      id: 'tr-net-basics',
-      title: 'Networking Basics',
-      category: 'Networking',
-      level: 'Beginner',
-      hours: 22,
-      summary: 'Start learning how networks operate and build foundational skills.',
-      recruitmentOpen: true,
-    ),
-    TrainingOffer(
-      id: 'tr-cyber-intro',
-      title: 'Introduction to Cybersecurity',
-      category: 'Cybersecurity',
-      level: 'Beginner',
-      hours: 6,
-      summary: 'Explore cybersecurity and why it is a future-proof career.',
-      recruitmentOpen: true,
-    ),
-    TrainingOffer(
-      id: 'tr-python',
-      title: 'Python Essentials',
-      category: 'Programming & Linux',
-      level: 'Beginner',
-      hours: 70,
-      summary: 'Build Python skills from zero toward certification readiness.',
-    ),
-    TrainingOffer(
-      id: 'tr-ccna-1',
-      title: 'CCNA: Introduction to Networks',
-      category: 'Networking',
-      level: 'Intermediate',
-      hours: 70,
-      summary: 'First course in the CCNA series for associate-level jobs.',
-      recruitmentOpen: true,
-    ),
-    TrainingOffer(
-      id: 'tr-it-support',
-      title: 'IT Customer Support Basics',
-      category: 'IT Essentials',
-      level: 'Beginner',
-      hours: 4,
-      summary: 'Help-desk skills for entry-level IT support roles.',
-    ),
-  ];
+  List<TrainingOffer> get _offers => WebsiteCoursesCatalogue.offers;
 
   final List<ProgrammeHighlight> _programmes = const [
     ProgrammeHighlight(
-      id: 'pg-youth-2026',
-      title: 'Youth Tech Intake 2026',
-      subtitle: 'Open recruitment for young people entering IT pathways.',
+      id: 'pg-ccna-paid',
+      title: 'CCNA pathway (paid)',
+      subtitle: 'R550 × 6 months via website PayFast — CCNA 1, 2 and 3.',
       isRecruiting: true,
     ),
     ProgrammeHighlight(
-      id: 'pg-cyber-path',
-      title: 'Junior Cybersecurity Path',
-      subtitle: 'Structured pathway into cyber defence roles.',
+      id: 'pg-free-skills',
+      title: 'Free Skills for All',
+      subtitle: 'Self-paced Cisco NetAcad courses under Village NetAcad.',
       isRecruiting: true,
     ),
   ];
@@ -92,6 +50,7 @@ class DummyTrainingRepository implements TrainingRepository {
     required String phone,
     required String gender,
   }) async {
+    // Kept for demo/admin lead queue; primary enrol is Cisco / website pay.
     interests.add({
       'trainingId': trainingId,
       'fullName': fullName,
@@ -116,7 +75,7 @@ class DummyTrainingRepository implements TrainingRepository {
       ),
     );
     DemoHub.instance.log(
-      'Training interest (LMS): ${offer?.title ?? trainingId} by $fullName ($gender)',
+      'Training interest: ${offer?.title ?? trainingId} by $fullName ($gender)',
     );
   }
 }

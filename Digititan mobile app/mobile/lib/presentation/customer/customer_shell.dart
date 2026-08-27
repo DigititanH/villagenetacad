@@ -64,7 +64,7 @@ class _CustomerShellState extends State<CustomerShell> {
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
-          NavigationDestination(icon: Icon(Icons.school_outlined), label: 'Training'),
+          NavigationDestination(icon: Icon(Icons.school_outlined), label: 'Courses'),
           NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Academies'),
           NavigationDestination(icon: Icon(Icons.storefront_outlined), label: 'Store'),
           NavigationDestination(icon: Icon(Icons.person_outline), label: 'Profile'),

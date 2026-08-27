@@ -237,21 +237,44 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 ## Phase 9 — Academies + training (live, not dummy)
 
-### Original
-- Academy list/map from a real table (website doesn’t have this yet — new backend)  
-- Active / inactive, recruitment dates, courses  
-- Academy + NPO registration land in admin, not console print  
-- Training interest / programme apply stored per user  
-- Online vs in-person registration links  
-- Later: recommend academies by interest (cyber → X)  
+**Status (27 Aug 2026):**  
+- **Slice A — UAT PASSED:** website-parity courses, photos, light theme, pagination, Cisco / website enrol.  
+- **Slice B — WAIT:** academies table/API (**Khanyi** / website).
 
-### Meeting inserts
-| Meeting | Work | Notes |
-|---------|------|--------|
-| **#5 [W2]** | Learner **full name, gender, email** in DB | Align / export to LMS (Phase 2 was forms only) |
-| **#6 [W1→live]** | Academy register with us first | Wave 1 form → live admin queue (not Cisco-only) |
+### Blockers / owners
+| Item | Owner | Action |
+|------|--------|--------|
+| Academies table + API on live site | **Khanyi** (website) | App calls API like customers/resellers **when ready** |
+| Cisco NetAcad enrol linking | Website / Cisco ops team | Free enrol → Cisco; learner under Village NetAcad; they see enrolments in Cisco DB |
+| Paid CCNA (R550 × 6) | Website page already | App opens **`https://villagenetacad.co.za/courses/enrol`** (browser), same pattern as shop cart |
 
-**Done when:** map → province → academy is real data, applications hit an inbox/admin queue, and LMS fields exist in DB.
+### Slice A — what we *can* implement now (app)
+1. **Hardcoded courses list** in the app (mirror live website catalogue — free Skills/NetAcad titles + CCNA pathway).  
+2. **Free course CTA:** open Cisco `enrollUrl` in the system browser (same as website).  
+3. **Paid CCNA CTA:** open website **`/courses/enrol`** (PayFast Subscribe form on site) — **no in-app PayFast**.  
+4. Optional: course detail screen with “Enroll on Cisco” vs “Pay on website” based on course type.  
+5. Keep Training tab / Home featured training aligned with this static catalogue (replace pure DemoHub fiction where it conflicts).
+
+### What Phase 9 is *not* (v1)
+- Putting courses into MySQL / building a courses API  
+- Building a Village NetAcad LMS inside the app  
+- In-app PayFast for CCNA / course fees  
+- Inventing academies DB in the mobile repo before Khanyi’s API  
+
+### Slice B — once website academies API exists
+- Consume academies API (list / province / active)  
+- Academy / NPO register → admin queue (if provided; until then ASC Microsoft Form)  
+- Optional later: learner name/gender/email when DB path exists  
+
+### Original backlog (Slice B+)
+- Academy list/map from a real table  
+- Active / inactive, recruitment dates, academy metadata  
+- Meeting **#5**: learner full name, gender, email in DB when path exists  
+- Meeting **#6**: academy register with us first → live admin queue  
+
+**Slice A done when:** app shows website-parity courses; free enrol → Cisco; paid CCNA → website `/courses/enrol`.  
+**Slice A UAT (27 Aug 2026): PASSED** — theme, photos, filters, pagination, enrol CTAs.  
+**Phase 9 done when:** Slice A + academies from website API + enrol rules above.
 
 ---
 
