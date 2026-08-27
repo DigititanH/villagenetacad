@@ -8,14 +8,18 @@ if (-not (Test-Path ".\mobile\pubspec.yaml")) {
 }
 
 $branch = "cursor/phase9-wait-website-09ad"
-# Cache-bust so Windows / CDN cannot serve a stale zip after a push
+# Cache-bust so Windows / CDN cannot serve a stale zip after a push.
+# Use ${branch} — bare $branch?t= is parsed as PowerShell null-conditional.
 $bust = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-$zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/$branch?t=$bust"
-$zipPath = Join-Path $env:TEMP "vna-phase9-$bust.zip"
-$extractRoot = Join-Path $env:TEMP "vna-phase9-$bust"
+$zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/${branch}?t=${bust}"
+$zipPath = Join-Path $env:TEMP ("vna-phase9-" + $bust + ".zip")
+$extractRoot = Join-Path $env:TEMP ("vna-phase9-" + $bust)
 
-Write-Host "Downloading Phase 9 (photos) from DigititanH/$branch ..." -ForegroundColor Cyan
+Write-Host "Downloading Phase 9 (photos) from DigititanH/${branch} ..." -ForegroundColor Cyan
 Write-Host "  $zipUrl"
+if ($zipUrl -notmatch [regex]::Escape($branch)) {
+  Write-Error "Installer bug: zip URL missing branch name: $zipUrl"
+}
 Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -Headers @{
   "Cache-Control" = "no-cache"
   "Pragma" = "no-cache"
