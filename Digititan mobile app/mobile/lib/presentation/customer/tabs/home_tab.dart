@@ -11,6 +11,7 @@ import '../../../shared/widgets/demo_banner.dart';
 import '../../../shared/widgets/product_image.dart';
 import '../../../shared/widgets/product_price_text.dart';
 import '../product_detail_screen.dart';
+import '../widgets/course_image.dart';
 import '../training_detail_screen.dart';
 
 class HomeTab extends StatefulWidget {
@@ -271,8 +272,11 @@ class _TrainingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      leading: CourseImageThumb(imageUrl: offer.imageUrl, size: 56),
       title: Text(offer.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text('${offer.category} · ${offer.level} · ${offer.hours}h · ${offer.priceLabel}'),
+      subtitle: Text(
+        '${offer.category} · ${offer.level} · ${offer.hours}h · ${offer.priceLabel}',
+      ),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
     );

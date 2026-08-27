@@ -13,6 +13,10 @@
 
 ## Implemented (Slice A)
 - `WebsiteCoursesCatalogue` — 16 courses from live `/courses`
+- **Same Unsplash images** as live site (per-course `image` or category-pool hash)
+- Courses tab: image cards + category chips (All / Digital Literacy / IT Essentials / …)
+- Detail: hero image + sticky enrol CTA
+- Home hub: course thumbs
 - Training / Courses tab + detail: **Enroll on Cisco** or **Pay & enrol on website**
 - Paid URL helper: `AppConfig.villageNetAcadCoursesEnrolUrl`
 - No MySQL courses; no in-app PayFast

@@ -13,6 +13,9 @@ class TrainingOffer {
   /// Display price from website (`Free` or `R550/mo`).
   final String priceLabel;
 
+  /// Course card image (same Unsplash URLs as the website).
+  final String? imageUrl;
+
   /// Cisco NetAcad enrol URL for free courses. Null for paid website pathways.
   final String? ciscoEnrollUrl;
 
@@ -28,6 +31,7 @@ class TrainingOffer {
     required this.summary,
     this.recruitmentOpen = true,
     this.priceLabel = 'Free',
+    this.imageUrl,
     this.ciscoEnrollUrl,
     this.isPaidOnWebsite = false,
   });

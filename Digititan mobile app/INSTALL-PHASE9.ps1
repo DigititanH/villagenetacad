@@ -44,7 +44,8 @@ Copy-Item (Join-Path $pack "docs\12-LOCKED-DECISIONS.md") $docsDest -Force -Erro
 $checks = @(
   "infrastructure\courses\website_courses_catalogue.dart",
   "presentation\customer\training_detail_screen.dart",
-  "presentation\customer\tabs\training_tab.dart"
+  "presentation\customer\tabs\training_tab.dart",
+  "presentation\customer\widgets\course_image.dart"
 )
 foreach ($rel in $checks) {
   $p = Join-Path $libDest $rel
@@ -59,5 +60,5 @@ Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
-Write-Host "UAT: Courses tab -> free course -> Cisco; CCNA -> website /courses/enrol"
+Write-Host "UAT: Courses cards show website images; category chips; free -> Cisco; CCNA -> /courses/enrol"
 Write-Host "See docs\36-PHASE9-COURSES-SLICE-A.md"
