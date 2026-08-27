@@ -1,4 +1,4 @@
-# PHASE 9 - Courses photos + digital screens
+# PHASE 9 - Courses photos + app light theme
 # Run from: S:\WORK\VillageNetAcad
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -8,8 +8,7 @@ if (-not (Test-Path ".\mobile\pubspec.yaml")) {
 }
 
 $branch = "cursor/phase9-wait-website-09ad"
-# Cache-bust so Windows / CDN cannot serve a stale zip after a push.
-# Use ${branch} — bare $branch?t= is parsed as PowerShell null-conditional.
+# Cache-bust zip URL. Use ${branch} - bare $branch?t= breaks in PowerShell 7+.
 $bust = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
 $zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/${branch}?t=${bust}"
 $zipPath = Join-Path $env:TEMP ("vna-phase9-" + $bust + ".zip")
@@ -69,7 +68,7 @@ foreach ($rel in $checks) {
   if (-not (Test-Path $p)) { Write-Error "Missing after sync: $rel" }
 }
 
-# Hard proof the photo cards landed (app light theme — not website dark)
+# Proof photo cards + app light theme (not website dark)
 $tab = Join-Path $libDest "presentation\customer\tabs\training_tab.dart"
 $img = Join-Path $libDest "presentation\customer\widgets\course_image.dart"
 $tabText = Get-Content $tab -Raw
@@ -87,7 +86,6 @@ if ($imgText -notmatch "CourseDigitalTile") {
   Write-Error "Sync incomplete: course_image.dart missing CourseDigitalTile"
 }
 
-# Cleanup temp zip (best-effort)
 Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
 Remove-Item $extractRoot -Recurse -Force -ErrorAction SilentlyContinue
 
@@ -102,5 +100,5 @@ Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
 Write-Host "You MUST see: light Courses screen (same as Home/Store) + photo cards." -ForegroundColor Cyan
-Write-Host "If Courses is still dark blue, sync failed — re-download INSTALL-PHASE9.ps1."
+Write-Host "If Courses is still dark blue, sync failed - re-download INSTALL-PHASE9.ps1."
 Write-Host "See docs\36-PHASE9-COURSES-SLICE-A.md"
