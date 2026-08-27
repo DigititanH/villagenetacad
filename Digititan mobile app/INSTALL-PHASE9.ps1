@@ -82,6 +82,9 @@ if ($tabText -notmatch "DigititanColors.background") {
 if ($tabText -match "0xFF0B1220") {
   Write-Error "Sync incomplete: training_tab.dart still has website dark theme"
 }
+if ($tabText -notmatch "_kPageSizes") {
+  Write-Error "Sync incomplete: training_tab.dart missing pagination"
+}
 if ($imgText -notmatch "CourseDigitalTile") {
   Write-Error "Sync incomplete: course_image.dart missing CourseDigitalTile"
 }
@@ -90,8 +93,8 @@ Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
 Remove-Item $extractRoot -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host ""
-Write-Host "SUCCESS - Phase 9 courses (photos + app light theme) synced." -ForegroundColor Green
-Write-Host "Proof: CourseDigitalTile + DigititanColors.background (matches Home/Store)." -ForegroundColor Green
+Write-Host "SUCCESS - Phase 9 courses (photos + light theme + pagination) synced." -ForegroundColor Green
+Write-Host "Proof: CourseDigitalTile + DigititanColors.background + page sizes 5/10/15." -ForegroundColor Green
 Write-Host ""
 Write-Host "STOP the running app completely (hot reload will NOT pick this up)." -ForegroundColor Yellow
 Write-Host "Then:"
@@ -99,6 +102,6 @@ Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
-Write-Host "You MUST see: light Courses screen (same as Home/Store) + photo cards." -ForegroundColor Cyan
-Write-Host "If Courses is still dark blue, sync failed - re-download INSTALL-PHASE9.ps1."
+Write-Host "You MUST see: light Courses + photo cards + Per page (5/10/15) + Prev/Next." -ForegroundColor Cyan
+Write-Host "If Courses is still dark blue or has no pager, sync failed - re-download INSTALL-PHASE9.ps1."
 Write-Host "See docs\36-PHASE9-COURSES-SLICE-A.md"
