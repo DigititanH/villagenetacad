@@ -5,7 +5,6 @@ import '../../domain/repositories/email_sender.dart';
 import '../../domain/repositories/reseller_repository.dart';
 import '../../infrastructure/api/http_auth_repository.dart';
 import '../../infrastructure/dummy/dummy_auth_repository.dart';
-import '../../shared/config/app_config.dart';
 import '../../shared/result/result.dart';
 import '../../shared/utils/friendly_api_error.dart';
 
@@ -32,11 +31,6 @@ class RegisterWithEmail {
   }) async {
     if (name.trim().isEmpty || email.trim().isEmpty || password.length < 6) {
       return const Failure('Name, email and password (min 6) are required');
-    }
-    if (role == UserRole.reseller &&
-        AppConfig.useLiveApi &&
-        (academyName == null || academyName.trim().isEmpty)) {
-      return const Failure('Please enter the name of your academy');
     }
 
     try {

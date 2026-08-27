@@ -433,9 +433,15 @@ class _ResellerShellState extends State<ResellerShell> {
 
   Widget _dashboard() {
     final p = _profile!;
-    final shareLabel = p.codeType == ResellerCodeType.centre
-        ? 'Centre earnings · 26%'
-        : 'Your earnings · 53%';
+    final code = p.code.toUpperCase();
+    final issuedSplit =
+        code.startsWith('VNA-B-') || code.startsWith('VNA-C-');
+    final shareLabel = issuedSplit
+        ? (p.codeType == ResellerCodeType.centre
+            ? 'Centre earnings · ${p.commissionRate.toStringAsFixed(0)}%'
+            : 'Your earnings · ${p.commissionRate.toStringAsFixed(0)}%')
+        : 'Provisional code · ${p.commissionRate.toStringAsFixed(0)}% '
+            '(Ops will issue VNA-B / VNA-C later)';
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [

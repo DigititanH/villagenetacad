@@ -166,13 +166,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             if (_role == UserRole.reseller) ...[
               const SizedBox(height: 8),
+              Text(
+                live
+                    ? 'Reseller type (live): Ops later issues VNA-B (person, 53%) or '
+                        'VNA-C (centre org, 26%). Typing a centre name does NOT make '
+                        'you that centre — it only notes where you sell from. '
+                        'Leave blank if you sell independently.'
+                    : 'Optional linked academy / centre for your application.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _academy,
-                decoration: InputDecoration(
-                  labelText: live
-                      ? 'Academy / centre (required)'
-                      : 'Academy / centre (optional)',
-                  hintText: 'e.g. Lesedi Labatu Academy',
+                decoration: const InputDecoration(
+                  labelText: 'Academy / centre (optional)',
+                  hintText: 'Leave blank if independent, or type linked centre name',
                 ),
               ),
             ],

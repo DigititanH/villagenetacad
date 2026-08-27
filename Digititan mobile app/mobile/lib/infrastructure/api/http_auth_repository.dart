@@ -81,11 +81,8 @@ class HttpAuthRepository implements AuthRepository {
       'role': role == UserRole.reseller ? 'reseller' : 'customer',
     };
     if (role == UserRole.reseller) {
-      final academy = (academyName ?? '').trim();
-      if (academy.isEmpty) {
-        throw Exception('Please enter the name of your academy');
-      }
-      body['academy'] = academy;
+      // Optional: linked centre/academy name, or leave blank if independent.
+      body['academy'] = (academyName ?? '').trim();
     }
 
     final json = await _api.postJson('/api/auth/register', body);

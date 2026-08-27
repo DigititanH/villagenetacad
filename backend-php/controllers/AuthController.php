@@ -16,12 +16,9 @@ class AuthController
         }
 
         $userRole = $role === 'reseller' ? 'reseller' : 'customer';
-        if ($userRole === 'reseller') {
-            $academyName = trim((string) $academy);
-            if ($academyName === '') {
-                Response::error('Please enter the name of your academy', 400);
-            }
-        }
+        // Academy / centre name is optional. Blank = independent seller
+        // (programme-support). Typing a name does NOT make the applicant a centre.
+        $academyName = trim((string) $academy);
 
         if (User::emailExists($email)) {
             Response::error('Email already registered', 409);
