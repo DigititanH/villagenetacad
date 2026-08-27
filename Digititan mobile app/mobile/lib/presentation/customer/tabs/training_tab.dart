@@ -42,11 +42,25 @@ class _TrainingTabState extends State<TrainingTab> {
   String _category = 'All Courses';
   int _pageSize = _kDefaultPageSize;
   int _page = 1; // 1-based
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.jumpTo(0);
+    });
   }
 
   Future<void> _load() async {
@@ -89,6 +103,7 @@ class _TrainingTabState extends State<TrainingTab> {
       _category = label;
       _page = 1;
     });
+    _scrollToTop();
   }
 
   void _setPageSize(int size) {
@@ -96,6 +111,7 @@ class _TrainingTabState extends State<TrainingTab> {
       _pageSize = size;
       _page = 1;
     });
+    _scrollToTop();
   }
 
   void _goToPage(int page) {
@@ -103,6 +119,7 @@ class _TrainingTabState extends State<TrainingTab> {
     final next = page.clamp(1, max);
     if (next == _page) return;
     setState(() => _page = next);
+    _scrollToTop();
   }
 
   void _open(TrainingOffer o) {
@@ -134,6 +151,7 @@ class _TrainingTabState extends State<TrainingTab> {
           : _error != null
               ? Center(child: Text(_error!))
               : CustomScrollView(
+                  controller: _scrollController,
                   slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
