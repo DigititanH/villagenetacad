@@ -1,6 +1,7 @@
 import '../entities/product.dart';
 import '../entities/reseller.dart';
 import '../entities/shop_order.dart';
+import '../entities/withdrawal_request.dart';
 
 class PendingResellerApplication {
   final String id;
@@ -79,7 +80,7 @@ abstract class AdminRepository {
   Future<void> setProductPromotion(String productId, bool onPromotion);
 
   Future<List<IssuedResellerCode>> getIssuedCodes();
-  Future<List<dynamic>> getPendingWithdrawals();
+  Future<List<WithdrawalRequest>> getPendingWithdrawals();
   Future<void> approveWithdrawal(String id);
   Future<void> rejectWithdrawal(String id);
 

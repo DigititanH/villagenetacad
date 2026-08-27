@@ -280,6 +280,12 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 ## Phase 10 — Notifications + ops admin without developers
 
+**Status (27 Aug 2026):** Slice A — **UAT PASSED** on `cursor/phase10-ops-admin-09ad`  
+- **Ops Admin live wire-up** (orders, products, resellers, payouts) — no phpMyAdmin  
+- **In-app notifications only** — no Gmail/SMTP  
+- Ambassadors / academy queues / email alerts — later  
+- Customer Profile **Become a Reseller** hidden on live (register-as-reseller only)  
+
 ### Original
 - Payment confirmation  
 - Order status changes  
@@ -288,6 +294,16 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - Recruitment / “we’re looking for young people” on Home  
 - Ops Admin: products, promos, prices, order status, reseller approval + deactivate/lockout, academy content, ambassador queue + list + deactivate  
 - Super Admin: system/config (devs)  
+
+### This slice (A)
+- App `HttpAdminRepository` → existing live admin/reseller/order/product APIs  
+- In-app notification inbox (`/api/notifications`) — **DB only, no email**  
+- Empty states + live approve copy (codes already at register)  
+
+### Parked in Phase 10
+- Email/SMS push notifications (needs SMTP / SMS provider)  
+- Ambassador live admin API  
+- Academy org queue (Khanyi)  
 
 ### Meeting Wave 3 insert
 | Meeting | Work | Notes |

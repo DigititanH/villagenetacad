@@ -146,7 +146,10 @@ class ProfileTab extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => NotificationsScreen(user: user),
+                  builder: (_) => NotificationsScreen(
+                    user: user,
+                    container: container,
+                  ),
                 ),
               );
             },
@@ -165,7 +168,9 @@ class ProfileTab extends StatelessWidget {
             },
             child: const Text('Verify a reseller'),
           ),
-          if (!approvedReseller && !pendingReseller) ...[
+          // Live API: reseller is chosen at register (role=reseller), same as website.
+          // In-profile "Become a Reseller" only throws — hide until team adds a real path.
+          if (!AppConfig.useLiveApi && !approvedReseller && !pendingReseller) ...[
             const SizedBox(height: 10),
             OutlinedButton(
               onPressed: () {
@@ -181,7 +186,16 @@ class ProfileTab extends StatelessWidget {
               child: const Text('Become a Reseller'),
             ),
           ],
-          if (pendingReseller) ...[
+          if (AppConfig.useLiveApi &&
+              user.role == UserRole.customer) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Want to sell? Create a Reseller account at register '
+              '(same as the website). Ops Admin must approve it before login.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+          if (!AppConfig.useLiveApi && pendingReseller) ...[
             const SizedBox(height: 10),
             Container(
               width: double.infinity,
