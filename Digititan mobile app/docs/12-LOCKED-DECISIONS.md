@@ -20,16 +20,25 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 ## Desktop
 - Downloadable Windows/Mac app required (Flutter desktop later)
 
-## Training / LMS
-- Information + registration in-app
-- Learning in separate LMS
-- **Wave 2C:** store learner full name, gender, email for LMS alignment
+## Training / courses / Cisco (updated 27 Aug 2026)
+- Company has **no own LMS** for now — association is with **Cisco NetAcad**.
+- **Free / Cisco pathway:** “Enroll” follows the **website** pattern → redirect to **Cisco** to enrol; learners are under **Village NetAcad** on Cisco’s side (Cisco holds that enrolment DB — **Karabo** for Cisco linking).
+- **Do not** put a full courses catalogue in MySQL for v1 — website `/courses` is **hardcoded**; app matches that (static / same process), wait on website if they change it.
+- **Paid courses (e.g. CCNA R550 × 6 PayFast):** same as shop products — app **opens the website** enrolment/checkout page; **no in-app PayFast**.  
+  Example: website CCNA Subscribe → PayFast (shipping address on site).
 
-## Academies (Wave 1)
+## Academies (updated 27 Aug 2026)
 - New academies / orgs **register with Digititan first**
-- Cisco NetAcad may follow — do **not** Cisco-only redirect
-- **ASC registration:** same Microsoft Form as the website (Home → ASC Registration).
-  App opens that form in the browser — do not maintain a separate shortened in-app form.
+- Cisco NetAcad may follow for learning — do **not** invent a parallel LMS in the app
+- **ASC registration:** same Microsoft Form as the website (Home → ASC Registration) until website provides an academies API
+- **Academies DB / API:** website did **not** have academies in MySQL; they are **introducing** it.  
+  App waits to call academies like customers/resellers until website ships the API.  
+  **Contact: Khanyi** (website) — do not build a separate academies backend in the app first.
+- When academies exist in DB, enrolments under Village NetAcad / academy structure follow website + Cisco process (not a new MySQL courses catalogue)
+
+## Training / LMS (older Wave 2C note)
+- Information + registration in-app; learning on Cisco / external
+- **Wave 2C:** learner full name, gender, email — only when website/DB path exists (tied to academies work with Khanyi)
 
 ## Reseller model
 - Codes: Beneficiary (VNA-B) / Centre (VNA-C) — **target**; live may still issue `VNA-{hex}` until Phase 8 later slices

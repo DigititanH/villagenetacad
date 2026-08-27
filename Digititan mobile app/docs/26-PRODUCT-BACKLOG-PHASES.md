@@ -237,21 +237,35 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 ## Phase 9 — Academies + training (live, not dummy)
 
-### Original
-- Academy list/map from a real table (website doesn’t have this yet — new backend)  
-- Active / inactive, recruitment dates, courses  
-- Academy + NPO registration land in admin, not console print  
-- Training interest / programme apply stored per user  
+**Status (27 Aug 2026): WAIT on website** — do not invent academies/courses DB in the mobile repo first.
+
+### Blockers / owners
+| Item | Owner | Action |
+|------|--------|--------|
+| Academies table + API on live site | **Khanyi** (website) | App will call API like customers/resellers once it exists |
+| Cisco NetAcad enrol linking | **Karabo** | Enrol goes to Cisco; learner under Village NetAcad on Cisco side |
+| Paid CCNA (etc.) | Website PayFast pages already | App = **browser redirect** (same as shop), no in-app pay |
+
+### What Phase 9 is *not* (v1)
+- Putting website “Our Courses” list into MySQL  
+- Building a Village NetAcad LMS inside the app  
+- In-app PayFast for CCNA / course fees  
+
+### What Phase 9 becomes once website is ready
+- Consume **academies** API (list / province / active) from live backend  
+- Academy / NPO register → admin queue (if website provides it; until then ASC Microsoft Form)  
+- Training/enrol CTAs mirror website: Cisco redirect and/or website PayFast CCNA page  
+- Optional later: learner name/gender/email fields when DB path exists  
+
+### Original backlog (kept for when unblocked)
+- Academy list/map from a real table  
+- Active / inactive, recruitment dates, courses (academy metadata — not a full LMS catalogue)  
+- Academy + NPO registration land in admin  
 - Online vs in-person registration links  
-- Later: recommend academies by interest (cyber → X)  
+- Meeting **#5**: learner full name, gender, email in DB when path exists  
+- Meeting **#6**: academy register with us first → live admin queue  
 
-### Meeting inserts
-| Meeting | Work | Notes |
-|---------|------|--------|
-| **#5 [W2]** | Learner **full name, gender, email** in DB | Align / export to LMS (Phase 2 was forms only) |
-| **#6 [W1→live]** | Academy register with us first | Wave 1 form → live admin queue (not Cisco-only) |
-
-**Done when:** map → province → academy is real data, applications hit an inbox/admin queue, and LMS fields exist in DB.
+**Done when:** map → province → academy is real data from website API, enrol follows website/Cisco/PayFast rules, and app never embeds course payment.
 
 ---
 
