@@ -93,10 +93,11 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                     Expanded(
                       child: ListView(
                         children: [
-                          CourseImage(
+                          CourseDigitalTile(
                             imageUrl: offer.imageUrl,
-                            height: 240,
-                            borderRadius: BorderRadius.zero,
+                            hours: offer.hours,
+                            priceLabel: offer.priceLabel,
+                            level: offer.level,
                           ),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),

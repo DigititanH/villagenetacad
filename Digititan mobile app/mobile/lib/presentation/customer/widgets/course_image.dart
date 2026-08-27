@@ -2,63 +2,126 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/theme/digititan_theme.dart';
 
-/// Course hero / card image (website Unsplash URLs).
+/// Network course photo — fills parent (use inside AspectRatio / SizedBox).
 class CourseImage extends StatelessWidget {
   final String? imageUrl;
-  final double height;
   final BorderRadius? borderRadius;
 
   const CourseImage({
     super.key,
     required this.imageUrl,
-    this.height = 180,
     this.borderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
-    final radius = borderRadius ?? BorderRadius.circular(16);
+    final radius = borderRadius ?? BorderRadius.zero;
     final url = imageUrl?.trim();
     return ClipRRect(
       borderRadius: radius,
-      child: SizedBox(
-        width: double.infinity,
-        height: height,
-        child: url == null || url.isEmpty
-            ? _placeholder()
-            : Image.network(
-                url,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: height,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return ColoredBox(
-                    color: DigititanColors.muted.withValues(alpha: 0.25),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (_, _, _) => _placeholder(),
+      child: url == null || url.isEmpty
+          ? _placeholder()
+          : Image.network(
+              url,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              gaplessPlayback: true,
+              filterQuality: FilterQuality.medium,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return _placeholder(loading: true);
+              },
+              errorBuilder: (_, _, _) => _placeholder(broken: true),
+            ),
+    );
+  }
+
+  Widget _placeholder({bool loading = false, bool broken = false}) {
+    return ColoredBox(
+      color: const Color(0xFF0F172A),
+      child: Center(
+        child: loading
+            ? const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: DigititanColors.teal,
+                ),
+              )
+            : Icon(
+                broken ? Icons.broken_image_outlined : Icons.school_outlined,
+                size: 40,
+                color: DigititanColors.teal.withValues(alpha: 0.75),
               ),
       ),
     );
   }
+}
 
-  Widget _placeholder({double iconSize = 40}) {
-    return ColoredBox(
-      color: DigititanColors.muted.withValues(alpha: 0.35),
-      child: Center(
-        child: Icon(
-          Icons.school_outlined,
-          size: iconSize,
-          color: DigititanColors.primary,
-        ),
+/// Website-style digital course tile: photo + gradient + hours/price/level.
+class CourseDigitalTile extends StatelessWidget {
+  final String? imageUrl;
+  final int hours;
+  final String priceLabel;
+  final String level;
+
+  const CourseDigitalTile({
+    super.key,
+    required this.imageUrl,
+    required this.hours,
+    required this.priceLabel,
+    required this.level,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 16 / 10,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          CourseImage(imageUrl: imageUrl),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x00000000),
+                  Color(0x26000000),
+                  Color(0xB3000000),
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 10,
+            child: DefaultTextStyle(
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.schedule, size: 12, color: Colors.white),
+                  const SizedBox(width: 4),
+                  Text('${hours}H'),
+                  const Spacer(),
+                  Text(priceLabel.toUpperCase()),
+                  const Spacer(),
+                  Text(level.toUpperCase()),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -84,21 +147,18 @@ class CourseImageThumb extends StatelessWidget {
         width: size,
         height: size,
         child: url == null || url.isEmpty
-            ? ColoredBox(
-                color: DigititanColors.muted.withValues(alpha: 0.35),
-                child: const Icon(
-                  Icons.school_outlined,
-                  color: DigititanColors.primary,
-                ),
+            ? const ColoredBox(
+                color: Color(0xFF0F172A),
+                child: Icon(Icons.school_outlined, color: DigititanColors.teal),
               )
             : Image.network(
                 url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => ColoredBox(
-                  color: DigititanColors.muted.withValues(alpha: 0.35),
-                  child: const Icon(
+                errorBuilder: (_, _, _) => const ColoredBox(
+                  color: Color(0xFF0F172A),
+                  child: Icon(
                     Icons.broken_image_outlined,
-                    color: DigititanColors.primary,
+                    color: DigititanColors.teal,
                   ),
                 ),
               ),

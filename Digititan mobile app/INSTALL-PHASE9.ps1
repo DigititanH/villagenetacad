@@ -53,12 +53,14 @@ foreach ($rel in $checks) {
 }
 
 Write-Host ""
-Write-Host "SUCCESS - Phase 9 courses slice A is on this machine." -ForegroundColor Green
+Write-Host "SUCCESS - Phase 9 courses (photos + digital cards) synced." -ForegroundColor Green
 Write-Host ""
-Write-Host "Run:" -ForegroundColor Yellow
+Write-Host "STOP the running app completely (hot reload will NOT pick this up)." -ForegroundColor Yellow
+Write-Host "Then:"
 Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
-Write-Host "UAT: Courses cards show website images; category chips; free -> Cisco; CCNA -> /courses/enrol"
+Write-Host "You MUST see: dark Courses screen + big photo cards (like the website)." -ForegroundColor Cyan
+Write-Host "If you still see a plain light text list, the sync did not land — re-run this script."
 Write-Host "See docs\36-PHASE9-COURSES-SLICE-A.md"
