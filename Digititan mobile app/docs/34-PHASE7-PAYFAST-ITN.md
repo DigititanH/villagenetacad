@@ -1,22 +1,42 @@
-# Phase 7 — PayFast ITN (notify URL) — PARKED
+# Phase 7 — PayFast ITN (notify URL)
 
-**Status: on hold** — do not change production `.env` / `Payfast.php` until leadership is ready.
+**Status: READY TO DEPLOY** on the **live** tree only.
 
-## What it is
-After PayFast payment, ITN hits your server so orders mark as paid.
+## Critical path
 
-Target URL (when we resume):
+Live API = **`public_html/backend-php/`**
+
+Wrong (stale duplicate — do not edit):
+
+`public_html/village-netacad/backend-php/`
+
+## Goal
+
+After PayFast payment, ITN hits:
 
 `https://villagenetacad.co.za/api/payfast/notify`
 
-Live today may still show legacy:
+so orders mark as **paid**.
 
-`…/payfast/notify.php`
+## Live before fix
 
-## When we resume
-1. Edit only `village-netacad/backend-php/.env` + matching `lib/Payfast.php` (same tree as live site).
-2. Set `PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify`
-3. Deploy normalize/`getNotifyUrl` fix from this branch if needed.
-4. Confirm `/api/payfast/status` then do a small paid UAT → My orders.
+```text
+GET /api/payfast/status
+notify_url = https://www.villagenetacad.co.za/payfast/notify.php
+```
 
-Until then: leave production PayFast as-is.
+`POST /api/payfast/notify` already returns `OK`.
+
+## Deploy pack
+
+See `deploy/phase7-itn-live/README.md`.
+
+1. Edit `public_html/backend-php/.env` → `PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify`
+2. Upload `Payfast.php` → `public_html/backend-php/lib/Payfast.php`
+3. Upload `notify.php` → `public_html/payfast/notify.php` (legacy forwarder)
+
+## Smoke
+
+1. `https://villagenetacad.co.za/api/payfast/status` → `notify_url` ends with `/api/payfast/notify`
+2. Small paid checkout on site
+3. My Orders → payment status **paid**

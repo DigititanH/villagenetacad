@@ -182,13 +182,12 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
 - Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**. **Live keys done (UAT).**
 
-### This slice — parked production PayFast ITN
-- Notify URL fix (`notify.php` → `/api/payfast/notify`) is **on hold** (no prod deploys for now).  
-- See `docs/34-PHASE7-PAYFAST-ITN.md`.
+### This slice — production PayFast ITN
+- Notify URL fix (`notify.php` → `/api/payfast/notify`) — **ready** on live tree `public_html/backend-php/` only.  
+- See `docs/34-PHASE7-PAYFAST-ITN.md` + `deploy/phase7-itn-live/`.
 
 ### Parked / later in Phase 7
 - Live email OTP (Gmail/cPanel SMTP) — **on hold**  
-- PayFast ITN notify URL — **on hold**  
 - SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
@@ -201,7 +200,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 | **#10 [W2]** | Same PayFast merchant as the website | **Done** (live) |
 | **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout |
 | **#2 [W2]** | Live SMS + email OTP | **On hold** |
-| **#3 [W3]** | Tight security | ITN notify **on hold**; more later |
+| **#3 [W3]** | Tight security | ITN notify **ready to deploy** on correct live tree |
 | **#8 [W3]** | Lawyer-ready legal + **POPI** | **Parked** |
 
 **Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
