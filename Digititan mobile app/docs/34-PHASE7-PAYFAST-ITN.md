@@ -1,14 +1,21 @@
 # Phase 7 — PayFast ITN (notify URL)
 
-**Status: READY TO DEPLOY** on the **live** tree only.
+**Status: RETRY on live tree** — previous attempts often edited the wrong folder.
 
 ## Critical path
 
 Live API = **`public_html/backend-php/`**
 
-Wrong (stale duplicate — do not edit):
+| Path | Use |
+|------|-----|
+| `public_html/backend-php/.env` | Set `PAYFAST_NOTIFY_URL` |
+| `public_html/backend-php/lib/Payfast.php` | Normalize + build notify URL |
+| `public_html/payfast/notify.php` | Legacy forwarder (site-root `/payfast/`) |
 
-`public_html/village-netacad/backend-php/`
+Wrong places (do not use for this fix):
+
+- `public_html/village-netacad/backend-php/` (stale duplicate)
+- `public_html/backend-php/payfast/` (stub/log-only folder — PayFast does not call this)
 
 ## Goal
 

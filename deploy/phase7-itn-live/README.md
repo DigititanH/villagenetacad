@@ -1,9 +1,18 @@
 # Phase 7 — PayFast ITN live pack
 
-**Live tree only:** `public_html/backend-php/`  
-**Do NOT edit:** `public_html/village-netacad/backend-php/` (stale duplicate — burns deploys)
+**Live API tree only:** `public_html/backend-php/`  
+**Do NOT edit:** `public_html/village-netacad/backend-php/` (stale duplicate)
 
-## Live today (before fix)
+## Wrong vs right folders
+
+| Path | Role |
+|------|------|
+| `public_html/backend-php/` | Live API + `.env` + `lib/Payfast.php` |
+| `public_html/payfast/notify.php` | Public legacy ITN URL PayFast already calls |
+| `public_html/backend-php/payfast/` | **WRONG** for ITN — a stub here does nothing for live payments |
+| `public_html/village-netacad/...` | **WRONG** — stale duplicate |
+
+Live status today still shows:
 
 ```text
 GET https://villagenetacad.co.za/api/payfast/status
@@ -20,21 +29,21 @@ POST https://villagenetacad.co.za/api/payfast/notify → OK
 
 1. `.env` — point ITN at the API route  
 2. `lib/Payfast.php` — normalize legacy `…/payfast/notify.php` → `/api/payfast/notify`  
-3. Optional `public_html/payfast/notify.php` — keep old URL working by calling the same controller  
+3. `public_html/payfast/notify.php` — forward old URL into the real controller (marks orders paid)
 
-## Steps (cPanel / Afrihost File Manager or FTP)
+## Steps (cPanel File Manager / FTP)
 
 ### 1) Edit `.env` (required)
 
 File: **`public_html/backend-php/.env`**
 
-Set (or replace) this line:
+Set / replace:
 
 ```env
 PAYFAST_NOTIFY_URL=https://villagenetacad.co.za/api/payfast/notify
 ```
 
-Keep your existing `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYFAST_SANDBOX`.
+Keep existing `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYFAST_SANDBOX`.
 
 ### 2) Upload `Payfast.php` (required)
 
@@ -42,17 +51,21 @@ Overwrite:
 
 `public_html/backend-php/lib/Payfast.php`
 
-### 3) Upload legacy `notify.php` (recommended)
+### 3) Upload legacy forwarder (required if PayFast still uses notify.php)
 
 Overwrite:
 
 `public_html/payfast/notify.php`
 
-(so any PayFast dashboard still using the old path still hits the real controller)
+**Not** `public_html/backend-php/payfast/notify.php`.
 
-### 4) PayFast dashboard (if you use Integration settings)
+That file must `require` `../backend-php/bootstrap.php` and call `PayfastController::notify()`.
 
-Notify URL should be:
+If you only have a stub that logs `$_POST` and echoes "PayFast ITN endpoint active", replace it — it never marks orders paid.
+
+### 4) PayFast dashboard (optional but good)
+
+Notify URL:
 
 `https://villagenetacad.co.za/api/payfast/notify`
 
@@ -68,7 +81,7 @@ Expect:
 "notify_url":"https://villagenetacad.co.za/api/payfast/notify"
 ```
 
-Then: small paid checkout → order shows **paid** in My Orders (ITN fired).
+Then: small paid checkout → My Orders → payment status **paid**.
 
 ## Download (jsDelivr)
 
