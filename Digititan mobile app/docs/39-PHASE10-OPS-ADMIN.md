@@ -26,6 +26,22 @@
 Ops user must have website role **`admin`** (PHP `Auth::authorize('admin')`).  
 Sign in on the app with that account + live API base URL.
 
+## UAT (27 Aug 2026): **PASSED**
+1. Login as live admin → Ops shell — PASS  
+2. Dashboard loads — PASS  
+3. Orders tab — PASS  
+4. Order status update — PASS  
+5. Resellers list — PASS  
+6. Approve/reject pending — PASS  
+7. Deactivate/reactivate — PASS  
+8. Products — PASS  
+9. Payouts empty (no pending) — PASS (expected)  
+10. Ambassadors “not on live API” — PASS  
+11. Notifications inbox opens — PASS  
+
+### Follow-up from UAT
+Live Profile no longer shows **Become a Reseller** (that path only errored — register as reseller at signup, same as website). Demo mode keeps the button for decks.
+
 ## Sync
 ```powershell
 cd S:\WORK\VillageNetAcad
@@ -34,12 +50,3 @@ cd mobile
 flutter pub get
 flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 ```
-
-## UAT
-1. Login as live admin  
-2. Dashboard shows real counts  
-3. Resellers: pending approve/reject; deactivate/reactivate  
-4. Orders: change status  
-5. Products: price / stock / add  
-6. Payouts: pending withdrawals approve/reject  
-7. Profile → Notifications: opens (may be empty — OK, no email)
