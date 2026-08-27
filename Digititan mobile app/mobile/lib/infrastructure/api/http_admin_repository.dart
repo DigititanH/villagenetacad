@@ -4,7 +4,6 @@ import '../../domain/entities/revenue_split.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/repositories/admin_repository.dart';
-import '../../shared/config/app_config.dart';
 import 'api_client.dart';
 
 /// Live Ops Admin APIs on villagenetacad.co.za.
