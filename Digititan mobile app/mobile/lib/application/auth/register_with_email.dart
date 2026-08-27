@@ -10,7 +10,7 @@ import '../../shared/utils/friendly_api_error.dart';
 
 /// Register flow:
 /// - Dummy: create unverified user → optional reseller apply → OTP email
-/// - Live API: POST /api/auth/register (academy for reseller); JWT session; no app OTP
+/// - Live API: POST /api/auth/register with reseller_kind + academy
 class RegisterWithEmail {
   final AuthRepository _authRepository;
   final EmailSender _emailSender;
@@ -28,9 +28,23 @@ class RegisterWithEmail {
     required String password,
     required UserRole role,
     String? academyName,
+    String? resellerKind,
   }) async {
     if (name.trim().isEmpty || email.trim().isEmpty || password.length < 6) {
       return const Failure('Name, email and password (min 6) are required');
+    }
+
+    if (role == UserRole.reseller) {
+      final kind = (resellerKind ?? 'independent').trim().toLowerCase();
+      final academy = (academyName ?? '').trim();
+      if (kind == 'affiliated' && academy.isEmpty) {
+        return const Failure(
+          'Enter the centre / academy you are affiliated with',
+        );
+      }
+      if (kind == 'centre' && academy.isEmpty) {
+        return const Failure('Enter your centre / academy organisation name');
+      }
     }
 
     try {
@@ -40,6 +54,7 @@ class RegisterWithEmail {
         password: password,
         role: role,
         academyName: academyName,
+        resellerKind: resellerKind,
       );
 
       // Dummy path only — live API already creates reseller_profiles.

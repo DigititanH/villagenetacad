@@ -1,31 +1,15 @@
-# Phase 7 SMTP + reseller register UX notes
+# SMTP parked + reseller VNA-B / VNA-C register
 
-## Email not arriving after register
+## SMTP
+Live email send is **parked** again (host SMTP not delivering). Register still works; verify-mail is best-effort only.
 
-1. Confirm `.env` in **`public_html/backend-php/.env`** (not village-netacad duplicate):
-```env
-SMTP_HOST=localhost
-SMTP_PORT=587
-SMTP_USER=info@villagenetacad.co.za
-SMTP_PASS=YOUR_MAILBOX_PASSWORD
-```
-2. If no mail with `localhost`, change to:
-```env
-SMTP_HOST=mail.villagenetacad.co.za
-```
-3. Confirm `lib/Mailer.php` is the **real SMTP** version (not the short `mail()` stub).
-4. Check spam. Register again with a fresh email after host change.
+## Reseller register (meeting model)
+| Choice | Code | Your cut | Notes |
+|--------|------|----------|-------|
+| Independent (no centre) | `VNA-B-*` | **53%** | Rest Digititan |
+| Affiliated with a centre | `VNA-B-*` | **53%** | Centre **26%** · Digititan **21%** (name stored) |
+| I am a centre | `VNA-C-*` | **26%** | Rest Digititan |
 
-## Reseller / centre confusion (app)
-
-- Live codes today are provisional `VNA-{hex}` (e.g. `VNA-C1A2B3D4`).
-- App bug: hex starting with `C` was wrongly shown as **Centre 26%**. Fixed: only `VNA-C-*` / `VNA-B-*` count.
-- Typing an academy name does **not** make you a centre — Ops issues VNA-B / VNA-C later.
-- Academy field is now **optional** (blank = independent).
-
-### Live backend upload (optional academy)
-
-Overwrite:
-`public_html/backend-php/controllers/AuthController.php`
-
-(from this branch / PR)
+### Live upload
+1. App: sync this branch `mobile/lib`
+2. Backend: overwrite `public_html/backend-php/controllers/AuthController.php` from `deploy/reseller-vna-bc-live/`

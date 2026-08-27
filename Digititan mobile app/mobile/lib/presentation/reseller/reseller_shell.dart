@@ -433,15 +433,13 @@ class _ResellerShellState extends State<ResellerShell> {
 
   Widget _dashboard() {
     final p = _profile!;
-    final code = p.code.toUpperCase();
-    final issuedSplit =
-        code.startsWith('VNA-B-') || code.startsWith('VNA-C-');
-    final shareLabel = issuedSplit
-        ? (p.codeType == ResellerCodeType.centre
-            ? 'Centre earnings · ${p.commissionRate.toStringAsFixed(0)}%'
-            : 'Your earnings · ${p.commissionRate.toStringAsFixed(0)}%')
-        : 'Provisional code · ${p.commissionRate.toStringAsFixed(0)}% '
-            '(Ops will issue VNA-B / VNA-C later)';
+    final shareLabel = p.codeType == ResellerCodeType.centre
+        ? 'Centre (VNA-C) · ${p.commissionRate.toStringAsFixed(0)}%'
+        : (p.academyName != null &&
+                p.academyName!.toLowerCase().contains('independent'))
+            ? 'Independent (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}% · rest Digititan'
+            : 'Beneficiary (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}%'
+                '${p.academyName != null && p.academyName!.trim().isNotEmpty ? ' · centre noted for 26%' : ''}';
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
