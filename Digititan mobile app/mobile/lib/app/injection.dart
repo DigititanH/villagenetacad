@@ -18,6 +18,7 @@ import '../../domain/repositories/reseller_repository.dart';
 import '../../domain/repositories/store_repository.dart';
 import '../../domain/repositories/training_repository.dart';
 import '../../infrastructure/api/api_client.dart';
+import '../../infrastructure/api/http_admin_repository.dart';
 import '../../infrastructure/api/http_auth_repository.dart';
 import '../../infrastructure/api/http_reseller_repository.dart';
 import '../../infrastructure/api/http_store_repository.dart';
@@ -71,17 +72,19 @@ class AppContainer {
       storeRepository = HttpStoreRepository(api: apiClient!);
       // Phase 8: live verify + earnings/withdraw; clients CRM stays empty.
       resellerRepository = HttpResellerRepository(api: apiClient!);
+      // Phase 10: live ops admin (no SMTP; ambassadors/leads still empty).
+      adminRepository = HttpAdminRepository(api: apiClient!);
     } else {
       apiClient = null;
       authRepository = DummyAuthRepository();
       storeRepository = DummyStoreRepository();
       resellerRepository = DummyResellerRepository();
+      adminRepository = DummyAdminRepository();
     }
 
     emailSender = ConsoleEmailSender();
     trainingRepository = DummyTrainingRepository();
     academyRepository = DummyAcademyRepository();
-    adminRepository = DummyAdminRepository();
 
     signInWithEmail = SignInWithEmail(authRepository);
     registerWithEmail = RegisterWithEmail(

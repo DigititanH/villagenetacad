@@ -2,6 +2,7 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/revenue_split.dart';
 import '../../domain/entities/shop_order.dart';
+import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/repositories/admin_repository.dart';
 
 /// Shared in-memory demo state so Customer / Reseller / Admin flows connect.
@@ -715,20 +716,3 @@ class OrgApplication {
   });
 }
 
-class WithdrawalRequest {
-  final String id;
-  final String resellerEmail;
-  final String resellerName;
-  final double amount;
-  final DateTime createdAt;
-  String status;
-
-  WithdrawalRequest({
-    required this.id,
-    required this.resellerEmail,
-    required this.resellerName,
-    required this.amount,
-    required this.createdAt,
-    this.status = 'pending',
-  });
-}

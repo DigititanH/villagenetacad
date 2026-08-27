@@ -1,5 +1,6 @@
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/revenue_split.dart';
+import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/repositories/reseller_repository.dart';
 import '../../shared/config/app_config.dart';
 import 'demo_hub.dart';
