@@ -221,7 +221,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - Month-end statement from real sales — **GET /api/resellers/statement** (slice 2)  
 - Withdrawals last calendar day + Super Admin approval (live, not DemoHub) — **slice 1: server gate done**  
 
-**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — see `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
+**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — live deployed + **UAT PASSED** (clients + statement, 28 Aug 2026). See `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
 
 ### Meeting inserts
 | Meeting | Work | Notes |
