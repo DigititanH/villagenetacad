@@ -11,6 +11,9 @@ class AuthController
         $role = $body['role'] ?? '';
         $academy = $body['academy'] ?? '';
         $resellerKind = strtolower(trim((string) ($body['reseller_kind'] ?? '')));
+        // Mobile app sends client=mobile (+ X-VNA-Client). Website register must not
+        // use app@ welcome mail — website team owns their own outbound email.
+        $fromMobile = self::isMobileClient($body);
 
         if (!$name || !$email || !$password) {
             Response::error('Name, email and password are required', 400);
@@ -94,35 +97,38 @@ class AuthController
             }
         }
 
-        try {
-            $site = rtrim((string) Client::getClientUrl(), '/');
-            $safeName = htmlspecialchars($name);
-            $safeEmail = htmlspecialchars($email);
-            $roleLine = $userRole === 'reseller'
-                ? '<p>Your <strong>reseller</strong> application is with us. Ops must approve it before you can sign in as a reseller.</p>'
-                : '<p>You registered as a <strong>customer</strong>. You can sign in on the app and the website with this email right away.</p>';
+        // Welcome from app@ only for mobile-app register (shared .env / API with website).
+        if ($fromMobile) {
+            try {
+                $site = rtrim((string) Client::getClientUrl(), '/');
+                $safeName = htmlspecialchars($name);
+                $safeEmail = htmlspecialchars($email);
+                $roleLine = $userRole === 'reseller'
+                    ? '<p>Your <strong>reseller</strong> application is with us. Ops must approve it before you can sign in as a reseller.</p>'
+                    : '<p>You registered as a <strong>customer</strong>. You can sign in on the app and the website with this email right away.</p>';
 
-            Mailer::send([
-                'to' => $email,
-                'subject' => 'Welcome to Village NetAcad',
-                'html' => "<h2>Welcome, {$safeName}!</h2>
-                    <p>Your Village NetAcad account is ready.</p>
-                    <p><strong>Email:</strong> {$safeEmail}</p>
-                    {$roleLine}
-                    <h3>What you can do</h3>
-                    <ul>
-                      <li><strong>Shop</strong> — browse kit and merch in the app, then complete checkout on the website (PayFast).</li>
-                      <li><strong>Training</strong> — free Cisco NetAcad skills courses and the paid CCNA pathway via the website.</li>
-                      <li><strong>Academies</strong> — explore academy / NPO pathways on the site and in the app.</li>
-                      <li><strong>Reseller</strong> — apply from the app or site; approved sellers get a VNA-B or VNA-C code and wallet.</li>
-                    </ul>
-                    <p>Website: <a href=\"{$site}\">{$site}</a></p>
-                    <p>Use the same email and password on the <strong>Village NetAcad</strong> mobile app and on the website.</p>
-                    <p>Questions? Reply to this email or write to <a href=\"mailto:info@villagenetacad.co.za\">info@villagenetacad.co.za</a>.</p>
-                    <p>— Village NetAcad · Powered by Digititan</p>",
-            ]);
-        } catch (Throwable $e) {
-            error_log('[Auth] welcome mail skipped: ' . $e->getMessage());
+                Mailer::send([
+                    'to' => $email,
+                    'subject' => 'Welcome to Village NetAcad',
+                    'html' => "<h2>Welcome, {$safeName}!</h2>
+                        <p>Your Village NetAcad account is ready.</p>
+                        <p><strong>Email:</strong> {$safeEmail}</p>
+                        {$roleLine}
+                        <h3>What you can do</h3>
+                        <ul>
+                          <li><strong>Shop</strong> — browse kit and merch in the app, then complete checkout on the website (PayFast).</li>
+                          <li><strong>Training</strong> — free Cisco NetAcad skills courses and the paid CCNA pathway via the website.</li>
+                          <li><strong>Academies</strong> — explore academy / NPO pathways on the site and in the app.</li>
+                          <li><strong>Reseller</strong> — apply from the app or site; approved sellers get a VNA-B or VNA-C code and wallet.</li>
+                        </ul>
+                        <p>Website: <a href=\"{$site}\">{$site}</a></p>
+                        <p>Use the same email and password on the <strong>Village NetAcad</strong> mobile app and on the website.</p>
+                        <p>Questions? Reply to this email or write to <a href=\"mailto:info@villagenetacad.co.za\">info@villagenetacad.co.za</a>.</p>
+                        <p>— Village NetAcad · Powered by Digititan</p>",
+                ]);
+            } catch (Throwable $e) {
+                error_log('[Auth] welcome mail skipped: ' . $e->getMessage());
+            }
         }
 
         if ($userRole === 'reseller' && $approvalStatus === 'pending') {

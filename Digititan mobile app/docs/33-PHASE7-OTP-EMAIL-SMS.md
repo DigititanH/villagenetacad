@@ -9,7 +9,7 @@ Related: `cursor/phase7-smtp-cpanel-09ad` (SMTP Mailer pack)
 |------|--------|
 | Google Sign-In in app | **Removed** (website has none) |
 | cPanel mailbox SMTP (`app@villagenetacad.co.za`) | **LIVE** — ping UAT passed 28 Aug 2026 |
-| Register email | **Welcome message** (no verify link) — upload `deploy/phase7-welcome-mail-live/` |
+| Register email | **Welcome** from `app@` — **mobile app only** (website register does not use this mail) |
 | In-app OTP code screen | Dummy / offline only |
 | SMS OTP | Parked (provider TBD) |
 | Lawyer POPI / legal | Parked |
