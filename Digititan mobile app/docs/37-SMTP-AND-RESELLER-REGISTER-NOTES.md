@@ -1,15 +1,15 @@
 # SMTP + reseller VNA-B / VNA-C register
 
-## SMTP — **LIVE** (28 Aug 2026)
+## SMTP — **LIVE** (28 Aug 2026) — **mobile app only**
 
-Mailbox: **`app@villagenetacad.co.za`** (cPanel)  
-Host: `villagenetacad.co.za` · Port **465** · From name: Village NetAcad  
-Ops inbox: `info@villagenetacad.co.za` (`SITE_EMAIL`)
+Mailbox: **`app@villagenetacad.co.za`** (Afrihost cPanel — ours)  
+Host: `villagenetacad.co.za` · Port **465** · From: Village NetAcad  
+Ops inbox: `info@` (`SITE_EMAIL`) — receive only  
 
-Ping UAT passed. Keep one SMTP block in `.env` (remove duplicates).  
-Do **not** leave `smtp-ping.php` on production.
+**Website team configures their own email** on their side. See `docs/41-SMTP-APP-VS-WEBSITE.md`.
 
-See `docs/33-PHASE7-OTP-EMAIL-SMS.md` for app register → verify UAT.
+Ping UAT passed. Keep one SMTP block in `.env`. Delete `smtp-ping.php` after tests.  
+See `docs/33-PHASE7-OTP-EMAIL-SMS.md` for register → welcome UAT.
 
 ## Reseller register (meeting model)
 | Choice | Code | Your cut | Notes |
