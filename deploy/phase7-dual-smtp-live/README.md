@@ -16,8 +16,11 @@ Mobile Flutter sends `X-VNA-Client: mobile` (+ `client: mobile` on register).
 |-------|--------------|-----------------|
 | Register welcome | **no** app@ mail | welcome from `app@` |
 | Reseller ops notify | skipped (their mail later) | from `app@` to `SITE_EMAIL` |
-| Forgot password | uses `SMTP_*` if set | uses `APP_SMTP_*` |
-| Other Mailer sends | web / app by client header | `APP_SMTP_*` |
+| Forgot password | uses `SMTP_*` if set (else silent) | uses `APP_SMTP_*` |
+| PayFast ITN / paid-order ops | forced `channel=app` → `app@` | same |
+| Other Mailer sends | `SMTP_*` (web channel) | `APP_SMTP_*` |
+
+Website browser calls never fall back to `app@`. System hooks (ITN) pass `channel => app` explicitly.
 
 ## Live `.env` change (important)
 

@@ -94,14 +94,12 @@ class Mailer
         if ($f === 'web' || $f === 'website') {
             return 'web';
         }
+        // Flutter app only — never treat bare website/browser as app.
         if (Request::isMobileClient()) {
             return 'app';
         }
-        // Background jobs (PayFast ITN): prefer mobile mailbox if present.
-        $app = self::profile('app');
-        if ($app['user'] !== '' && $app['pass'] !== '') {
-            return 'app';
-        }
+        // Website / browser / unknown HTTP → web profile (SMTP_*).
+        // PayFast ITN and other system hooks must pass channel => 'app' explicitly.
         return 'web';
     }
 
