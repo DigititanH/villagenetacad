@@ -1,4 +1,4 @@
-# PHASE 8 SLICE 2 - Ledger + clients + statement
+# PHASE 8 SLICE 2 - Ledger + clients + statement (+ live Ops Admin)
 # Run from: S:\WORK\VillageNetAcad
 # ASCII-only for Windows PowerShell 5.
 $ErrorActionPreference = "Stop"
@@ -9,12 +9,14 @@ if (-not (Test-Path ".\mobile\pubspec.yaml")) {
 }
 
 $branch = "cursor/phase8-ledger-clients-09ad"
-$zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/$branch"
-$zipPath = Join-Path $env:TEMP "vna-phase8-ledger.zip"
-$extractRoot = Join-Path $env:TEMP "vna-phase8-ledger"
+# Bust CDN/cache so Windows always gets the latest branch tip.
+$cacheBust = [int][double]::Parse((Get-Date -UFormat %s))
+$zipUrl = "https://codeload.github.com/DigititanH/villagenetacad/zip/refs/heads/$branch" + "?t=$cacheBust"
+$zipPath = Join-Path $env:TEMP "vna-phase8-ledger-$cacheBust.zip"
+$extractRoot = Join-Path $env:TEMP "vna-phase8-ledger-$cacheBust"
 
-Write-Host "Downloading Phase 8 ledger/clients from DigititanH/${branch} ..." -ForegroundColor Cyan
-Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -Headers @{ "Cache-Control" = "no-cache" }
+Write-Host "Downloading Phase 8 from DigititanH/${branch} (t=$cacheBust) ..." -ForegroundColor Cyan
+Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -Headers @{ "Cache-Control" = "no-cache"; "Pragma" = "no-cache" }
 
 if (Test-Path $extractRoot) { Remove-Item $extractRoot -Recurse -Force }
 Expand-Archive -Path $zipPath -DestinationPath $extractRoot -Force
@@ -41,9 +43,14 @@ if (-not (Test-Path $docsDest)) { New-Item -ItemType Directory -Path $docsDest |
 Copy-Item (Join-Path $pack "docs\38-PHASE8-LEDGER-CLIENTS.md") $docsDest -Force -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $pack "docs\35-PHASE8-RESELLER-PRODUCTION.md") $docsDest -Force -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $pack "docs\26-PRODUCT-BACKLOG-PHASES.md") $docsDest -Force -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $pack "docs\39-ROLE-SMOKE-UAT.md") $docsDest -Force -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $pack "INSTALL-PHASE8-LEDGER.ps1") (Get-Location) -Force -ErrorAction SilentlyContinue
 
 $checks = @(
   "infrastructure\api\http_reseller_repository.dart",
+  "infrastructure\api\http_admin_repository.dart",
+  "infrastructure\dummy\dummy_reseller_repository.dart",
+  "domain\entities\withdrawal_request.dart",
   "presentation\reseller\reseller_shell.dart"
 )
 foreach ($rel in $checks) {
@@ -51,17 +58,17 @@ foreach ($rel in $checks) {
   if (-not (Test-Path $p)) { Write-Error "Missing after sync: $rel" }
 }
 
+$resellerDart = Get-Content (Join-Path $libDest "infrastructure\dummy\dummy_reseller_repository.dart") -Raw
+if ($resellerDart -notmatch "withdrawal_request\.dart") {
+  Write-Error "Stale lib: dummy_reseller_repository.dart missing withdrawal_request import. Re-run INSTALL."
+}
+
 Write-Host ""
-Write-Host "SUCCESS - Phase 8 ledger/clients lib is on this machine." -ForegroundColor Green
+Write-Host "SUCCESS - Phase 8 lib is on this machine (incl. live Ops Admin)." -ForegroundColor Green
 Write-Host ""
 Write-Host "Run:" -ForegroundColor Yellow
 Write-Host "  cd mobile"
 Write-Host "  flutter pub get"
 Write-Host "  flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za"
 Write-Host ""
-Write-Host "Backend (public_html/backend-php only) - see deploy/phase8-ledger-clients-live/README.md"
-Write-Host "  1) Run migration.sql in phpMyAdmin"
-Write-Host "  2) Upload ResellersController + OrderFulfillment (+ Router routes)"
-Write-Host "  3) Does NOT change PayFast ITN / notify.php"
-Write-Host ""
-Write-Host "See docs\38-PHASE8-LEDGER-CLIENTS.md"
+Write-Host "See docs\38-PHASE8-LEDGER-CLIENTS.md and docs\39-ROLE-SMOKE-UAT.md"
