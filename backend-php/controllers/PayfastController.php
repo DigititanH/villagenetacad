@@ -1,89 +1,13 @@
 <?php
 
-/**
- * PayFast controller — ITN auto-fulfill hardened for live cPanel.
- *
- * Compatible with the richer live lib/Payfast.php (do not need to overwrite Payfast.php).
- * Upload to: public_html/backend-php/controllers/PayfastController.php
- */
 class PayfastController
 {
     private static function parsePaymentId(string $mPaymentId): ?array
     {
-        if (!preg_match('/^(order|donation|ccna)-(\d+)$/', $mPaymentId, $m)) {
+        if (!preg_match('/^(order|donation)-(\d+)$/', $mPaymentId, $m)) {
             return null;
         }
         return ['type' => $m[1], 'id' => (int) $m[2]];
-    }
-
-    private static function itnLog(string $message): void
-    {
-        if (class_exists('Payfast') && method_exists('Payfast', 'itnLog')) {
-            Payfast::itnLog($message);
-            return;
-        }
-        $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
-        error_log('PayFast ITN: ' . $message);
-        $dir = dirname(__DIR__) . '/payfast';
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-        if (is_dir($dir) && is_writable($dir)) {
-            @file_put_contents($dir . '/payfast.log', $line, FILE_APPEND | LOCK_EX);
-        }
-    }
-
-    /** Local signature check — works with live generateSignature($data, $pp, $useAttributeOrder). */
-    private static function localSignatureOk(array $data): bool
-    {
-        if (method_exists('Payfast', 'verifyItnSignature')) {
-            return Payfast::verifyItnSignature($data);
-        }
-
-        $received = (string) ($data['signature'] ?? '');
-        if ($received === '' || !method_exists('Payfast', 'generateSignature')) {
-            return false;
-        }
-
-        $passphrases = array_values(array_unique([
-            method_exists('Payfast', 'passphrase') ? Payfast::passphrase() : '',
-            '',
-        ]));
-
-        foreach ($passphrases as $pp) {
-            // Live API: generateSignature($data, $passphrase = null, $useAttributeOrder = true)
-            // false = preserve POST field order (ITN); true = FIELD_ORDER (forms)
-            foreach ([false, true] as $useAttributeOrder) {
-                try {
-                    $expected = Payfast::generateSignature($data, $pp, $useAttributeOrder);
-                    if (hash_equals((string) $expected, $received)) {
-                        return true;
-                    }
-                } catch (Throwable $e) {
-                    // ignore and try next
-                }
-            }
-            // 2-arg fallback
-            try {
-                $expected = Payfast::generateSignature($data, $pp);
-                if (hash_equals((string) $expected, $received)) {
-                    return true;
-                }
-            } catch (Throwable $e) {
-                // ignore
-            }
-        }
-        return false;
-    }
-
-    private static function merchantOk(array $data): bool
-    {
-        if (method_exists('Payfast', 'itnMerchantMatches')) {
-            return Payfast::itnMerchantMatches($data);
-        }
-        $posted = trim((string) ($data['merchant_id'] ?? ''));
-        $ours = trim(method_exists('Payfast', 'merchantId') ? (string) Payfast::merchantId() : '');
-        return $posted !== '' && $ours !== '' && hash_equals($ours, $posted);
     }
 
     public static function status(): void
@@ -118,13 +42,23 @@ class PayfastController
         $blockers = [];
 
         if (Payfast::isNotifyUrlLocal($notifyUrl)) {
-            $warnings[] = 'notify_url uses localhost — payments may work, but PayFast cannot confirm them.';
+            $warnings[] = 'notify_url uses localhost — payments may work, but PayFast cannot confirm them. Use ngrok: PAYFAST_NOTIFY_URL=https://YOUR-ID.ngrok-free.app/api/payfast/notify';
         }
         if (Payfast::passphrase() !== '') {
-            $warnings[] = 'Passphrase is set — it must match PayFast → Settings → Security exactly.';
+            $warnings[] = 'Passphrase is set — it must match PayFast → Settings → Security exactly, or remove PAYFAST_PASSPHRASE from .env if disabled.';
         }
 
-        $probe = method_exists('Payfast', 'probeCredentials') ? Payfast::probeCredentials() : [];
+        $probe = Payfast::probeCredentials();
+        if (!empty($probe['invalid_merchant_id'])) {
+            $blockers[] = 'Invalid merchant ID — copy Merchant ID and Merchant Key from https://sandbox.payfast.co.za (Settings → Integration).';
+        }
+        if (!empty($probe['signature_mismatch'])) {
+            $blockers[] = 'Signature rejected — check PAYFAST_PASSPHRASE matches your PayFast security settings.';
+        }
+        if (!empty($probe['merchant_key_required'])) {
+            $blockers[] = 'PayFast requires merchant_key in the payment form (server misconfiguration).';
+        }
+
         Response::json([
             'ok' => count($blockers) === 0,
             'sandbox' => Payfast::isSandbox(),
@@ -134,7 +68,11 @@ class PayfastController
             'warnings' => $warnings,
             'blockers' => $blockers,
             'probe' => $probe,
-            'sample_signature' => $sample['signature'] ?? null,
+            'sample_signature' => $sample['signature'],
+            'tips' => [
+                'Credentials in .env must be from the SAME environment as PAYFAST_SANDBOX (sandbox vs live).',
+                'Restart the PHP server after any .env change.',
+            ],
         ]);
     }
 
@@ -170,8 +108,6 @@ class PayfastController
             'cancelUrl' => $cancelUrl,
         ]);
 
-        $fields = array_map(static fn ($v) => is_scalar($v) ? (string) $v : $v, $fields);
-
         Response::json(['url' => Payfast::processUrl(), 'fields' => $fields]);
     }
 
@@ -192,10 +128,8 @@ class PayfastController
         $hidden = $sample;
         $hidden['signature'] = '[hidden]';
         Response::json([
-            'signature_string' => method_exists('Payfast', 'buildSignatureString')
-                ? Payfast::buildSignatureString($sample)
-                : null,
-            'signature' => $sample['signature'] ?? null,
+            'signature_string' => Payfast::buildSignatureString($sample),
+            'signature' => $sample['signature'],
             'fields' => $hidden,
         ]);
     }
@@ -219,19 +153,15 @@ class PayfastController
             Response::error('Order is already paid', 400);
         }
 
-        try {
-            $fields = Payfast::buildPaymentPayload([
-                'amount' => $order['total'],
-                'itemName' => "Village Netacad Order $orderId",
-                'paymentId' => "order-$orderId",
-                'email' => Auth::$user['email'],
-                'name' => Auth::$user['name'],
-                'returnPath' => "/payment/success?type=order&id=$orderId",
-                'cancelPath' => "/payment/cancel?type=order&id=$orderId",
-            ]);
-        } catch (Throwable $e) {
-            Response::error($e->getMessage(), 400);
-        }
+        $fields = Payfast::buildPaymentPayload([
+            'amount' => $order['total'],
+            'itemName' => "Village Netacad Order #$orderId",
+            'paymentId' => "order-$orderId",
+            'email' => Auth::$user['email'],
+            'name' => Auth::$user['name'],
+            'returnPath' => "/payment/success?type=order&id=$orderId",
+            'cancelPath' => "/payment/cancel?type=order&id=$orderId",
+        ]);
 
         Response::json(['url' => Payfast::processUrl(), 'fields' => $fields]);
     }
@@ -251,19 +181,15 @@ class PayfastController
             Response::error('Donation is already completed', 400);
         }
 
-        try {
-            $fields = Payfast::buildPaymentPayload([
-                'amount' => $donation['amount'],
-                'itemName' => "Village Netacad Donation $donationId",
-                'paymentId' => "donation-$donationId",
-                'email' => $donation['email'] ?: 'donor@villagenetacad.co.za',
-                'name' => $donation['donor_name'] ?: 'Donor',
-                'returnPath' => "/payment/success?type=donation&id=$donationId",
-                'cancelPath' => "/payment/cancel?type=donation&id=$donationId",
-            ]);
-        } catch (Throwable $e) {
-            Response::error($e->getMessage(), 400);
-        }
+        $fields = Payfast::buildPaymentPayload([
+            'amount' => $donation['amount'],
+            'itemName' => "Village Netacad Donation #$donationId",
+            'paymentId' => "donation-$donationId",
+            'email' => $donation['email'] ?: 'donor@villagenetacad.co.za',
+            'name' => $donation['donor_name'] ?: 'Donor',
+            'returnPath' => "/payment/success?type=donation&id=$donationId",
+            'cancelPath' => "/payment/cancel?type=donation&id=$donationId",
+        ]);
 
         Response::json(['url' => Payfast::processUrl(), 'fields' => $fields]);
     }
@@ -274,45 +200,49 @@ class PayfastController
         echo 'OK';
 
         if (function_exists('fastcgi_finish_request')) {
-            @fastcgi_finish_request();
+            fastcgi_finish_request();
         } else {
             if (ob_get_level()) {
-                @ob_end_flush();
+                ob_end_flush();
             }
-            @flush();
+            flush();
         }
 
         try {
             $data = $_POST;
             $mPaymentId = (string) ($data['m_payment_id'] ?? '');
-            self::itnLog(
+            Payfast::itnLog(
                 'hit m_payment_id=' . $mPaymentId
                 . ' status=' . ($data['payment_status'] ?? '')
                 . ' amount_gross=' . ($data['amount_gross'] ?? '')
                 . ' keys=' . implode(',', array_keys($data))
             );
 
-            if (!self::merchantOk($data)) {
-                self::itnLog('REJECTED merchant_id mismatch or missing');
-                return;
-            }
-
-            $localOk = self::localSignatureOk($data);
+            $localOk = Payfast::verifyItnSignature($data);
             $hostOk = Payfast::validateItnWithPayFast($data);
+            $merchantOk = Payfast::itnMerchantMatches($data);
 
-            // Either host VALID or local signature — Afrihost curl to PayFast often fails.
-            if (!$localOk && !$hostOk) {
-                self::itnLog('REJECTED local_sig=0 host_valid=0 — order left pending');
+            if (!$merchantOk) {
+                Payfast::itnLog('REJECTED merchant_id mismatch or missing');
                 return;
             }
-            self::itnLog(
+
+            // Either PayFast host VALID or a matching local signature is enough.
+            // Afrihost often fails outbound validate (curl); local sig then must pass.
+            if (!$localOk && !$hostOk) {
+                Payfast::itnLog(
+                    'REJECTED local_sig=0 host_valid=0 — order left pending'
+                );
+                return;
+            }
+            Payfast::itnLog(
                 'accepted local_sig=' . ($localOk ? '1' : '0')
                 . ' host_valid=' . ($hostOk ? '1' : '0')
             );
 
             $parsed = self::parsePaymentId($mPaymentId);
             if (!$parsed) {
-                self::itnLog('unknown m_payment_id ' . $mPaymentId);
+                Payfast::itnLog('unknown m_payment_id ' . $mPaymentId);
                 return;
             }
 
@@ -323,53 +253,41 @@ class PayfastController
                         "UPDATE orders SET payment_status = 'failed', updated_at = NOW() WHERE id = ?",
                         [$parsed['id']]
                     );
-                } elseif ($parsed['type'] === 'donation') {
+                } else {
                     Database::queryRun(
                         "UPDATE donations SET payment_status = 'failed' WHERE id = ?",
                         [$parsed['id']]
                     );
-                } elseif ($parsed['type'] === 'ccna') {
-                    Database::queryRun(
-                        "UPDATE ccna_enrolments SET payment_status = 'failed', updated_at = NOW() WHERE id = ?",
-                        [$parsed['id']]
-                    );
                 }
-                self::itnLog('non-COMPLETE for ' . $mPaymentId);
+                Payfast::itnLog('non-COMPLETE status for ' . $mPaymentId . ' → failed');
                 return;
             }
 
             $pfPaymentId = $data['pf_payment_id'] ?? $data['m_payment_id'] ?? '';
-            $token = $data['token'] ?? $data['subscription_token'] ?? null;
 
             if ($parsed['type'] === 'order') {
                 $order = Database::queryGet('SELECT * FROM orders WHERE id = ?', [$parsed['id']]);
                 if (!$order) {
-                    self::itnLog('order not found id=' . $parsed['id']);
+                    Payfast::itnLog('order not found id=' . $parsed['id']);
                     return;
                 }
                 if ($order['payment_status'] === 'paid') {
-                    self::itnLog('order already paid id=' . $parsed['id']);
+                    Payfast::itnLog('order already paid id=' . $parsed['id']);
                     return;
                 }
 
                 $paidAmount = (float) ($data['amount_gross'] ?? $data['amount_net'] ?? 0);
                 if (abs($paidAmount - (float) $order['total']) > 0.01) {
-                    self::itnLog("amount mismatch $paidAmount vs {$order['total']}");
+                    Payfast::itnLog("amount mismatch $paidAmount vs {$order['total']}");
                     return;
                 }
 
                 Database::queryRun('UPDATE orders SET payment_intent_id = ? WHERE id = ?', [$pfPaymentId, $parsed['id']]);
                 OrderFulfillment::fulfill($parsed['id']);
-                self::itnLog('FULFILLED order id=' . $parsed['id'] . ' referral=' . ($order['referral_code'] ?? ''));
+                Payfast::itnLog('FULFILLED order id=' . $parsed['id'] . ' referral=' . ($order['referral_code'] ?? ''));
             } elseif ($parsed['type'] === 'donation') {
                 $donation = Database::queryGet('SELECT * FROM donations WHERE id = ?', [$parsed['id']]);
                 if (!$donation || $donation['payment_status'] === 'completed') {
-                    return;
-                }
-
-                $paidAmount = (float) ($data['amount_gross'] ?? $data['amount_net'] ?? 0);
-                if ($paidAmount > 0 && abs($paidAmount - (float) $donation['amount']) > 0.01) {
-                    self::itnLog("donation amount mismatch $paidAmount vs {$donation['amount']}");
                     return;
                 }
 
@@ -388,51 +306,10 @@ class PayfastController
                         <p><strong>Amount:</strong> R' . number_format((float) $donation['amount'], 2) . '</p>
                         <p><strong>PayFast ref:</strong> ' . htmlspecialchars((string) $pfPaymentId) . '</p>',
                 ]);
-                self::itnLog('donation completed id=' . $parsed['id']);
-            } elseif ($parsed['type'] === 'ccna') {
-                $enrolment = Database::queryGet('SELECT * FROM ccna_enrolments WHERE id = ?', [$parsed['id']]);
-                if (!$enrolment || $enrolment['payment_status'] === 'active') {
-                    return;
-                }
-
-                $paidAmount = (float) ($data['amount_gross'] ?? $data['amount_net'] ?? 0);
-                if ($paidAmount > 0 && abs($paidAmount - (float) $enrolment['amount']) > 0.01) {
-                    self::itnLog("CCNA amount mismatch $paidAmount vs {$enrolment['amount']}");
-                    return;
-                }
-
-                Database::queryRun(
-                    "UPDATE ccna_enrolments
-                     SET payment_status = 'active',
-                         payment_intent_id = ?,
-                         subscription_token = COALESCE(?, subscription_token),
-                         updated_at = NOW()
-                     WHERE id = ?",
-                    [$pfPaymentId, $token ?: null, $parsed['id']]
-                );
-
-                Mailer::send([
-                    'to' => Site::email(),
-                    'replyTo' => $enrolment['email'] ?: null,
-                    'subject' => 'CCNA subscription paid: ' . $enrolment['course_title'],
-                    'html' => '<p><strong>Enrolment ID:</strong> ' . $parsed['id'] . '</p>
-                        <p><strong>Course:</strong> ' . htmlspecialchars($enrolment['course_title']) . '</p>
-                        <p><strong>Student:</strong> ' . htmlspecialchars($enrolment['full_name']) . ' (' . htmlspecialchars($enrolment['email']) . ')</p>
-                        <p><strong>Amount:</strong> R' . number_format((float) $enrolment['amount'], 2) . '</p>
-                        <p><strong>PayFast ref:</strong> ' . htmlspecialchars((string) $pfPaymentId) . '</p>',
-                ]);
-
-                Mailer::send([
-                    'to' => $enrolment['email'],
-                    'subject' => 'Your Village NetAcad CCNA subscription is active',
-                    'html' => '<p>Hi ' . htmlspecialchars($enrolment['full_name']) . ',</p>
-                        <p>Thank you. Your PayFast subscription for <strong>' . htmlspecialchars($enrolment['course_title']) . '</strong> is active.</p>
-                        <p>— Village NetAcad</p>',
-                ]);
-                self::itnLog('ccna activated id=' . $parsed['id']);
+                Payfast::itnLog('donation completed id=' . $parsed['id']);
             }
         } catch (Throwable $e) {
-            self::itnLog('error: ' . $e->getMessage());
+            Payfast::itnLog('error: ' . $e->getMessage());
         }
     }
 }
