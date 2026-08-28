@@ -140,7 +140,30 @@ class Payfast
         return md5(self::buildSignatureString($data, $passphrase, $usePostedOrder, $useUrlEncode));
     }
 
-    /** Try ITN signature variants used by PayFast sandbox vs live. */
+    /** Append one line to backend-php/payfast/payfast.log (best-effort). */
+    public static function itnLog(string $message): void
+    {
+        $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n";
+        error_log('PayFast ITN: ' . $message);
+        $dirs = [
+            dirname(__DIR__) . '/payfast',
+            dirname(__DIR__, 2) . '/backend-php/payfast',
+        ];
+        foreach ($dirs as $dir) {
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+            if (is_dir($dir) && is_writable($dir)) {
+                @file_put_contents($dir . '/payfast.log', $line, FILE_APPEND | LOCK_EX);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Try ITN signature variants (sandbox vs live, encode, field order, passphrase on/off).
+     * Wrong PAYFAST_PASSPHRASE in .env is a common live failure — empty passphrase is tried too.
+     */
     public static function verifyItnSignature(array $data): bool
     {
         $received = (string) ($data['signature'] ?? '');
@@ -153,13 +176,24 @@ class Payfast
             [false, false], // attribute order + pfEncode (outbound form style)
             [false, true],  // attribute order + urlencode
         ];
-        foreach ($variants as [$posted, $urlEnc]) {
-            $expected = self::generateSignature($data, null, $posted, $urlEnc);
-            if (hash_equals($expected, $received)) {
-                return true;
+        $passphrases = array_values(array_unique([self::passphrase(), '']));
+        foreach ($passphrases as $pp) {
+            foreach ($variants as [$posted, $urlEnc]) {
+                $expected = self::generateSignature($data, $pp, $posted, $urlEnc);
+                if (hash_equals($expected, $received)) {
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    /** Merchant id on the ITN must match our .env (anti-spoof when host validate is down). */
+    public static function itnMerchantMatches(array $data): bool
+    {
+        $posted = trim((string) ($data['merchant_id'] ?? ''));
+        $ours = trim(self::merchantId());
+        return $posted !== '' && $ours !== '' && hash_equals($ours, $posted);
     }
 
     public static function formatAmount(float $amount): string
@@ -216,6 +250,11 @@ class Payfast
         }
         $postData = implode('&', $params);
 
+        if (!function_exists('curl_init')) {
+            self::itnLog('host validate skipped — curl missing');
+            return false;
+        }
+
         $ch = curl_init(self::validateUrl());
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
@@ -225,8 +264,22 @@ class Payfast
             CURLOPT_TIMEOUT => 30,
         ]);
         $text = curl_exec($ch);
+        $errno = curl_errno($ch);
+        $err = curl_error($ch);
+        $http = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        return trim((string) $text) === 'VALID';
+
+        $trimmed = trim((string) $text);
+        $ok = $trimmed === 'VALID';
+        if (!$ok) {
+            self::itnLog(
+                'host validate failed http=' . $http
+                . ' curl_errno=' . $errno
+                . ' curl_err=' . ($err !== '' ? $err : '-')
+                . ' body=' . substr(preg_replace('/\s+/', ' ', $trimmed), 0, 120)
+            );
+        }
+        return $ok;
     }
 
     public static function statusPayload(): array
@@ -235,8 +288,9 @@ class Payfast
             'configured' => self::isConfigured(),
             'sandbox' => self::isSandbox(),
             'process_url' => self::processUrl(),
-            'notify_url' => self::getApiBaseUrl() . '/api/payfast/notify',
+            'notify_url' => self::getNotifyUrl(),
             'has_passphrase' => self::passphrase() !== '',
+            'min_amount' => 5,
         ];
     }
 

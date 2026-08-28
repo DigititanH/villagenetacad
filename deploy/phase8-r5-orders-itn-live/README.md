@@ -1,79 +1,49 @@
-# Phase 8 — R5 paid-order fix (My Orders + ITN + wallets)
+# Phase 8 — ITN auto-fulfill fix
 
-**Live API tree only:** `public_html/backend-php/`
+**Why order 17 stayed `pending`:** PayFast hit `notify.php` (returned OK), but the controller required **both** a perfect local signature **and** PayFast host `VALID`. On Afrihost the host validate curl often fails, and/or passphrase encoding mismatches — so fulfill never ran.
 
-## Symptoms this pack fixes
+**Fix:** accept **either** local signature **or** host VALID (still requires matching `merchant_id` + amount + COMPLETE).
 
-1. **My Orders** showed only order # / status / amount — no product name or image (`order_items` has no name/image; API must JOIN `products`).
-2. **Wallets stayed R0** after PayFast COMPLETE — ITN never called `OrderFulfillment::fulfill()`, or live `OrderFulfillment.php` is missing the 53/26/21 credit logic.
+## Upload (cPanel File Manager)
 
-## Upload (cPanel File Manager / FTP)
+| File in this folder | Live path |
+|---------------------|-----------|
+| `PayfastController.php` | `public_html/backend-php/controllers/PayfastController.php` |
+| `notify.php` | `public_html/payfast/notify.php` |
 
-Overwrite these under **`public_html/backend-php/`**:
+**Do not overwrite** `lib/Payfast.php` — keep your current live payment builder.
 
-| Local file | Live path |
-|------------|-----------|
-| `OrdersController.php` | `controllers/OrdersController.php` |
-| `PayfastController.php` | `controllers/PayfastController.php` |
-| `Payfast.php` | `lib/Payfast.php` |
-| `OrderFulfillment.php` | `lib/OrderFulfillment.php` |
+`notify.php` is the URL already in status:  
+`https://www.villagenetacad.co.za/payfast/notify.php`
 
-Do **not** touch `public/payfast/notify.php` if it already bootstraps the API and calls `PayfastController::notify()`.
+## After upload — quick smoke test
 
-## After upload — diagnose this R5 payment (phpMyAdmin)
+1. Open (should still say OK):  
+   `https://www.villagenetacad.co.za/payfast/notify.php`
+2. Check log file:  
+   `public_html/backend-php/payfast/payfast.log`  
+   (created on first ITN / POST)
+
+## UAT — next R5 paid order
+
+1. Checkout with referral **`VNA-B-067FA503`**
+2. Complete PayFast (real R5)
+3. phpMyAdmin:
 
 ```sql
-SELECT id, user_id, total, payment_status, status, referral_code, created_at
-FROM orders
-ORDER BY id DESC
-LIMIT 5;
+SELECT id, total, payment_status, referral_code
+FROM orders ORDER BY id DESC LIMIT 3;
 
-SELECT * FROM commissions WHERE order_id = <ORDER_ID>;
-
-SELECT id, referral_code, wallet_balance, total_earned
+SELECT referral_code, wallet_balance, total_earned
 FROM reseller_profiles
 WHERE referral_code IN ('VNA-B-067FA503', 'VNA-C-3D1342F6');
 ```
 
-| Result | Meaning |
-|--------|---------|
-| `payment_status = pending` | PayFast took money but ITN did not fulfill — use recover script below |
-| `payment_status = paid` but wallets still 0 | `referral_code` blank, or old `OrderFulfillment` — re-upload fulfill then recover once |
-| `referral_code` NULL/empty | No commission possible for that order |
+**Pass:** new order becomes `paid` **without** `_fulfill_once.php`, seller +R2.65, centre +R1.30.
 
-### Recover this R5 payment (after uploading `OrderFulfillment.php`)
+**Fail:** order stays `pending` → open `payfast.log` and paste the last lines here.
 
-Create `public_html/backend-php/public/_fulfill_once.php`:
+## Optional: Orders name/image
 
-```php
-<?php
-require_once dirname(__DIR__) . '/bootstrap.php';
-$id = (int) ($_GET['id'] ?? 0);
-if ($id < 1) { http_response_code(400); echo 'id required'; exit; }
-$order = Database::queryGet('SELECT id, payment_status, total, referral_code FROM orders WHERE id = ?', [$id]);
-if (!$order) { http_response_code(404); echo 'not found'; exit; }
-
-if ($order['payment_status'] !== 'paid') {
-    OrderFulfillment::fulfill($id);
-} else {
-    OrderFulfillment::ensureCommissions($id);
-}
-
-$after = Database::queryGet('SELECT id, payment_status, status, referral_code FROM orders WHERE id = ?', [$id]);
-$comms = Database::queryAll('SELECT * FROM commissions WHERE order_id = ?', [$id]);
-$wallets = Database::queryAll(
-    "SELECT id, referral_code, wallet_balance, total_earned FROM reseller_profiles
-     WHERE referral_code IN ('VNA-B-067FA503', 'VNA-C-3D1342F6')"
-);
-header('Content-Type: application/json');
-echo json_encode(['before' => $order, 'after' => $after, 'commissions' => $comms, 'wallets' => $wallets]);
-```
-
-Visit once: `https://villagenetacad.co.za/_fulfill_once.php?id=<ORDER_ID>`  
-Then **delete** `_fulfill_once.php`.
-
-Expect on a R5 affiliated sale (`referral_code = VNA-B-067FA503`, academy Nkuna Centre): seller ≈ **R2.65**, centre ≈ **R1.30**.
-
-## My Orders (name + image)
-
-Only `OrdersController.php` is required for product name/image. After overwrite, reopen **Profile → Orders** (pull to refresh / leave and re-enter). List and detail both need `name` + `image` from the JOIN.
+If My Orders still lacks product name/thumbnail, also upload `OrdersController.php` from this pack to  
+`public_html/backend-php/controllers/OrdersController.php`.
