@@ -1,7 +1,15 @@
-# SMTP parked + reseller VNA-B / VNA-C register
+# SMTP + reseller VNA-B / VNA-C register
 
-## SMTP
-Live email send is **parked** (host SMTP not delivering). Register still works; verify-mail is best-effort only.
+## SMTP — **LIVE** (28 Aug 2026)
+
+Mailbox: **`app@villagenetacad.co.za`** (cPanel)  
+Host: `villagenetacad.co.za` · Port **465** · From name: Village NetAcad  
+Ops inbox: `info@villagenetacad.co.za` (`SITE_EMAIL`)
+
+Ping UAT passed. Keep one SMTP block in `.env` (remove duplicates).  
+Do **not** leave `smtp-ping.php` on production.
+
+See `docs/33-PHASE7-OTP-EMAIL-SMS.md` for app register → verify UAT.
 
 ## Reseller register (meeting model)
 | Choice | Code | Your cut | Notes |

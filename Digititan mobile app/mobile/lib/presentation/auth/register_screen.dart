@@ -119,8 +119,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: const Text('Account created'),
         content: Text(
           'You are signed in on the app as ${user.email}.\n\n'
-          'Same account as the website — use the same email and password on '
-          'villagenetacad.co.za.',
+          'Check your inbox for a verify link from '
+          'app@villagenetacad.co.za (same as the website).\n\n'
+          'Use the same email and password on villagenetacad.co.za.',
         ),
         actions: [
           TextButton(
