@@ -30,6 +30,16 @@ Windows sync: `INSTALL-PHASE7-SMTP.ps1`
 | # | Step | Pass? |
 |---|------|-------|
 | S1–S5 | Register + inbox + sign-in | **PASS** |
-| M1 | Website register → **no** `app@` welcome | optional spot-check |
+| M1 | Website register → **no** `app@` welcome | **PASS** |
 | M2 | App register → welcome from `app@` | **PASS** |
 | M3 | `.env` uses `APP_SMTP_*` for app@ | **PASS** |
+
+## Next UAT (email + app)
+
+| # | Step | Notes |
+|---|------|-------|
+| F1 | App **forgot password** | API exists; **no app screen yet** — build or API-only test |
+| F2 | Website forgot password | Uses `SMTP_*` (`info@` if set) — website team path |
+| F3 | Reseller apply from **app** | Ops mail to `info@` from `app@` |
+| F4 | Paid order (R5) | In-app notify + ops mail via `channel=app` (optional; costs R5) |
+| F5 | Ops order status change | Buyer in-app **Order update** (already N5 PASS) |
