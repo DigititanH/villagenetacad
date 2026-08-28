@@ -188,7 +188,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - See `docs/34-PHASE7-PAYFAST-ITN.md` and `docs/38-PHASE8-LEDGER-CLIENTS.md`.
 
 ### Parked / later in Phase 7
-- Live email OTP (Gmail/cPanel SMTP) — **on hold**  
+- Live email via cPanel `app@` SMTP — **LIVE** (ping + Mailer UAT 28 Aug 2026); app register dialog points to inbox verify link  
 - SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
