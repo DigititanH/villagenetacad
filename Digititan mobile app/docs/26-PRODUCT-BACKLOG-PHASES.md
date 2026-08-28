@@ -213,15 +213,15 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 **Slice 1 (this branch):** live verify API + server R100 / last-day withdraw + app `HttpResellerRepository`.
 
 ### Original
-- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **issued at register** (reseller UX branch; UAT passed)  
+- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **issued at register** (UAT passed 27 Aug 2026)  
 - Independent seller → Digititan programme-support — **53% at register + fulfill**  
-- Beneficiary under a centre: sales split **53 / 26 / 21** — **built in repo (slice 2); live deploy PARKED** (no phpMyAdmin / no live PHP upload)  
-- Clients: bought / pending / confirmed / did not buy — **built in repo; live PARKED**  
-- Reseller sees their earnings; Digititan 21% for ops/statements — **built in repo; live PARKED**  
-- Month-end statement from real sales — **built in repo; live PARKED**  
+- Beneficiary under a centre: sales split **53 / 26 / 21** — **OrderFulfillment + clients + statement** (slice 2)  
+- Clients: bought / pending / confirmed / did not buy — **live API + app** (slice 2)  
+- Reseller sees their earnings; Digititan 21% for ops/statements — **statement + profile share totals** (slice 2)  
+- Month-end statement from real sales — **GET /api/resellers/statement** (slice 2)  
 - Withdrawals last calendar day + Super Admin approval (live, not DemoHub) — **slice 1: server gate done**  
 
-**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — see `docs/38-PHASE8-LEDGER-CLIENTS.md` (**parked**).  
+**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — see `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
 
 ### Meeting inserts
 | Meeting | Work | Notes |

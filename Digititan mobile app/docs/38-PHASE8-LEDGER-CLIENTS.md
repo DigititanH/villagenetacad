@@ -5,12 +5,12 @@
 **Live tree:** `public_html/backend-php/` only  
 **Not touched:** PayFast ITN, `notify.php`, SMTP
 
-## Live deploy status (27 Aug 2026): **PARKED**
-User chose **not** to run phpMyAdmin / live DB migration or upload PHP for this slice.  
-**Do not** run `migration.sql` or overwrite live `ResellersController` / `OrderFulfillment` / `Router` until leadership asks.  
-Code stays in the repo/PR ready for later. Live site keeps today’s commission behaviour (flat rate only).
+## Live deploy status (28 Aug 2026): **DEPLOYED**
+- phpMyAdmin: `reseller_clients` + `commissions.party` / `share_percent`  
+- PHP uploaded: `ResellersController`, `OrderFulfillment`, `Router`  
+- App: sync this branch (includes reseller Independent/Affiliated/Centre register UX)
 
-## What we built (in repo only — not live)
+## What we built
 
 ### 1. Auto 53 / 26 / 21 ledger (`OrderFulfillment.php`)
 On paid fulfill (same call ITN already makes — **ITN file unchanged**):

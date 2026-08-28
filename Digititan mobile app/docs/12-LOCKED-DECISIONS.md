@@ -41,11 +41,13 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 - **Wave 2C:** learner full name, gender, email — only when website/DB path exists (tied to academies work with Khanyi)
 
 ## Reseller model
-- Codes: Beneficiary (VNA-B) / Centre (VNA-C) — issued at register (reseller UX); live hex codes may remain on older accounts
+- Codes: **VNA-B-*** (beneficiary / independent) vs **VNA-C-*** (centre) — issued at register
+- Independent (no centre): **53%** seller · rest Digititan
+- Affiliated with centre: **53%** seller · **26%** centre · **21%** Digititan (auto on fulfill when live ledger deployed)
+- Register as centre: **26%** centre · rest Digititan
 - Month-end withdrawals only (**server-enforced** in Phase 8 slice 1)
 - **Minimum withdrawal: R100** (UI + **server** in Phase 8 slice 1)
-- Split: **53%** / **26%** / **21%** — built in Phase 8 slice 2 repo; **live deploy parked** (no phpMyAdmin until asked)
-- Clients CRM + monthly statement API — Phase 8 slice 2 (**live parked**)
+- Clients CRM + monthly statement API — Phase 8 slice 2
 - **Wave 2A / Phase 8 slice 1:** buyer verifies reseller via code → `GET /api/resellers/verify/{code}`
 
 ## OTP

@@ -321,6 +321,9 @@ Withdrawals: last calendar day of the month only · min R${AppConfig.minWithdraw
 
   ResellerCodeType _codeTypeFrom(String code) {
     final upper = code.trim().toUpperCase();
+    // Live provisional codes look like VNA-2D23BA54 or VNA-C1A2B3D4 (hex after
+    // one hyphen). Only explicit issued forms VNA-C-* / VNA-B-* are centre /
+    // beneficiary. Do NOT treat "VNA-C" + hex as a centre code.
     if (upper.startsWith('VNA-C-')) return ResellerCodeType.centre;
     if (upper.startsWith('VNA-B-')) return ResellerCodeType.beneficiary;
     return ResellerCodeType.beneficiary;

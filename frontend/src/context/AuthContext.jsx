@@ -32,8 +32,13 @@ export function AuthProvider({ children }) {
     return res.data.user;
   };
 
-  const register = async (name, email, password, role, academy) => {
-    const res = await api.post("/auth/register", { name, email, password, role, academy });
+  const register = async (name, email, password, role, academy, resellerKind) => {
+    const payload = { name, email, password, role };
+    if (role === "reseller") {
+      payload.academy = academy || "";
+      payload.reseller_kind = resellerKind || "independent";
+    }
+    const res = await api.post("/auth/register", payload);
     if (res.data.pending) {
       return { ...res.data.user, pending: true };
     }
