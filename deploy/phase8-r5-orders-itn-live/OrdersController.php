@@ -15,10 +15,7 @@ class OrdersController
         }
 
         $reseller = null;
-        if (Auth::$user['role'] !== 'admin') {
-            if ($referralCode === '') {
-                Response::error('A reseller referral code is required to place an order', 400);
-            }
+        if ($referralCode !== '') {
             $reseller = Database::queryGet(
                 "SELECT id, commission_rate FROM reseller_profiles WHERE referral_code = ? AND status = 'approved'",
                 [$referralCode]
@@ -26,11 +23,6 @@ class OrdersController
             if (!$reseller) {
                 Response::error('Invalid or inactive reseller referral code', 400);
             }
-        } elseif ($referralCode !== '') {
-            $reseller = Database::queryGet(
-                "SELECT id, commission_rate FROM reseller_profiles WHERE referral_code = ? AND status = 'approved'",
-                [$referralCode]
-            );
         }
 
         $total = 0.0;
@@ -56,6 +48,10 @@ class OrdersController
         }
 
         $payfastEnabled = Payfast::isConfigured();
+        if ($payfastEnabled && $total < 5) {
+            Response::error('PayFast orders must total at least R5.00', 400);
+        }
+
         $order = Database::queryRun(
             "INSERT INTO orders (user_id, total, shipping_address, payment_status, referral_code) VALUES (?, ?, ?, 'pending', ?)",
             [Auth::$user['id'], $total, json_encode($shippingAddress), $referralCode ?: null]
@@ -102,6 +98,7 @@ class OrdersController
             [Auth::$user['id']]
         );
         foreach ($orders as &$order) {
+            // order_items has no name/image — join products so My Orders list + detail can show them
             $order['items'] = Database::queryAll(
                 'SELECT oi.*, p.name, p.image
                  FROM order_items oi

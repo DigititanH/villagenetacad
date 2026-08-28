@@ -76,25 +76,6 @@ class OrderFulfillment
         return Database::queryGet('SELECT * FROM orders WHERE id = ?', [$orderId]);
     }
 
-    /**
-     * Credit commissions for an order that is already paid but has no commission rows
-     * (e.g. ITN marked paid with an older fulfill, or referral was fixed after pay).
-     * Does not touch stock or payment_status.
-     */
-    public static function ensureCommissions(int $orderId): array
-    {
-        $order = Database::queryGet('SELECT * FROM orders WHERE id = ?', [$orderId]);
-        if (!$order) {
-            throw new RuntimeException('Order not found');
-        }
-        self::creditCommissions($order);
-        self::markClientBought($order);
-        return [
-            'order' => Database::queryGet('SELECT id, payment_status, total, referral_code FROM orders WHERE id = ?', [$orderId]),
-            'commissions' => Database::queryAll('SELECT * FROM commissions WHERE order_id = ?', [$orderId]),
-        ];
-    }
-
     private static function creditCommissions(array $order): void
     {
         $orderId = (int) $order['id'];
