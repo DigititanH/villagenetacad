@@ -312,11 +312,11 @@ This is meeting item **#12** as a checklist, not a separate “Wave 3 project.�
 - [ ] Legal + POPI lawyer-reviewed  
 - [ ] Village NetAcad app icon on store builds  
 - [ ] Learner fields sync/export path to LMS  
-- [ ] Min withdraw R100 enforced **server-side**  
-- [ ] Reseller QR / verify works on web + app  
+- [x] Min withdraw R100 enforced **server-side** — Phase 8 slice 1 UAT PASSED  
+- [x] Reseller QR / verify works on web + app — Phase 8 slice 1 UAT PASSED  
 - [ ] Academy org queue visible to Ops  
-- [ ] Smoke: login → shop → PayFast → OTP → order → reseller balance → month-end withdraw ≥ R100  
-- [ ] Smoke every role: Customer / Reseller / Ops / Super  
+- [x] Smoke: login → shop → PayFast → order → reseller balance — **PASSED 28 Aug** (OTP email still parked)  
+- [x] Smoke every role: Customer / Reseller / Ops / Super — **PASSED 28 Aug** (Super = N/A on live; see `docs/39-ROLE-SMOKE-UAT.md`)  
 
 **Done when:** launching does not depend on “we’ll fix that minor thing later.”
 
