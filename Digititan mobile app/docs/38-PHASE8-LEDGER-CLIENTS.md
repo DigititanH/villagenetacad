@@ -5,10 +5,20 @@
 **Live tree:** `public_html/backend-php/` only  
 **Not touched:** PayFast ITN, `notify.php`, SMTP
 
-## Live deploy status (28 Aug 2026): **DEPLOYED**
+## Live deploy status (28 Aug 2026): **DEPLOYED + UAT PASSED**
 - phpMyAdmin: `reseller_clients` + `commissions.party` / `share_percent`  
 - PHP uploaded: `ResellersController`, `OrderFulfillment`, `Router`  
 - App: sync this branch (includes reseller Independent/Affiliated/Centre register UX)
+
+### Mobile UAT (28 Aug 2026): **PASSED**
+1. Approved reseller login — PASS  
+2. Clients tab — PASS  
+3. Add client — PASS  
+4. Change status (pending → bought) — PASS  
+5–6. Earnings statement (Dashboard → Earnings statement) — PASS  
+7–8. Profile / verify — covered / OK  
+
+Real PayFast sale to prove 53/26/21 wallet credit — optional later (not required for this UAT).
 
 ## What we built
 
@@ -39,9 +49,8 @@ Centre match: approved `VNA-C-*` whose `academy` **or** registration name equals
 App: `INSTALL-PHASE8-LEDGER.ps1`
 
 ## UAT (after live upload + migration)
-1. Clients: add → list → change status → reload  
-2. Statement: open Earnings statement → month header  
-3. Ledger (careful): one test paid order with affiliated referral + matching centre name → seller + centre wallets; Digititan line in statement  
+**Clients + statement UAT PASSED (28 Aug 2026).**  
+Optional later: one test paid order to prove multi-party wallet credit.  
 
 ## Still later
 - Stronger centre link than name match (store centre referral code at register)
