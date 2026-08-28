@@ -6,15 +6,12 @@
 
 ## Upload (cPanel File Manager)
 
-| File in this folder | Live path |
-|---------------------|-----------|
-| `PayfastController.php` | `public_html/backend-php/controllers/PayfastController.php` |
-| `notify.php` | `public_html/payfast/notify.php` |
+| File in this folder | Live path | Action |
+|---------------------|-----------|--------|
+| `PayfastController.php` | `public_html/backend-php/controllers/PayfastController.php` | **Overwrite** |
+| — | `public_html/backend-php/public/payfast/notify.php` | **Leave as-is** (yours is already good) |
 
-**Do not overwrite** `lib/Payfast.php` — keep your current live payment builder.
-
-`notify.php` is the URL already in status:  
-`https://www.villagenetacad.co.za/payfast/notify.php`
+**Do not overwrite** `lib/Payfast.php` or `notify.php`.
 
 ## After upload — quick smoke test
 
