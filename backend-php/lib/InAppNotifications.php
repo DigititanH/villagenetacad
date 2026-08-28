@@ -52,7 +52,7 @@ class InAppNotifications
         self::notify(
             $userId,
             'Payment confirmed',
-            "Order #$orderId is paid (R$total). We’re processing $itemsLine.",
+            "Order #$orderId is paid (R$total). We are processing $itemsLine.",
             'success'
         );
 
