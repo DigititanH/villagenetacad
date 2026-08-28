@@ -210,22 +210,39 @@ class PayfastController
 
         try {
             $data = $_POST;
-            $receivedSignature = $data['signature'] ?? '';
-            $expectedSignature = Payfast::generateSignature($data);
+            $mPaymentId = (string) ($data['m_payment_id'] ?? '');
+            Payfast::itnLog(
+                'hit m_payment_id=' . $mPaymentId
+                . ' status=' . ($data['payment_status'] ?? '')
+                . ' amount_gross=' . ($data['amount_gross'] ?? '')
+                . ' keys=' . implode(',', array_keys($data))
+            );
 
-            if (!$receivedSignature || $receivedSignature !== $expectedSignature) {
-                error_log('PayFast ITN: invalid signature');
+            $localOk = Payfast::verifyItnSignature($data);
+            $hostOk = Payfast::validateItnWithPayFast($data);
+            $merchantOk = Payfast::itnMerchantMatches($data);
+
+            if (!$merchantOk) {
+                Payfast::itnLog('REJECTED merchant_id mismatch or missing');
                 return;
             }
 
-            if (!Payfast::validateItnWithPayFast($data)) {
-                error_log('PayFast ITN: validation failed');
+            // Either PayFast host VALID or a matching local signature is enough.
+            // Afrihost often fails outbound validate (curl); local sig then must pass.
+            if (!$localOk && !$hostOk) {
+                Payfast::itnLog(
+                    'REJECTED local_sig=0 host_valid=0 — order left pending'
+                );
                 return;
             }
+            Payfast::itnLog(
+                'accepted local_sig=' . ($localOk ? '1' : '0')
+                . ' host_valid=' . ($hostOk ? '1' : '0')
+            );
 
-            $parsed = self::parsePaymentId((string) ($data['m_payment_id'] ?? ''));
+            $parsed = self::parsePaymentId($mPaymentId);
             if (!$parsed) {
-                error_log('PayFast ITN: unknown m_payment_id ' . ($data['m_payment_id'] ?? ''));
+                Payfast::itnLog('unknown m_payment_id ' . $mPaymentId);
                 return;
             }
 
@@ -242,6 +259,7 @@ class PayfastController
                         [$parsed['id']]
                     );
                 }
+                Payfast::itnLog('non-COMPLETE status for ' . $mPaymentId . ' → failed');
                 return;
             }
 
@@ -249,18 +267,24 @@ class PayfastController
 
             if ($parsed['type'] === 'order') {
                 $order = Database::queryGet('SELECT * FROM orders WHERE id = ?', [$parsed['id']]);
-                if (!$order || $order['payment_status'] === 'paid') {
+                if (!$order) {
+                    Payfast::itnLog('order not found id=' . $parsed['id']);
+                    return;
+                }
+                if ($order['payment_status'] === 'paid') {
+                    Payfast::itnLog('order already paid id=' . $parsed['id']);
                     return;
                 }
 
                 $paidAmount = (float) ($data['amount_gross'] ?? $data['amount_net'] ?? 0);
                 if (abs($paidAmount - (float) $order['total']) > 0.01) {
-                    error_log("PayFast ITN: amount mismatch $paidAmount vs {$order['total']}");
+                    Payfast::itnLog("amount mismatch $paidAmount vs {$order['total']}");
                     return;
                 }
 
                 Database::queryRun('UPDATE orders SET payment_intent_id = ? WHERE id = ?', [$pfPaymentId, $parsed['id']]);
                 OrderFulfillment::fulfill($parsed['id']);
+                Payfast::itnLog('FULFILLED order id=' . $parsed['id'] . ' referral=' . ($order['referral_code'] ?? ''));
             } elseif ($parsed['type'] === 'donation') {
                 $donation = Database::queryGet('SELECT * FROM donations WHERE id = ?', [$parsed['id']]);
                 if (!$donation || $donation['payment_status'] === 'completed') {
@@ -282,9 +306,10 @@ class PayfastController
                         <p><strong>Amount:</strong> R' . number_format((float) $donation['amount'], 2) . '</p>
                         <p><strong>PayFast ref:</strong> ' . htmlspecialchars((string) $pfPaymentId) . '</p>',
                 ]);
+                Payfast::itnLog('donation completed id=' . $parsed['id']);
             }
         } catch (Throwable $e) {
-            error_log('PayFast ITN error: ' . $e->getMessage());
+            Payfast::itnLog('error: ' . $e->getMessage());
         }
     }
 }

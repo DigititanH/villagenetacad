@@ -5,6 +5,7 @@ import '../../domain/entities/shop_order.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/order_status_tracker.dart';
+import '../../shared/widgets/product_image.dart';
 import 'return_request_screen.dart';
 import 'review_order_screen.dart';
 
@@ -82,6 +83,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ..._order!.items.map(
                       (i) => ListTile(
                         contentPadding: EdgeInsets.zero,
+                        leading: ProductImage(imageUrl: i.imageUrl, size: 52),
                         title: Text(i.productName),
                         subtitle: Text(
                           '${i.quantity} × R${i.unitPrice.toStringAsFixed(0)}',

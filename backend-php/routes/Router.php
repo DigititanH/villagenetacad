@@ -101,6 +101,10 @@ class Router
         self::get('/api/resellers/profile', [ResellersController::class, 'profile']);
         self::get('/api/resellers/commissions', [ResellersController::class, 'commissions']);
         self::get('/api/resellers/sales', [ResellersController::class, 'sales']);
+        self::get('/api/resellers/statement', [ResellersController::class, 'statement']);
+        self::get('/api/resellers/clients', [ResellersController::class, 'clients']);
+        self::post('/api/resellers/clients', [ResellersController::class, 'addClient']);
+        self::put('/api/resellers/clients/{id}', fn ($p) => ResellersController::updateClient($p));
         self::post('/api/resellers/withdraw', [ResellersController::class, 'withdraw']);
         self::get('/api/resellers/withdrawals', [ResellersController::class, 'withdrawals']);
         self::get('/api/resellers/admin/all', [ResellersController::class, 'adminAll']);

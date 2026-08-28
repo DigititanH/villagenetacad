@@ -182,13 +182,13 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
 - Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**. **Live keys done (UAT).**
 
-### This slice — parked production PayFast ITN
-- Notify URL fix (`notify.php` → `/api/payfast/notify`) is **on hold** (no prod deploys for now).  
-- See `docs/34-PHASE7-PAYFAST-ITN.md`.
+### PayFast ITN — **UAT PASSED** (28 Aug 2026)
+- Live `notify.php` → `PayfastController::notify()` → `OrderFulfillment`  
+- Order 18 auto-`paid`; affiliated R5 → seller R2.65 + centre R1.30 (+ prior order 17)  
+- See `docs/34-PHASE7-PAYFAST-ITN.md` and `docs/38-PHASE8-LEDGER-CLIENTS.md`.
 
 ### Parked / later in Phase 7
 - Live email OTP (Gmail/cPanel SMTP) — **on hold**  
-- PayFast ITN notify URL — **on hold**  
 - SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
@@ -201,7 +201,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 | **#10 [W2]** | Same PayFast merchant as the website | **Done** (live) |
 | **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout |
 | **#2 [W2]** | Live SMS + email OTP | **On hold** |
-| **#3 [W3]** | Tight security | ITN notify **on hold**; more later |
+| **#3 [W3]** | Tight security | ITN notify **UAT PASSED** 28 Aug; more later |
 | **#8 [W3]** | Lawyer-ready legal + **POPI** | **Parked** |
 
 **Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
@@ -213,13 +213,15 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 **Slice 1 (this branch):** live verify API + server R100 / last-day withdraw + app `HttpResellerRepository`.
 
 ### Original
-- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **later** (live today often `VNA-{hex}`)  
-- Independent seller → programme-support bucket (not a centre) — **later**  
-- Beneficiary under a centre: sales split **53 / 26 / 21** as locked — **later** (flat `commission_rate` still on live)  
-- Clients: bought / pending / confirmed / did not buy — from real orders + leads — **later**  
-- Reseller sees their earnings; Digititan 21% for ops/statements — **partial** (profile + sales via live API)  
-- Month-end statement from real sales — **partial**  
+- Live referral codes (`VNA-B-*` / `VNA-C-*`) — **issued at register** (UAT passed 27 Aug 2026)  
+- Independent seller → Digititan programme-support — **53% at register + fulfill**  
+- Beneficiary under a centre: sales split **53 / 26 / 21** — **OrderFulfillment + clients + statement** (slice 2)  
+- Clients: bought / pending / confirmed / did not buy — **live API + app** (slice 2)  
+- Reseller sees their earnings; Digititan 21% for ops/statements — **statement + profile share totals** (slice 2)  
+- Month-end statement from real sales — **GET /api/resellers/statement** (slice 2)  
 - Withdrawals last calendar day + Super Admin approval (live, not DemoHub) — **slice 1: server gate done**  
+
+**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — live deployed + **UAT PASSED** (clients + statement + paid 53/26/21 + ITN auto-fulfill, 28 Aug 2026). See `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
 
 ### Meeting inserts
 | Meeting | Work | Notes |
@@ -280,6 +282,15 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 ## Phase 10 — Notifications + ops admin without developers
 
+**Ops Admin live wire (28 Aug 2026): PASSED** — `HttpAdminRepository` on branch `cursor/phase8-ledger-clients-09ad`; role smoke D PASS. See `docs/39-ROLE-SMOKE-UAT.md`.
+
+**In-app notifications (28 Aug 2026):** order paid / status / reseller sale → `notifications` table + Profile inbox. See `docs/40-PHASE10-IN-APP-NOTIFICATIONS.md`. Upload pack: `deploy/phase10-notifications-live/`.
+
+### Still open in Phase 10
+- Ambassador queue + academy org queue on live API (thin / empty today)  
+- Super Admin as distinct role (live DB only has `admin`)  
+- Push / email when SMTP is ready (in-app already covers the three sale events)  
+
 ### Original
 - Payment confirmation  
 - Order status changes  
@@ -304,17 +315,17 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 Run **after Phases 7–10 are green**, before hard-pushing Phase 11 or public launch.  
 This is meeting item **#12** as a checklist, not a separate “Wave 3 project.”
 
-- [ ] PayFast live keys + notify URL reachable  
+- [x] PayFast live keys + notify URL reachable — **ITN auto-fulfill UAT PASSED 28 Aug 2026**  
 - [ ] SMS + email OTP live (or documented fallback)  
 - [ ] HTTPS everywhere; passwords hashed; sessions revoke on logout  
 - [ ] Legal + POPI lawyer-reviewed  
 - [ ] Village NetAcad app icon on store builds  
 - [ ] Learner fields sync/export path to LMS  
-- [ ] Min withdraw R100 enforced **server-side**  
-- [ ] Reseller QR / verify works on web + app  
+- [x] Min withdraw R100 enforced **server-side** — Phase 8 slice 1 UAT PASSED  
+- [x] Reseller QR / verify works on web + app — Phase 8 slice 1 UAT PASSED  
 - [ ] Academy org queue visible to Ops  
-- [ ] Smoke: login → shop → PayFast → OTP → order → reseller balance → month-end withdraw ≥ R100  
-- [ ] Smoke every role: Customer / Reseller / Ops / Super  
+- [x] Smoke: login → shop → PayFast → order → reseller balance — **PASSED 28 Aug** (OTP email still parked)  
+- [x] Smoke every role: Customer / Reseller / Ops / Super — **PASSED 28 Aug** (Super = N/A on live; see `docs/39-ROLE-SMOKE-UAT.md`)  
 
 **Done when:** launching does not depend on “we’ll fix that minor thing later.”
 

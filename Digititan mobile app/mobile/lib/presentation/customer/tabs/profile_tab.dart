@@ -146,7 +146,10 @@ class ProfileTab extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => NotificationsScreen(user: user),
+                  builder: (_) => NotificationsScreen(
+                    user: user,
+                    container: container,
+                  ),
                 ),
               );
             },

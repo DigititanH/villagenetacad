@@ -19,11 +19,14 @@ Live **buyer verify** + **server-enforced** withdraw rules (R100 + last calendar
 - `injection.dart` uses `HttpResellerRepository` when `AppConfig.useLiveApi`
 - Profile + checkout pass `resellerRepository` into `VerifyResellerScreen`
 
-## Not in this slice (later Phase 8)
-- Live `VNA-B-*` / `VNA-C-*` issuance (live codes are often `VNA-{hex}` today)
-- Full **53 / 26 / 21** split accounting on the server
-- Live clients CRM (bought / pending / confirmed)
-- Full month-end statement from live ledger beyond profile + sales lists
+## Not in slice 1 (moved to slice 2 — see `38-PHASE8-LEDGER-CLIENTS.md`)
+- Live `VNA-B-*` / `VNA-C-*` issuance — **done on register UX branch**
+- Full **53 / 26 / 21** split accounting on fulfill — **slice 2**
+- Live clients CRM — **slice 2**
+- Month-end statement API — **slice 2**
+
+## Slice 2 branch
+`cursor/phase8-ledger-clients-09ad` — deploy pack `deploy/phase8-ledger-clients-live/`
 
 ## Production deploy (when ready)
 

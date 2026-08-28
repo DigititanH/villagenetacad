@@ -1,6 +1,7 @@
 import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
+import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/repositories/admin_repository.dart';
 import 'demo_hub.dart';
 
@@ -47,6 +48,16 @@ class DummyAdminRepository implements AdminRepository {
     _hub.orders[i] = old.copyWith(
       status: status,
       trackingTimeline: [...old.trackingTimeline, 'Status → ${status.name}'],
+    );
+    _hub.notifications.insert(
+      0,
+      DemoNotification(
+        id: 'n-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Order update',
+        body: 'Order $orderId is now: ${status.name}.',
+        createdAt: DateTime.now(),
+        recipientEmail: old.buyerEmail,
+      ),
     );
     _hub.log('Order $orderId → ${status.name}');
   }

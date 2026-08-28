@@ -9,6 +9,7 @@ import '../../infrastructure/dummy/demo_hub.dart';
 import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
+import '../customer/notifications_screen.dart';
 import '../customer/widgets/demo_role_switcher.dart';
 import 'reseller_qr_card.dart';
 
@@ -285,6 +286,20 @@ class _ResellerShellState extends State<ResellerShell> {
           title: const Text('Reseller'),
           actions: [
             IconButton(
+              tooltip: 'Notifications',
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => NotificationsScreen(
+                      user: widget.user,
+                      container: widget.container,
+                    ),
+                  ),
+                );
+              },
+            ),
+            IconButton(
               tooltip: 'Refresh (after Admin approval)',
               onPressed: _load,
               icon: const Icon(Icons.refresh),
@@ -434,8 +449,12 @@ class _ResellerShellState extends State<ResellerShell> {
   Widget _dashboard() {
     final p = _profile!;
     final shareLabel = p.codeType == ResellerCodeType.centre
-        ? 'Centre earnings · 26%'
-        : 'Your earnings · 53%';
+        ? 'Centre (VNA-C) · ${p.commissionRate.toStringAsFixed(0)}%'
+        : (p.academyName != null &&
+                p.academyName!.toLowerCase().contains('independent'))
+            ? 'Independent (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}% · rest Digititan'
+            : 'Beneficiary (VNA-B) · ${p.commissionRate.toStringAsFixed(0)}%'
+                '${p.academyName != null && p.academyName!.trim().isNotEmpty ? ' · centre noted for 26%' : ''}';
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
@@ -540,6 +559,23 @@ class _ResellerShellState extends State<ResellerShell> {
                   fontSize: 13,
                 ),
               ),
+              if (p.centreShareTotal > 0 || p.amountDueToDigititan > 0) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Centre share (lifetime): R${p.centreShareTotal.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  'Digititan share (lifetime): R${p.amountDueToDigititan.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.78),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

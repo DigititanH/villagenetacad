@@ -15,13 +15,16 @@ abstract class AuthRepository {
   });
 
   /// Creates an account and returns it.
-  /// [academyName] is required by the live API when [role] is reseller.
+  ///
+  /// [resellerKind]: `independent` | `affiliated` | `centre` (live reseller only).
+  /// [academyName]: required for affiliated/centre; ignored/blank for independent.
   Future<User> registerWithEmail({
     required String name,
     required String email,
     required String password,
     required UserRole role,
     String? academyName,
+    String? resellerKind,
   });
 
   Future<User> verifyEmailOtp({

@@ -4,6 +4,7 @@ import '../../app/injection.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/entities/user.dart';
 import '../../shared/result/result.dart';
+import '../../shared/widgets/product_image.dart';
 import 'order_detail_screen.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -45,6 +46,13 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     });
   }
 
+  String _itemSummary(ShopOrder order) {
+    if (order.items.isEmpty) return order.id;
+    final first = order.items.first.productName;
+    if (order.items.length == 1) return first;
+    return '$first +${order.items.length - 1} more';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,10 +67,14 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                       itemCount: _orders.length,
                       itemBuilder: (context, i) {
                         final o = _orders[i];
+                        final thumb = o.items.isNotEmpty
+                            ? o.items.first.imageUrl
+                            : null;
                         return ListTile(
-                          title: Text(o.id),
+                          leading: ProductImage(imageUrl: thumb, size: 52),
+                          title: Text(_itemSummary(o)),
                           subtitle: Text(
-                            '${o.status.name} · R${o.total.toStringAsFixed(0)}',
+                            '${o.id} · ${o.status.name} · R${o.total.toStringAsFixed(0)}',
                           ),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {

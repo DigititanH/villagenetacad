@@ -186,6 +186,7 @@ class HttpStoreRepository implements StoreRepository {
             productName: variant.isEmpty ? baseName : '$baseName ($variant)',
             quantity: _asInt(m['quantity']),
             unitPrice: _asDouble(m['price']),
+            imageUrl: resolveMediaUrl(m['image']?.toString()),
           ),
         );
       }

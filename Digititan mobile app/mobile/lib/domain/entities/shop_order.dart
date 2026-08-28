@@ -13,12 +13,14 @@ class OrderItem {
   final String productName;
   final int quantity;
   final double unitPrice;
+  final String? imageUrl;
 
   const OrderItem({
     required this.productId,
     required this.productName,
     required this.quantity,
     required this.unitPrice,
+    this.imageUrl,
   });
 
   double get lineTotal => unitPrice * quantity;
