@@ -65,14 +65,17 @@ Notes: ______________________________________
 
 ## D — Ops Admin
 
-Login as live **ops** / admin account.
+Login: **`admin@villagenetacad.com`** / **`Admin123!`** (live seed; change if rotated).
+
+**Must use this branch after live Ops wire:** `INSTALL-PHASE8-LEDGER.ps1` then `flutter run …API_BASE_URL=…`.  
+Older builds always used **DummyAdminRepository** (seeded demo) even on live login — that mismatch is fixed on this branch (`HttpAdminRepository`).
 
 | # | Step | Pass? |
 |---|------|-------|
 | D1 | Ops shell opens (not customer shell) | |
-| D2 | Orders list loads (incl. recent paid R5) | |
-| D3 | Resellers / pending applications list loads | |
-| D4 | Products list loads | |
+| D2 | Orders list matches **website** admin (incl. paid R5 orders) — not demo seed | |
+| D3 | Resellers / pending applications list loads (live) | |
+| D4 | Products list matches live catalogue | |
 | D5 | Withdrawals queue loads (may be empty) | |
 
 Notes: ______________________________________
