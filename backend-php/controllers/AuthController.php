@@ -102,7 +102,14 @@ class AuthController
         }
 
         // Welcome from app@ only for mobile-app register (shared .env / API with website).
+        $welcomeMail = [
+            'from_mobile' => $fromMobile,
+            'attempted' => false,
+            'sent' => false,
+            'error' => null,
+        ];
         if ($fromMobile) {
+            $welcomeMail['attempted'] = true;
             try {
                 $site = rtrim((string) Client::getClientUrl(), '/');
                 $safeName = htmlspecialchars($name);
@@ -111,7 +118,8 @@ class AuthController
                     ? '<p>Your <strong>reseller</strong> application is with us. Ops must approve it before you can sign in as a reseller.</p>'
                     : '<p>You registered as a <strong>customer</strong>. You can sign in on the app and the website with this email right away.</p>';
 
-                Mailer::send([
+                // sendOrFail — do not swallow SMTP errors (silent send() hid failures).
+                Mailer::sendOrFail([
                     'to' => $email,
                     'subject' => 'Welcome to Village NetAcad',
                     'channel' => 'app',
@@ -131,8 +139,10 @@ class AuthController
                         <p>Questions? Reply to this email or write to <a href=\"mailto:info@villagenetacad.co.za\">info@villagenetacad.co.za</a>.</p>
                         <p>— Village NetAcad · Powered by Digititan</p>",
                 ]);
+                $welcomeMail['sent'] = true;
             } catch (Throwable $e) {
-                error_log('[Auth] welcome mail skipped: ' . $e->getMessage());
+                $welcomeMail['error'] = $e->getMessage();
+                error_log('[Auth] welcome mail failed: ' . $e->getMessage());
             }
         }
 
@@ -140,6 +150,7 @@ class AuthController
             Response::json([
                 'pending' => true,
                 'message' => 'Reseller account created. An admin must approve it before you can sign in.',
+                'welcome_mail' => $welcomeMail,
                 'user' => [
                     'id' => $userId,
                     'name' => $name,
@@ -152,6 +163,7 @@ class AuthController
 
         Response::json([
             'token' => Jwt::sign($userId),
+            'welcome_mail' => $welcomeMail,
             'user' => [
                 'id' => $userId,
                 'name' => $name,
