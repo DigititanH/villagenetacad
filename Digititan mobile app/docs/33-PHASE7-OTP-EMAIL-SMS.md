@@ -1,45 +1,34 @@
 # Phase 7 — OTP / email / SMS (status)
 
-Branch: `cursor/phase7-smtp-app-uat-09ad`  
-Related: `cursor/phase7-smtp-cpanel-09ad` (SMTP Mailer pack)
+Branch: `cursor/phase7-smtp-app-uat-09ad`
 
-## Current status
+## Decision: one `.env`, two SMTP profiles (no `.envMail`)
+
+| Profile | Keys | Mailbox |
+|---------|------|---------|
+| Mobile app | `APP_SMTP_*` | `app@villagenetacad.co.za` |
+| Website | `SMTP_*` | Website team configures later |
+
+Flutter sends `X-VNA-Client: mobile`. Welcome / app mails only when that client is detected.
+
+Pack: `deploy/phase7-dual-smtp-live/`
+
+## Status
 
 | Item | Status |
 |------|--------|
-| Google Sign-In in app | **Removed** (website has none) |
-| cPanel mailbox SMTP (`app@villagenetacad.co.za`) | **LIVE** — ping UAT passed 28 Aug 2026 |
-| Register email | **Welcome** from `app@` — **mobile app only** (website register does not use this mail) |
-| In-app OTP code screen | Dummy / offline only |
-| SMS OTP | Parked (provider TBD) |
-| Lawyer POPI / legal | Parked |
-| T&Cs before pay | Parked |
-| In-app PayFast | Deferred (v1 = website browser) |
+| Google Sign-In | Removed |
+| cPanel `app@` SMTP ping | **PASS** |
+| Welcome mail (no verify link) | Mobile-only |
+| Dual SMTP split | Implement + upload |
+| SMS OTP | Parked |
+| POPI / T&Cs before pay | Parked |
 
-## Live SMTP (passed)
-
-```env
-SITE_EMAIL=info@villagenetacad.co.za
-SMTP_HOST=villagenetacad.co.za
-SMTP_PORT=465
-SMTP_USER=app@villagenetacad.co.za
-SMTP_PASS=<mailbox password>
-SMTP_FROM=Village NetAcad
-```
-
-## App UAT — register → mail
+## App UAT
 
 | # | Step | Pass? |
 |---|------|-------|
-| S1 | Login screen loads (no Google) | **PASS** |
-| S2 | Register → customer with a new email | **PASS** |
-| S3 | Account created dialog | **PASS** |
-| S4 | Inbox mail from `app@` | **PASS** (verify-link version) |
-| S5 | Sign in works | **PASS** |
-
-### Welcome-mail re-check (after upload)
-| # | Step | Pass? |
-|---|------|-------|
-| W1 | Register new customer | |
-| W2 | Inbox subject **Welcome to Village NetAcad** — no confirm link | |
-| W3 | App dialog says welcome mail (not verify link) | |
+| S1–S5 | Register + inbox + sign-in | **PASS** |
+| M1 | Website register → **no** `app@` welcome | |
+| M2 | App register → welcome from `app@` | |
+| M3 | `.env` uses `APP_SMTP_*` for app@ | |

@@ -13,7 +13,7 @@ class AuthController
         $resellerKind = strtolower(trim((string) ($body['reseller_kind'] ?? '')));
         // Mobile app sends client=mobile (+ X-VNA-Client). Website register must not
         // use app@ welcome mail — website team owns their own outbound email.
-        $fromMobile = self::isMobileClient($body);
+        $fromMobile = Request::isMobileClient($body);
 
         if (!$name || !$email || !$password) {
             Response::error('Name, email and password are required', 400);
@@ -81,17 +81,21 @@ class AuthController
                 [$userId, $referralCode, $academyName, $commissionRate]
             );
             try {
-                Mailer::send([
-                    'to' => Site::email(),
-                    'replyTo' => $email,
-                    'subject' => "New reseller registration: $name",
-                    'html' => "<p><strong>Name:</strong> " . htmlspecialchars($name) . "</p>
-                        <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
-                        <p><strong>Kind:</strong> " . htmlspecialchars($kindLabel) . "</p>
-                        <p><strong>Academy:</strong> " . htmlspecialchars($academyName) . "</p>
-                        <p><strong>Referral code:</strong> $referralCode</p>
-                        <p><strong>Commission rate:</strong> {$commissionRate}%</p>",
-                ]);
+                // Ops notify via app@ only when reseller applied from the mobile app.
+                if ($fromMobile) {
+                    Mailer::send([
+                        'to' => Site::email(),
+                        'replyTo' => $email,
+                        'channel' => 'app',
+                        'subject' => "New reseller registration: $name",
+                        'html' => "<p><strong>Name:</strong> " . htmlspecialchars($name) . "</p>
+                            <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
+                            <p><strong>Kind:</strong> " . htmlspecialchars($kindLabel) . "</p>
+                            <p><strong>Academy:</strong> " . htmlspecialchars($academyName) . "</p>
+                            <p><strong>Referral code:</strong> $referralCode</p>
+                            <p><strong>Commission rate:</strong> {$commissionRate}%</p>",
+                    ]);
+                }
             } catch (Throwable $e) {
                 error_log('[Auth] reseller notify mail skipped: ' . $e->getMessage());
             }
@@ -110,6 +114,7 @@ class AuthController
                 Mailer::send([
                     'to' => $email,
                     'subject' => 'Welcome to Village NetAcad',
+                    'channel' => 'app',
                     'html' => "<h2>Welcome, {$safeName}!</h2>
                         <p>Your Village NetAcad account is ready.</p>
                         <p><strong>Email:</strong> {$safeEmail}</p>
