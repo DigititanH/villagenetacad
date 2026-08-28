@@ -20,21 +20,9 @@ No email / Gmail / SMTP.
 | `OrderFulfillment.php` | `lib/OrderFulfillment.php` |
 | `OrdersController.php` | `controllers/OrdersController.php` |
 
-## phpMyAdmin (once)
+## phpMyAdmin
 
-```sql
-CREATE TABLE IF NOT EXISTS notifications (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  message TEXT NOT NULL,
-  is_read TINYINT(1) DEFAULT 0,
-  type ENUM('info','success','warning','error') DEFAULT 'info',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES registrations(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-```
-
+`notifications` table **already exists** on live — do **not** recreate it. Skip `notifications.sql` unless a fresh DB is missing the table.
 ## Backfill order 18 (optional one-time)
 
 Create `public_html/backend-php/public/_notify_backfill_once.php`:
