@@ -210,16 +210,23 @@ class PayfastController
 
         try {
             $data = $_POST;
+            $validSig = method_exists(Payfast::class, 'verifyItnSignature')
+                ? Payfast::verifyItnSignature($data)
+                : false;
 
-            // PayFast server VALID is required. Local signature is tried with several
-            // encode/order variants; mismatch alone does not block if host says VALID.
-            if (!Payfast::validateItnWithPayFast($data)) {
-                error_log('PayFast ITN: host validation failed');
+            // Hosted validation is authoritative. If local sig algo mismatches but PayFast
+            // says VALID, still fulfill (common when passphrase / encode order differs).
+            $hostValid = Payfast::validateItnWithPayFast($data);
+            if (!$validSig && !$hostValid) {
+                error_log('PayFast ITN: invalid signature and host validation failed');
                 return;
             }
-            if (method_exists(Payfast::class, 'verifyItnSignature')
-                && !Payfast::verifyItnSignature($data)) {
+            if (!$validSig && $hostValid) {
                 error_log('PayFast ITN: local signature mismatch but host VALID — proceeding');
+            }
+            if ($validSig && !$hostValid) {
+                error_log('PayFast ITN: host validation failed');
+                return;
             }
 
             $parsed = self::parsePaymentId((string) ($data['m_payment_id'] ?? ''));
