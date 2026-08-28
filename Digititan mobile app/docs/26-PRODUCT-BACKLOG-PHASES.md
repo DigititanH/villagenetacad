@@ -306,7 +306,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 Run **after Phases 7–10 are green**, before hard-pushing Phase 11 or public launch.  
 This is meeting item **#12** as a checklist, not a separate “Wave 3 project.”
 
-- [ ] PayFast live keys + notify URL reachable  
+- [x] PayFast live keys + notify URL reachable — **ITN auto-fulfill UAT PASSED 28 Aug 2026**  
 - [ ] SMS + email OTP live (or documented fallback)  
 - [ ] HTTPS everywhere; passwords hashed; sessions revoke on logout  
 - [ ] Legal + POPI lawyer-reviewed  
