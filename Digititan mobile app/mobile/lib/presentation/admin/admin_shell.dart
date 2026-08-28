@@ -5,9 +5,11 @@ import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/enums/user_role.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../infrastructure/dummy/demo_hub.dart';
+import '../../shared/config/app_config.dart';
 import '../../shared/theme/digititan_theme.dart';
 import '../../shared/widgets/demo_banner.dart';
 import '../../shared/widgets/product_price_text.dart';
@@ -48,6 +50,9 @@ class _AdminShellState extends State<AdminShell> {
   String? _error;
 
   bool get _isSuper => widget.user.role.isSuperAdmin;
+  bool get _live => AppConfig.useLiveApi;
+  /// Live `admin` role maps to Ops in the app — still needs payouts queue.
+  bool get _showPayouts => _isSuper || _live;
 
   @override
   void initState() {
@@ -91,11 +96,20 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Future<void> _updateOrder(ShopOrder order) async {
+    final choices = _live
+        ? const [
+            OrderStatus.placed,
+            OrderStatus.processing,
+            OrderStatus.shipped,
+            OrderStatus.delivered,
+            OrderStatus.cancelled,
+          ]
+        : OrderStatus.values;
     final status = await showDialog<OrderStatus>(
       context: context,
       builder: (_) => SimpleDialog(
         title: Text('Update ${order.id}'),
-        children: OrderStatus.values
+        children: choices
             .map(
               (s) => SimpleDialogOption(
                 onPressed: () => Navigator.pop(context, s),
@@ -106,15 +120,62 @@ class _AdminShellState extends State<AdminShell> {
       ),
     );
     if (status == null) return;
-    await widget.container.adminRepository.updateOrderStatus(order.id, status);
-    await _load();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${order.id} → ${status.name}')),
-    );
+    try {
+      await widget.container.adminRepository.updateOrderStatus(order.id, status);
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${order.id} → ${status.name}')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$e')),
+      );
+    }
   }
 
   Future<void> _approveReseller(PendingResellerApplication app) async {
+    if (_live) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text('Approve ${app.name}?'),
+          content: Text(
+            'Live codes are already issued at register '
+            '(${app.academyName == null || app.academyName!.trim().isEmpty ? 'independent / centre path' : 'centre noted: ${app.academyName}'}).\n\n'
+            'Approve unlocks reseller login — it does not mint a new code.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Approve'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      try {
+        final code = await widget.container.adminRepository.approveReseller(
+          app.id,
+          codeType: ResellerCodeType.beneficiary,
+        );
+        await _load();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Approved ${app.name}. Code: $code')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+      return;
+    }
+
     final linked = (app.academyName ?? '').trim();
     final type = await showDialog<ResellerCodeType>(
       context: context,
@@ -370,8 +431,8 @@ class _AdminShellState extends State<AdminShell> {
       const Tab(text: 'Ambassadors'),
       const Tab(text: 'Codes'),
       const Tab(text: 'Products'),
-      if (_isSuper) const Tab(text: 'Payouts'),
-      if (_isSuper) const Tab(text: 'Activity'),
+      if (_showPayouts) const Tab(text: 'Payouts'),
+      if (_isSuper && !_live) const Tab(text: 'Activity'),
     ];
 
     return DefaultTabController(
@@ -380,7 +441,7 @@ class _AdminShellState extends State<AdminShell> {
         appBar: AppBar(
           title: Text(widget.user.role.label),
           actions: [
-            if (widget.onDemoUserSwitched != null)
+            if (widget.onDemoUserSwitched != null && !_live)
               IconButton(
                 tooltip: 'Demo role switch (decks)',
                 icon: const Icon(Icons.swap_horiz),
@@ -421,13 +482,44 @@ class _AdminShellState extends State<AdminShell> {
         body: _loading
             ? const Center(child: CircularProgressIndicator())
             : _error != null
-                ? Center(child: Text(_error!))
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Could not load ops data',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(_error!, textAlign: TextAlign.center),
+                          const SizedBox(height: 16),
+                          FilledButton(
+                            onPressed: () {
+                              setState(() {
+                                _loading = true;
+                                _error = null;
+                              });
+                              _load();
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 : Column(
                     children: [
                       DemoBanner(
-                        message: _isSuper
-                            ? 'Super Admin · oversight + payouts'
-                            : 'Ops Admin · orders, resellers, ambassadors, codes',
+                        message: _live
+                            ? (_showPayouts
+                                ? 'Live Ops · orders, resellers, products, payouts (in-app only — no email)'
+                                : 'Live Ops · orders, resellers, products')
+                            : (_isSuper
+                                ? 'Super Admin · oversight + payouts'
+                                : 'Ops Admin · orders, resellers, ambassadors, codes'),
                       ),
                       Expanded(
                         child: TabBarView(
@@ -438,8 +530,8 @@ class _AdminShellState extends State<AdminShell> {
                             _ambassadorsTab(),
                             _codesTab(),
                             _productsTab(),
-                            if (_isSuper) _payoutsTab(),
-                            if (_isSuper) _activityTab(),
+                            if (_showPayouts) _payoutsTab(),
+                            if (_isSuper && !_live) _activityTab(),
                           ],
                         ),
                       ),
@@ -518,7 +610,17 @@ class _AdminShellState extends State<AdminShell> {
 
   Widget _ordersTab() {
     if (_orders.isEmpty) {
-      return const Center(child: Text('No orders yet — place one as Customer'));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _live
+                ? 'No orders on live yet.\nWhen customers pay on the website, they show up here so you can update status.'
+                : 'No orders yet — place one as Customer',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
     }
     return ListView.builder(
       itemCount: _orders.length,
@@ -595,6 +697,18 @@ class _AdminShellState extends State<AdminShell> {
   }
 
   Widget _ambassadorsTab() {
+    if (_live) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'Ambassador queue is not on the live API yet.\n'
+            'Use the website / Ops process for ambassadors for now.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
     final pending =
         _ambassadors.where((a) => a.status == 'under_review').toList();
     final all = [..._ambassadors]
@@ -754,7 +868,17 @@ class _AdminShellState extends State<AdminShell> {
 
   Widget _payoutsTab() {
     if (_withdrawals.isEmpty) {
-      return const Center(child: Text('No pending withdrawals'));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            _live
+                ? 'No pending withdrawal requests.\nResellers can only request on the last day of the month (min R100).'
+                : 'No pending withdrawals',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
     }
     return ListView.builder(
       itemCount: _withdrawals.length,

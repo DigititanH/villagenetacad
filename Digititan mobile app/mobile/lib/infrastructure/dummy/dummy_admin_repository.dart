@@ -1,6 +1,7 @@
 import '../../domain/entities/product.dart';
 import '../../domain/entities/reseller.dart';
 import '../../domain/entities/shop_order.dart';
+import '../../domain/entities/withdrawal_request.dart';
 import '../../domain/repositories/admin_repository.dart';
 import 'demo_hub.dart';
 
