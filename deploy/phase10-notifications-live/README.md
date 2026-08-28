@@ -25,26 +25,13 @@ No email / Gmail / SMTP.
 `notifications` table **already exists** on live — do **not** recreate it. Skip `notifications.sql` unless a fresh DB is missing the table.
 ## Backfill order 18 (optional one-time)
 
-Create `public_html/backend-php/public/_notify_backfill_once.php`:
+**First upload** `lib/InAppNotifications.php` (and the other two PHP files), or backfill will 500.
 
-```php
-<?php
-require_once dirname(__DIR__) . '/bootstrap.php';
-$id = (int) ($_GET['id'] ?? 18);
-$order = Database::queryGet('SELECT * FROM orders WHERE id = ?', [$id]);
-if (!$order) { http_response_code(404); echo 'not found'; exit; }
-$items = Database::queryAll(
-  'SELECT oi.*, p.name FROM order_items oi JOIN products p ON p.id = oi.product_id WHERE oi.order_id = ?',
-  [$id]
-);
-InAppNotifications::orderPaid($order, $items);
-$rows = Database::queryAll('SELECT id, user_id, title, message FROM notifications ORDER BY id DESC LIMIT 10');
-header('Content-Type: application/json');
-echo json_encode($rows, JSON_PRETTY_PRINT);
-```
+Use the safer script in this pack: `_notify_backfill_once.php`  
+→ `public_html/backend-php/public/_notify_backfill_once.php`
 
-Visit once: `https://villagenetacad.co.za/_notify_backfill_once.php?id=18`  
-Then **delete** the file.
+Visit: `https://villagenetacad.co.za/_notify_backfill_once.php?id=18`  
+Then **delete** the file. On failure it returns JSON with the real error (missing class / path / exception).
 
 ## App
 
