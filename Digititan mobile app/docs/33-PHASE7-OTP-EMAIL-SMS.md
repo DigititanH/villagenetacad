@@ -9,37 +9,41 @@ Branch: `cursor/phase7-smtp-app-uat-09ad`
 | Mobile app | `APP_SMTP_*` | `app@villagenetacad.co.za` |
 | Website | `SMTP_*` | Website team configures later |
 
-Flutter sends `X-VNA-Client: mobile`. Welcome / app mails only when that client is detected.
+Flutter sends `X-VNA-Client: mobile`. App transactional mail uses `channel=app`.
 
-Pack: `deploy/phase7-dual-smtp-live/`  
+Packs: `deploy/phase7-dual-smtp-live/` · `deploy/phase7-app-emails-live/`  
 Windows sync: `INSTALL-PHASE7-SMTP.ps1`
+
+## Email + in-app (hand-in-hand with the mobile app)
+
+| Event | Email (app@) | In-app inbox |
+|-------|----------------|--------------|
+| Customer register (app) | Welcome | — |
+| Reseller apply (app) | Pending review (“We…”) | — |
+| Reseller approved (Ops) | Code + how reselling works | Reseller approved |
+| Order paid | Customer confirmation + seller/centre sale notice | Payment / sale / centre |
+| Order status change | Customer status email | Order update |
 
 ## Status
 
 | Item | Status |
 |------|--------|
-| Google Sign-In | Removed |
-| cPanel `app@` SMTP ping | **PASS** |
-| Welcome mail (no verify link) | Mobile-only — **PASS** |
-| Dual SMTP split | **PASS** (28 Aug 2026) |
+| Dual SMTP + welcome | **PASS** |
+| Reseller pending / approved / sale / order emails | Implemented — upload `phase7-app-emails-live` then UAT |
 | SMS OTP | Parked |
 | POPI / T&Cs before pay | Parked |
 
-## App UAT — **PASSED** (28 Aug 2026)
+## App UAT — dual SMTP **PASSED** (28 Aug 2026)
 
 | # | Step | Pass? |
 |---|------|-------|
-| S1–S5 | Register + inbox + sign-in | **PASS** |
-| M1 | Website register → **no** `app@` welcome | **PASS** |
-| M2 | App register → welcome from `app@` | **PASS** |
-| M3 | `.env` uses `APP_SMTP_*` for app@ | **PASS** |
+| M1–M3 | Website vs app welcome split | **PASS** |
+| F3a–c | Three reseller apply paths | **PASS** (API + app) |
 
-## Next UAT (email + app)
-
-| # | Step | Notes |
-|---|------|-------|
-| F1 | App **forgot password** | API exists; **no app screen yet** — build or API-only test |
-| F2 | Website forgot password | Uses `SMTP_*` (`info@` if set) — website team path |
-| F3 | Reseller apply from **app** | Ops mail to `info@` from `app@` |
-| F4 | Paid order (R5) | In-app notify + ops mail via `channel=app` (optional; costs R5) |
-| F5 | Ops order status change | Buyer in-app **Order update** (already N5 PASS) |
+### Next UAT after email pack upload
+| # | Step |
+|---|------|
+| E1 | Reseller apply → pending mail wording (“We…”) |
+| E2 | Ops approve → approval mail with referral code |
+| E3 | Paid order with referral → customer + reseller emails |
+| E4 | Ops status shipped/delivered → customer email |
