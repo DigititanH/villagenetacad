@@ -19,6 +19,23 @@ class AuthController
         $userRole = $role === 'reseller' ? 'reseller' : 'customer';
         $academyName = trim((string) $academy);
 
+        // Meeting model (app sends reseller_kind):
+        // independent → VNA-B, 53% (rest Digititan)
+        // affiliated  → VNA-B, 53% + centre name (centre 26% / Digititan 21%)
+        // centre      → VNA-C, 26% (rest Digititan)
+        // Backward compatible: blank academy = independent, filled = affiliated
+        if ($userRole === 'reseller') {
+            if ($resellerKind === '' || !in_array($resellerKind, ['independent', 'affiliated', 'centre'], true)) {
+                $resellerKind = $academyName === '' ? 'independent' : 'affiliated';
+            }
+            if ($resellerKind === 'affiliated' && $academyName === '') {
+                Response::error('Please enter the centre / academy you are affiliated with', 400);
+            }
+            if ($resellerKind === 'centre' && $academyName === '') {
+                Response::error('Please enter your centre / academy organisation name', 400);
+            }
+        }
+
         if (User::emailExists($email)) {
             Response::error('Email already registered', 409);
         }
@@ -39,20 +56,6 @@ class AuthController
         );
 
         if ($userRole === 'reseller') {
-            // Meeting model:
-            // independent → VNA-B 53% (rest Digititan)
-            // affiliated → VNA-B 53% + centre name for 26%/21% accounting
-            // centre → VNA-C 26% (rest Digititan)
-            if ($resellerKind === '' || !in_array($resellerKind, ['independent', 'affiliated', 'centre'], true)) {
-                $resellerKind = $academyName === '' ? 'independent' : 'affiliated';
-            }
-
-            if ($resellerKind === 'affiliated' && $academyName === '') {
-                Response::error('Please enter the centre / academy you are affiliated with', 400);
-            }
-            if ($resellerKind === 'centre' && $academyName === '') {
-                Response::error('Please enter your centre / academy organisation name', 400);
-            }
             if ($resellerKind === 'independent') {
                 $academyName = 'Independent (Digititan programme support)';
             }
@@ -71,8 +74,8 @@ class AuthController
             }
 
             Database::queryRun(
-                'INSERT INTO reseller_profiles (user_id, referral_code, commission_rate, academy) VALUES (?, ?, ?, ?)',
-                [$userId, $referralCode, $commissionRate, $academyName]
+                'INSERT INTO reseller_profiles (user_id, referral_code, academy, commission_rate) VALUES (?, ?, ?, ?)',
+                [$userId, $referralCode, $academyName, $commissionRate]
             );
             try {
                 Mailer::send([
