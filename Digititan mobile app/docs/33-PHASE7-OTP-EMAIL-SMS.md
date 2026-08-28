@@ -42,7 +42,7 @@ flutter run --no-dds --dart-define=API_BASE_URL=https://villagenetacad.co.za
 
 | # | Step | Pass? |
 |---|------|-------|
-| S1 | Login screen loads (no Google) | |
+| S1 | Login screen loads (no Google) | **PASS** (28 Aug 2026, Chrome live API) |
 | S2 | Register → customer with a **new** email you can open | |
 | S3 | Dialog: **Account created** + check inbox for `app@` verify link | |
 | S4 | Inbox has **Verify your Village NetAcad account** from `app@` | |
