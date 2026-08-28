@@ -284,10 +284,12 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 
 **Ops Admin live wire (28 Aug 2026): PASSED** — `HttpAdminRepository` on branch `cursor/phase8-ledger-clients-09ad`; role smoke D PASS. See `docs/39-ROLE-SMOKE-UAT.md`.
 
+**In-app notifications (28 Aug 2026):** order paid / status / reseller sale → `notifications` table + Profile inbox. See `docs/40-PHASE10-IN-APP-NOTIFICATIONS.md`. Upload pack: `deploy/phase10-notifications-live/`.
+
 ### Still open in Phase 10
-- In-app notifications (payment / order status / reseller sale) — no SMTP required for in-app only  
 - Ambassador queue + academy org queue on live API (thin / empty today)  
 - Super Admin as distinct role (live DB only has `admin`)  
+- Push / email when SMTP is ready (in-app already covers the three sale events)  
 
 ### Original
 - Payment confirmation  

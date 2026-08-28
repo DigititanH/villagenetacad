@@ -49,6 +49,16 @@ class DummyAdminRepository implements AdminRepository {
       status: status,
       trackingTimeline: [...old.trackingTimeline, 'Status → ${status.name}'],
     );
+    _hub.notifications.insert(
+      0,
+      DemoNotification(
+        id: 'n-${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Order update',
+        body: 'Order $orderId is now: ${status.name}.',
+        createdAt: DateTime.now(),
+        recipientEmail: old.buyerEmail,
+      ),
+    );
     _hub.log('Order $orderId → ${status.name}');
   }
 

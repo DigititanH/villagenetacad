@@ -51,6 +51,8 @@ $checks = @(
   "infrastructure\api\http_admin_repository.dart",
   "infrastructure\dummy\dummy_reseller_repository.dart",
   "domain\entities\withdrawal_request.dart",
+  "domain\entities\app_notification.dart",
+  "presentation\customer\notifications_screen.dart",
   "presentation\reseller\reseller_shell.dart"
 )
 foreach ($rel in $checks) {
