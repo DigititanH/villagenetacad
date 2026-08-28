@@ -1,6 +1,8 @@
 # Phase 8 — ITN auto-fulfill fix
 
-**Why order 17 stayed `pending`:** PayFast hit `notify.php` (returned OK), but the controller required **both** a perfect local signature **and** PayFast host `VALID`. On Afrihost the host validate curl often fails, and/or passphrase encoding mismatches — so fulfill never ran.
+**UAT PASSED (28 Aug 2026):** order **18** auto-`paid` after PayFast; wallets seller **R5.30** / centre **R2.60** (after order 17 recover + order 18 ITN).
+
+**Why order 17 stayed `pending` (before fix):** PayFast hit `notify.php` (returned OK), but the controller required **both** a perfect local signature **and** PayFast host `VALID`. On Afrihost the host validate curl often fails, and/or passphrase encoding mismatches — so fulfill never ran.
 
 **Fix:** accept **either** local signature **or** host VALID (still requires matching `merchant_id` + amount + COMPLETE).
 

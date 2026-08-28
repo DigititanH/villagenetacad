@@ -32,6 +32,6 @@
 
 ## What's next
 1. **Phase 9 Slice B** — wait for Khanyi academies API (do not invent DB in app)
-2. Or other parked items with the team (SMTP, PayFast ITN) when ready
+2. Or other parked items with the team (SMTP) when ready — PayFast ITN **UAT PASSED** 28 Aug 2026
 3. Phase 8 later: VNA-B/C + 53/26/21 (team consult)
 4. Phase 10: notifications + ops admin

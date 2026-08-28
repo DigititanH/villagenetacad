@@ -182,13 +182,13 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - **No** in-app PayFast / WebView checkout in Phase 7 unless leadership re-opens store-compliance (digital goods → likely Apple/Google IAP).  
 - Same PayFast merchant as the website; configure live keys + notify URL on the **server/website**. **Live keys done (UAT).**
 
-### This slice — parked production PayFast ITN
-- Notify URL fix (`notify.php` → `/api/payfast/notify`) is **on hold** (no prod deploys for now).  
-- See `docs/34-PHASE7-PAYFAST-ITN.md`.
+### PayFast ITN — **UAT PASSED** (28 Aug 2026)
+- Live `notify.php` → `PayfastController::notify()` → `OrderFulfillment`  
+- Order 18 auto-`paid`; affiliated R5 → seller R2.65 + centre R1.30 (+ prior order 17)  
+- See `docs/34-PHASE7-PAYFAST-ITN.md` and `docs/38-PHASE8-LEDGER-CLIENTS.md`.
 
 ### Parked / later in Phase 7
 - Live email OTP (Gmail/cPanel SMTP) — **on hold**  
-- PayFast ITN notify URL — **on hold**  
 - SMS OTP: provider TBD  
 - Lawyer POPI / legal (replace drafts)  
 - T&Cs must be accepted before pay  
@@ -201,7 +201,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 | **#10 [W2]** | Same PayFast merchant as the website | **Done** (live) |
 | **#11 [W2]** | Payment via the app as well | **Deferred** — v1 stays browser checkout |
 | **#2 [W2]** | Live SMS + email OTP | **On hold** |
-| **#3 [W3]** | Tight security | ITN notify **on hold**; more later |
+| **#3 [W3]** | Tight security | ITN notify **UAT PASSED** 28 Aug; more later |
 | **#8 [W3]** | Lawyer-ready legal + **POPI** | **Parked** |
 
 **Done when:** money only moves through website PayFast, with T&Cs + OTP + security signed off (in-app pay not required for done).
@@ -221,7 +221,7 @@ Where **[W2] money/OTP** and **[W3] security/legal** become real.
 - Month-end statement from real sales — **GET /api/resellers/statement** (slice 2)  
 - Withdrawals last calendar day + Super Admin approval (live, not DemoHub) — **slice 1: server gate done**  
 
-**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — live deployed + **UAT PASSED** (clients + statement, 28 Aug 2026). See `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
+**Slice 2 branch:** `cursor/phase8-ledger-clients-09ad` — live deployed + **UAT PASSED** (clients + statement + paid 53/26/21 + ITN auto-fulfill, 28 Aug 2026). See `docs/38-PHASE8-LEDGER-CLIENTS.md`.  
 
 ### Meeting inserts
 | Meeting | Work | Notes |

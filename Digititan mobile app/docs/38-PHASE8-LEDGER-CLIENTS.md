@@ -3,11 +3,12 @@
 **Branch:** `cursor/phase8-ledger-clients-09ad`  
 **Base:** `cursor/phase9-wait-website-09ad`  
 **Live tree:** `public_html/backend-php/` only  
-**Not touched:** PayFast ITN, `notify.php`, SMTP
+**Also on this branch:** PayFast ITN auto-fulfill harden (`PayfastController`) — see `docs/34-PHASE7-PAYFAST-ITN.md`.  
+**Still not touched:** SMTP
 
 ## Live deploy status (28 Aug 2026): **DEPLOYED + UAT PASSED**
 - phpMyAdmin: `reseller_clients` + `commissions.party` / `share_percent`  
-- PHP uploaded: `ResellersController`, `OrderFulfillment`, `Router`  
+- PHP uploaded: `ResellersController`, `OrderFulfillment`, `Router`, hardened `PayfastController`  
 - App: sync this branch (includes reseller Independent/Affiliated/Centre register UX)
 
 ### Mobile UAT (28 Aug 2026): **PASSED**
@@ -18,7 +19,11 @@
 5–6. Earnings statement (Dashboard → Earnings statement) — PASS  
 7–8. Profile / verify — covered / OK  
 
-Real PayFast sale to prove 53/26/21 wallet credit — optional later (not required for this UAT).
+### Paid 53/26/21 + ITN auto-fulfill UAT (28 Aug 2026): **PASSED**
+- Order **17**: recover once → seller R2.65 / centre R1.30 / digititan R1.05  
+- Order **18**: PayFast → ITN → **auto** `paid` (no `_fulfill_once`) → wallets **R5.30** / **R2.60**  
+- Referral `VNA-B-067FA503` · centre `VNA-C-3D1342F6` · academy Nkuna Centre  
+- My Orders list shows product name/image — OK on live
 
 ## What we built
 
@@ -50,7 +55,7 @@ App: `INSTALL-PHASE8-LEDGER.ps1`
 
 ## UAT (after live upload + migration)
 **Clients + statement UAT PASSED (28 Aug 2026).**  
-Optional later: one test paid order to prove multi-party wallet credit.  
+**Paid 53/26/21 + ITN auto-fulfill UAT PASSED (28 Aug 2026).**  
 
 ## Still later
 - Stronger centre link than name match (store centre referral code at register)
