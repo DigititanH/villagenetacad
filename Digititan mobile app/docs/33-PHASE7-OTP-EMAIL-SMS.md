@@ -29,7 +29,7 @@ Windows sync: `INSTALL-PHASE7-SMTP.ps1`
 | Item | Status |
 |------|--------|
 | Dual SMTP + welcome | **PASS** |
-| Reseller pending / approved / sale / order emails | Implemented — upload `phase7-app-emails-live` then UAT |
+| Reseller pending / approved / sale / order emails | **PASS** (29 Aug 2026 live UAT) |
 | SMS OTP | Parked |
 | POPI / T&Cs before pay | Parked |
 
@@ -40,10 +40,13 @@ Windows sync: `INSTALL-PHASE7-SMTP.ps1`
 | M1–M3 | Website vs app welcome split | **PASS** |
 | F3a–c | Three reseller apply paths | **PASS** (API + app) |
 
-### Next UAT after email pack upload
-| # | Step |
-|---|------|
-| E1 | Reseller apply → pending mail wording (“We…”) |
-| E2 | Ops approve → approval mail with referral code |
-| E3 | Paid order with referral → customer + reseller emails |
-| E4 | Ops status shipped/delivered → customer email |
+## App UAT — transactional emails **PASSED** (29 Aug 2026)
+
+Live order **#19** · referral **VNA-B-E1B40CC4** · mailbox **app@**
+
+| # | Step | Pass? |
+|---|------|-------|
+| E1 | Reseller apply → pending mail (“We…”, approval follow-up) | **PASS** (`shichabon@digititan.co.za`) |
+| E2 | Ops approve → code + how reselling works | **PASS** (`VNA-B-E1B40CC4`, 53%) |
+| E3 | Paid order with referral → customer + reseller emails | **PASS** (#19 R5 / seller share R2.65) |
+| E4 | Status shipped / delivered / cancelled → customer email | **PASS** |
