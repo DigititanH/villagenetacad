@@ -73,7 +73,13 @@ class ShopOrder {
     return left < 0 ? 0 : left;
   }
 
-  bool get canReview => status == OrderStatus.delivered && !reviewed;
+  /// Delivered (or return already requested) and not yet reviewed.
+  bool get canReview {
+    if (reviewed) return false;
+    if (deliveredAt == null) return false;
+    return status == OrderStatus.delivered ||
+        status == OrderStatus.returnRequested;
+  }
 
   ShopOrder copyWith({
     OrderStatus? status,

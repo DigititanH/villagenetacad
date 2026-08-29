@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
   comment TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uniq_review_user_product (user_id, product_id),
   FOREIGN KEY (user_id) REFERENCES registrations(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

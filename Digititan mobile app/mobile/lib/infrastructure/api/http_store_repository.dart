@@ -210,6 +210,22 @@ class HttpStoreRepository implements StoreRepository {
       );
     }
 
+    final deliveredAt = DateTime.tryParse(json['delivered_at']?.toString() ?? '') ??
+        ((status == OrderStatus.delivered ||
+                status == OrderStatus.returnRequested)
+            ? created
+            : null);
+
+    final returnRequested = json['return_requested'] == true ||
+        json['return_requested'] == 1 ||
+        status == OrderStatus.returnRequested;
+
+    final reviewed = json['reviewed'] == true || json['reviewed'] == 1;
+    final reviewStars = json['review_stars'] != null
+        ? _asInt(json['review_stars'])
+        : null;
+    final reviewText = json['review_text']?.toString();
+
     return ShopOrder(
       id: 'ORD-${json['id']}',
       buyerEmail: email.trim().toLowerCase(),
@@ -223,7 +239,11 @@ class HttpStoreRepository implements StoreRepository {
         created: created,
       ),
       referralCode: json['referral_code']?.toString(),
-      deliveredAt: status == OrderStatus.delivered ? created : null,
+      deliveredAt: deliveredAt,
+      returnRequested: returnRequested,
+      reviewed: reviewed,
+      reviewText: reviewText,
+      reviewStars: reviewStars,
     );
   }
 
@@ -488,7 +508,13 @@ class HttpStoreRepository implements StoreRepository {
     required String orderId,
     required String reason,
   }) async {
-    throw Exception('Returns on live orders land in a later phase');
+    final rawId = orderId.startsWith('ORD-') ? orderId.substring(4) : orderId;
+    final json = await _api.postJson(
+      '/api/orders/$rawId/return',
+      {'reason': reason},
+      auth: true,
+    );
+    return _mapOrder(json, email: '');
   }
 
   @override
@@ -497,7 +523,16 @@ class HttpStoreRepository implements StoreRepository {
     required int stars,
     required String text,
   }) async {
-    throw Exception('Reviews on live orders land in a later phase');
+    final rawId = orderId.startsWith('ORD-') ? orderId.substring(4) : orderId;
+    final json = await _api.postJson(
+      '/api/orders/$rawId/review',
+      {
+        'rating': stars,
+        'comment': text,
+      },
+      auth: true,
+    );
+    return _mapOrder(json, email: '');
   }
 
   @override
