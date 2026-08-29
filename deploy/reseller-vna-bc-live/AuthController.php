@@ -11,6 +11,9 @@ class AuthController
         $role = $body['role'] ?? '';
         $academy = $body['academy'] ?? '';
         $resellerKind = strtolower(trim((string) ($body['reseller_kind'] ?? '')));
+        // Mobile app sends client=mobile (+ X-VNA-Client). Website register must not
+        // use app@ welcome mail — website team owns their own outbound email.
+        $fromMobile = Request::isMobileClient($body);
 
         if (!$name || !$email || !$password) {
             Response::error('Name, email and password are required', 400);
@@ -19,17 +22,34 @@ class AuthController
         $userRole = $role === 'reseller' ? 'reseller' : 'customer';
         $academyName = trim((string) $academy);
 
+        // Meeting model (app sends reseller_kind):
+        // independent → VNA-B, 53% (rest Digititan)
+        // affiliated  → VNA-B, 53% + centre name (centre 26% / Digititan 21%)
+        // centre      → VNA-C, 26% (rest Digititan)
+        // Backward compatible: blank academy = independent, filled = affiliated
+        if ($userRole === 'reseller') {
+            if ($resellerKind === '' || !in_array($resellerKind, ['independent', 'affiliated', 'centre'], true)) {
+                $resellerKind = $academyName === '' ? 'independent' : 'affiliated';
+            }
+            if ($resellerKind === 'affiliated' && $academyName === '') {
+                Response::error('Please enter the centre / academy you are affiliated with', 400);
+            }
+            if ($resellerKind === 'centre' && $academyName === '') {
+                Response::error('Please enter your centre / academy organisation name', 400);
+            }
+        }
+
         if (User::emailExists($email)) {
             Response::error('Email already registered', 409);
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-        $verificationToken = Request::uuid();
         $approvalStatus = $userRole === 'customer' ? 'approved' : 'pending';
 
+        // No email-confirm link for v1 — welcome mail only; account usable immediately.
         $result = Database::queryRun(
-            'INSERT INTO registrations (name, role, verification_token, is_approved) VALUES (?, ?, ?, ?)',
-            [$name, $userRole, $verificationToken, $approvalStatus]
+            'INSERT INTO registrations (name, role, verification_token, is_verified, is_approved) VALUES (?, ?, NULL, 1, ?)',
+            [$name, $userRole, $approvalStatus]
         );
         $userId = $result['lastInsertRowid'];
 
@@ -39,20 +59,6 @@ class AuthController
         );
 
         if ($userRole === 'reseller') {
-            // Meeting model:
-            // independent → VNA-B 53% (rest Digititan)
-            // affiliated → VNA-B 53% + centre name for 26%/21% accounting
-            // centre → VNA-C 26% (rest Digititan)
-            if ($resellerKind === '' || !in_array($resellerKind, ['independent', 'affiliated', 'centre'], true)) {
-                $resellerKind = $academyName === '' ? 'independent' : 'affiliated';
-            }
-
-            if ($resellerKind === 'affiliated' && $academyName === '') {
-                Response::error('Please enter the centre / academy you are affiliated with', 400);
-            }
-            if ($resellerKind === 'centre' && $academyName === '') {
-                Response::error('Please enter your centre / academy organisation name', 400);
-            }
             if ($resellerKind === 'independent') {
                 $academyName = 'Independent (Digititan programme support)';
             }
@@ -71,36 +77,63 @@ class AuthController
             }
 
             Database::queryRun(
-                'INSERT INTO reseller_profiles (user_id, referral_code, commission_rate, academy) VALUES (?, ?, ?, ?)',
-                [$userId, $referralCode, $commissionRate, $academyName]
+                'INSERT INTO reseller_profiles (user_id, referral_code, academy, commission_rate) VALUES (?, ?, ?, ?)',
+                [$userId, $referralCode, $academyName, $commissionRate]
             );
             try {
-                Mailer::send([
-                    'to' => Site::email(),
-                    'replyTo' => $email,
-                    'subject' => "New reseller registration: $name",
-                    'html' => "<p><strong>Name:</strong> " . htmlspecialchars($name) . "</p>
-                        <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
-                        <p><strong>Kind:</strong> " . htmlspecialchars($kindLabel) . "</p>
-                        <p><strong>Academy:</strong> " . htmlspecialchars($academyName) . "</p>
-                        <p><strong>Referral code:</strong> $referralCode</p>
-                        <p><strong>Commission rate:</strong> {$commissionRate}%</p>",
-                ]);
+                // Ops notify via app@ only when reseller applied from the mobile app.
+                if ($fromMobile) {
+                    Mailer::send([
+                        'to' => Site::email(),
+                        'replyTo' => $email,
+                        'channel' => 'app',
+                        'subject' => "New reseller registration: $name",
+                        'html' => "<p><strong>Name:</strong> " . htmlspecialchars($name) . "</p>
+                            <p><strong>Email:</strong> " . htmlspecialchars($email) . "</p>
+                            <p><strong>Kind:</strong> " . htmlspecialchars($kindLabel) . "</p>
+                            <p><strong>Academy:</strong> " . htmlspecialchars($academyName) . "</p>
+                            <p><strong>Referral code:</strong> $referralCode</p>
+                            <p><strong>Commission rate:</strong> {$commissionRate}%</p>",
+                    ]);
+                }
             } catch (Throwable $e) {
                 error_log('[Auth] reseller notify mail skipped: ' . $e->getMessage());
             }
         }
 
-        try {
-            $verifyUrl = Client::getClientUrl() . '/verify-email?token=' . urlencode($verificationToken);
-            Mailer::send([
-                'to' => $email,
-                'subject' => 'Verify your Village NetAcad account',
-                'html' => "<h2>Welcome " . htmlspecialchars($name) . "!</h2>
-                    <p>Click <a href=\"$verifyUrl\">here</a> to verify your email.</p>",
-            ]);
-        } catch (Throwable $e) {
-            error_log('[Auth] verify mail skipped: ' . $e->getMessage());
+        // Welcome from app@ only for mobile-app register (shared .env / API with website).
+        if ($fromMobile) {
+            try {
+                $site = rtrim((string) Client::getClientUrl(), '/');
+                $safeName = htmlspecialchars($name);
+                $safeEmail = htmlspecialchars($email);
+                $roleLine = $userRole === 'reseller'
+                    ? '<p>Your <strong>reseller</strong> application is with us. Ops must approve it before you can sign in as a reseller.</p>'
+                    : '<p>You registered as a <strong>customer</strong>. You can sign in on the app and the website with this email right away.</p>';
+
+                Mailer::send([
+                    'to' => $email,
+                    'subject' => 'Welcome to Village NetAcad',
+                    'channel' => 'app',
+                    'html' => "<h2>Welcome, {$safeName}!</h2>
+                        <p>Your Village NetAcad account is ready.</p>
+                        <p><strong>Email:</strong> {$safeEmail}</p>
+                        {$roleLine}
+                        <h3>What you can do</h3>
+                        <ul>
+                          <li><strong>Shop</strong> — browse kit and merch in the app, then complete checkout on the website (PayFast).</li>
+                          <li><strong>Training</strong> — free Cisco NetAcad skills courses and the paid CCNA pathway via the website.</li>
+                          <li><strong>Academies</strong> — explore academy / NPO pathways on the site and in the app.</li>
+                          <li><strong>Reseller</strong> — apply from the app or site; approved sellers get a VNA-B or VNA-C code and wallet.</li>
+                        </ul>
+                        <p>Website: <a href=\"{$site}\">{$site}</a></p>
+                        <p>Use the same email and password on the <strong>Village NetAcad</strong> mobile app and on the website.</p>
+                        <p>Questions? Reply to this email or write to <a href=\"mailto:info@villagenetacad.co.za\">info@villagenetacad.co.za</a>.</p>
+                        <p>— Village NetAcad · Powered by Digititan</p>",
+                ]);
+            } catch (Throwable $e) {
+                error_log('[Auth] welcome mail skipped: ' . $e->getMessage());
+            }
         }
 
         if ($userRole === 'reseller' && $approvalStatus === 'pending') {

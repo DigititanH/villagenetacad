@@ -111,11 +111,34 @@ class AuthController
         if ($fromMobile) {
             $welcomeMail['attempted'] = true;
             try {
-                if ($userRole === 'reseller') {
-                    AppEmails::welcomeResellerPending($name, $email);
-                } else {
-                    AppEmails::welcomeCustomer($name, $email);
-                }
+                $site = rtrim((string) Client::getClientUrl(), '/');
+                $safeName = htmlspecialchars($name);
+                $safeEmail = htmlspecialchars($email);
+                $roleLine = $userRole === 'reseller'
+                    ? '<p>Your <strong>reseller</strong> application is with us. Ops must approve it before you can sign in as a reseller.</p>'
+                    : '<p>You registered as a <strong>customer</strong>. You can sign in on the app and the website with this email right away.</p>';
+
+                // sendOrFail — do not swallow SMTP errors (silent send() hid failures).
+                Mailer::sendOrFail([
+                    'to' => $email,
+                    'subject' => 'Welcome to Village NetAcad',
+                    'channel' => 'app',
+                    'html' => "<h2>Welcome, {$safeName}!</h2>
+                        <p>Your Village NetAcad account is ready.</p>
+                        <p><strong>Email:</strong> {$safeEmail}</p>
+                        {$roleLine}
+                        <h3>What you can do</h3>
+                        <ul>
+                          <li><strong>Shop</strong> — browse kit and merch in the app, then complete checkout on the website (PayFast).</li>
+                          <li><strong>Training</strong> — free Cisco NetAcad skills courses and the paid CCNA pathway via the website.</li>
+                          <li><strong>Academies</strong> — explore academy / NPO pathways on the site and in the app.</li>
+                          <li><strong>Reseller</strong> — apply from the app or site; approved sellers get a VNA-B or VNA-C code and wallet.</li>
+                        </ul>
+                        <p>Website: <a href=\"{$site}\">{$site}</a></p>
+                        <p>Use the same email and password on the <strong>Village NetAcad</strong> mobile app and on the website.</p>
+                        <p>Questions? Reply to this email or write to <a href=\"mailto:info@villagenetacad.co.za\">info@villagenetacad.co.za</a>.</p>
+                        <p>— Village NetAcad · Powered by Digititan</p>",
+                ]);
                 $welcomeMail['sent'] = true;
             } catch (Throwable $e) {
                 $welcomeMail['error'] = $e->getMessage();

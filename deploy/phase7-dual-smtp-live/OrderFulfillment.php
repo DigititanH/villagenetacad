@@ -52,31 +52,25 @@ class OrderFulfillment
 
         self::markClientBought($order);
 
-        // In-app + email (app@): buyer + attributed reseller(s).
+        // In-app only (no SMTP): buyer + attributed reseller(s).
         InAppNotifications::orderPaid($order, $items);
 
-        $paidOrder = Database::queryGet('SELECT * FROM orders WHERE id = ?', [$orderId]) ?: $order;
-        $buyer = Database::queryGet(
+        $user = Database::queryGet(
             'SELECT r.name, l.email FROM registrations r
              JOIN logins l ON l.registration_id = r.id WHERE r.id = ?',
             [$order['user_id']]
         );
-        if ($buyer) {
-            AppEmails::orderPaidCustomer($paidOrder, $items, $buyer);
-        }
-        self::emailResellerPartiesOnPaid($paidOrder, $items);
-
-        if ($buyer) {
+        if ($user) {
             $itemsList = implode('<br>', array_map(
                 fn ($i) => $i['name'] . ' × ' . $i['quantity'] . ' (R' . number_format($i['price'] * $i['quantity'], 2) . ')',
                 $items
             ));
             Mailer::send([
                 'to' => Site::email(),
-                'replyTo' => $buyer['email'],
+                'replyTo' => $user['email'],
                 'channel' => 'app', // ITN has no X-VNA-Client — use app@ until website SMTP is live
                 'subject' => 'Paid order #' . $orderId . ' — R' . number_format((float) $order['total'], 2),
-                'html' => '<p><strong>Customer:</strong> ' . htmlspecialchars($buyer['name']) . ' (' . htmlspecialchars($buyer['email']) . ')</p>
+                'html' => '<p><strong>Customer:</strong> ' . htmlspecialchars($user['name']) . ' (' . htmlspecialchars($user['email']) . ')</p>
                     <p><strong>Order ID:</strong> ' . $orderId . '</p>
                     <p><strong>Total paid:</strong> R' . number_format((float) $order['total'], 2) . '</p>
                     <p><strong>Items:</strong><br>' . $itemsList . '</p>',
@@ -84,100 +78,6 @@ class OrderFulfillment
         }
 
         return Database::queryGet('SELECT * FROM orders WHERE id = ?', [$orderId]);
-    }
-
-    /** Email seller (+ centre if affiliated) when referral code was used. */
-    private static function emailResellerPartiesOnPaid(array $order, array $items): void
-    {
-        $orderId = (int) ($order['id'] ?? 0);
-        $code = trim((string) ($order['referral_code'] ?? ''));
-        if ($code === '') {
-            return;
-        }
-
-        $seller = Database::queryGet(
-            "SELECT id, user_id, referral_code, academy FROM reseller_profiles
-             WHERE referral_code = ? AND status = 'approved'",
-            [$code]
-        );
-        if (!$seller) {
-            return;
-        }
-
-        $sellerAmt = Database::queryGet(
-            "SELECT amount FROM commissions WHERE order_id = ? AND reseller_id = ?
-             AND (party = 'seller' OR party = 'centre' OR party IS NULL)
-             ORDER BY id ASC LIMIT 1",
-            [$orderId, $seller['id']]
-        );
-        // Prefer explicit seller party when column exists.
-        try {
-            $sellerRow = Database::queryGet(
-                "SELECT amount FROM commissions WHERE order_id = ? AND reseller_id = ? AND party = 'seller' LIMIT 1",
-                [$orderId, $seller['id']]
-            );
-            if ($sellerRow) {
-                $sellerAmt = $sellerRow;
-            }
-        } catch (Throwable $e) {
-            // party column may be missing
-        }
-
-        $ref = strtoupper(trim((string) $seller['referral_code']));
-        $isCentreCode = strpos($ref, 'VNA-C-') === 0;
-        AppEmails::orderPaidResellerParty(
-            (int) $seller['user_id'],
-            (string) $seller['referral_code'],
-            $isCentreCode ? 'centre' : 'seller',
-            $order,
-            $items,
-            isset($sellerAmt['amount']) ? (float) $sellerAmt['amount'] : null
-        );
-
-        $academy = trim((string) ($seller['academy'] ?? ''));
-        if ($isCentreCode || $academy === '') {
-            return;
-        }
-
-        $centre = Database::queryGet(
-            "SELECT rp.id, rp.user_id, rp.referral_code
-             FROM reseller_profiles rp
-             JOIN registrations r ON r.id = rp.user_id
-             WHERE rp.status = 'approved'
-               AND UPPER(rp.referral_code) LIKE 'VNA-C-%'
-               AND (
-                 LOWER(TRIM(COALESCE(rp.academy, ''))) = LOWER(?)
-                 OR LOWER(TRIM(r.name)) = LOWER(?)
-               )
-             ORDER BY rp.id ASC
-             LIMIT 1",
-            [$academy, $academy]
-        );
-        if (!$centre || (int) $centre['user_id'] === (int) $seller['user_id']) {
-            return;
-        }
-
-        $centreAmt = null;
-        try {
-            $cRow = Database::queryGet(
-                "SELECT amount FROM commissions WHERE order_id = ? AND reseller_id = ? AND party = 'centre' LIMIT 1",
-                [$orderId, $centre['id']]
-            );
-            if ($cRow) {
-                $centreAmt = (float) $cRow['amount'];
-            }
-        } catch (Throwable $e) {
-            // ignore
-        }
-
-        AppEmails::orderPaidResellerParty(
-            (int) $centre['user_id'],
-            (string) $centre['referral_code'],
-            'centre',
-            $order,
-            $items,
-            $centreAmt
-        );
     }
 
     /**

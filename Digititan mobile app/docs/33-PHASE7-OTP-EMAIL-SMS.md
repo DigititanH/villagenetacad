@@ -1,31 +1,52 @@
 # Phase 7 — OTP / email / SMS (status)
 
-Branch: `cursor/phase7-otp-security-09ad`  
-Base: Phase 6.
+Branch: `cursor/phase7-smtp-app-uat-09ad`
 
-## Current status
+## Decision: one `.env`, two SMTP profiles (no `.envMail`)
+
+| Profile | Keys | Mailbox |
+|---------|------|---------|
+| Mobile app | `APP_SMTP_*` | `app@villagenetacad.co.za` |
+| Website | `SMTP_*` | Website team configures later |
+
+Flutter sends `X-VNA-Client: mobile`. App transactional mail uses `channel=app`.
+
+Packs: `deploy/phase7-dual-smtp-live/` · `deploy/phase7-app-emails-live/`  
+Windows sync: `INSTALL-PHASE7-SMTP.ps1`
+
+## Email + in-app (hand-in-hand with the mobile app)
+
+| Event | Email (app@) | In-app inbox |
+|-------|----------------|--------------|
+| Customer register (app) | Welcome | — |
+| Reseller apply (app) | Pending review (“We…”) | — |
+| Reseller approved (Ops) | Code + how reselling works | Reseller approved |
+| Order paid | Customer confirmation + seller/centre sale notice | Payment / sale / centre |
+| Order status change | Customer status email | Order update |
+
+## Status
 
 | Item | Status |
 |------|--------|
-| Google Sign-In in app | **Removed** (website has none) |
-| Gmail SMTP / App Password live mail | **On hold** — host/Gmail path not finished; Mailer reverted to previous `mail()` version |
-| SMS OTP | Parked (provider TBD) |
-| Lawyer POPI / legal | Parked |
-| T&Cs before pay | Parked |
-| In-app PayFast | Deferred (v1 = website browser) |
+| Dual SMTP + welcome | **PASS** |
+| Reseller pending / approved / sale / order emails | **PASS** (29 Aug 2026 live UAT) |
+| SMS OTP | Parked |
+| POPI / T&Cs before pay | Parked |
 
-## Gmail SMTP — parked notes (for later)
+## App UAT — dual SMTP **PASSED** (28 Aug 2026)
 
-When we resume:
+| # | Step | Pass? |
+|---|------|-------|
+| M1–M3 | Website vs app welcome split | **PASS** |
+| F3a–c | Three reseller apply paths | **PASS** (API + app) |
 
-1. Prefer **cPanel mailbox** SMTP (`localhost` / `mail.villagenetacad.co.za`) if Afrihost blocks `smtp.gmail.com`.
-2. Or finish Gmail App Password + real SMTP `Mailer` + deploy to  
-   `/public_html/village-netacad/backend-php/lib/Mailer.php`.
-3. Do **not** leave `public/smtp-test.php` on production.
+## App UAT — transactional emails **PASSED** (29 Aug 2026)
 
-Until then: leave `SMTP_*` in `.env` as-is or empty; app/website auth stays email+password without relying on inbox OTP mail.
+Live order **#19** · referral **VNA-B-E1B40CC4** · mailbox **app@**
 
-## Done in this branch so far
-
-- App login matches website (no Google button).
-- Docs updated; Gmail live send reverted / on hold.
+| # | Step | Pass? |
+|---|------|-------|
+| E1 | Reseller apply → pending mail (“We…”, approval follow-up) | **PASS** (`shichabon@digititan.co.za`) |
+| E2 | Ops approve → code + how reselling works | **PASS** (`VNA-B-E1B40CC4`, 53%) |
+| E3 | Paid order with referral → customer + reseller emails | **PASS** (#19 R5 / seller share R2.65) |
+| E4 | Status shipped / delivered / cancelled → customer email | **PASS** |

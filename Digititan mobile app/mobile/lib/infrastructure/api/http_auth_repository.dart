@@ -80,6 +80,8 @@ class HttpAuthRepository implements AuthRepository {
       'email': email.trim().toLowerCase(),
       'password': password,
       'role': role == UserRole.reseller ? 'reseller' : 'customer',
+      // Welcome mail from app@ is mobile-only (website owns its own email).
+      'client': 'mobile',
     };
     if (role == UserRole.reseller) {
       final kind = (resellerKind ?? 'independent').trim().toLowerCase();
@@ -103,7 +105,7 @@ class HttpAuthRepository implements AuthRepository {
       throw Exception('Register response missing token/user');
     }
     await _tokens.write(token);
-    // Website verifies email via link; treat session as usable once JWT exists.
+    // Mobile register marks verified server-side; JWT session is usable immediately.
     _current = _mapUser(userJson, emailVerified: true);
     return _current!;
   }

@@ -299,6 +299,7 @@ class PayfastController
                 Mailer::send([
                     'to' => Site::email(),
                     'replyTo' => $donation['email'] ?: null,
+                    'channel' => 'app',
                     'subject' => 'Donation received: R' . number_format((float) $donation['amount'], 2),
                     'html' => '<p><strong>Donation ID:</strong> ' . $parsed['id'] . '</p>
                         <p><strong>Academy:</strong> ' . htmlspecialchars($donation['academy'] ?? '—') . '</p>

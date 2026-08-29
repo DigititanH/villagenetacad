@@ -29,6 +29,8 @@ class ApiClient {
   }) async {
     final headers = <String, String>{
       'Accept': 'application/json',
+      // Lets backend know this call is from the mobile app (shared API with website).
+      'X-VNA-Client': 'mobile',
     };
     if (jsonBody) {
       headers['Content-Type'] = 'application/json';

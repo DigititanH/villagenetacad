@@ -52,7 +52,7 @@ Roadmap: `docs/25-PHASES-WAVE2-WAVE3.md`
 
 ## OTP
 - **Wave 2B:** Email **and** SMS channel choice  
-- **Phase 7 email:** Gmail SMTP / live inbox OTP **on hold** (host path TBD).  
+- **Phase 7 email:** cPanel `app@villagenetacad.co.za` SMTP **LIVE** (28 Aug 2026). Live path = verify **link** in inbox (website parity); in-app OTP code screen = dummy only.  
 - **Google Sign-In:** removed from the app for now (website has no Google login).  
 - **Phase 7 SMS:** provider not chosen yet (Africa’s Talking / Twilio / Clickatell).  
 - **Parked in Phase 7:** lawyer POPI, T&Cs-before-pay (do after email OTP works).
