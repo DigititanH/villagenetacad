@@ -1,8 +1,31 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { LogIn } from "lucide-react";
 import toast from "react-hot-toast";
+
+/** Block open redirects; only send shoppers back to cart/checkout (or similar). */
+export function safeReturnPath(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const path = raw.trim();
+  if (!path.startsWith("/") || path.startsWith("//") || path.includes("://")) {
+    return null;
+  }
+  const pathname = path.split("?")[0];
+  const allowedExact = new Set([
+    "/checkout",
+    "/cart",
+    "/my-orders",
+    "/wishlist",
+    "/shop",
+    "/courses",
+  ]);
+  if (allowedExact.has(pathname)) return path;
+  if (pathname.startsWith("/shop/") || pathname.startsWith("/courses/")) {
+    return path;
+  }
+  return null;
+}
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -10,6 +33,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = safeReturnPath(searchParams.get("next"));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,9 +42,15 @@ export default function Login() {
     try {
       const user = await login(email.trim().toLowerCase(), password);
       toast.success(`Welcome back, ${user.name}!`);
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "reseller") navigate("/reseller/dashboard");
-      else navigate("/");
+      if (next) {
+        navigate(next);
+      } else if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (user.role === "reseller") {
+        navigate("/reseller/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
     }
